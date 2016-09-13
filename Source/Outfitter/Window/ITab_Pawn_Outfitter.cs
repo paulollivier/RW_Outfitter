@@ -4,6 +4,7 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace Outfitter
 {
@@ -18,6 +19,23 @@ namespace Outfitter
             labelKey = "OutfitterTab";
         }
 
+        private Pawn SelPawnForGear
+        {
+            get
+            {
+                if (base.SelPawn != null)
+                {
+                    return base.SelPawn;
+                }
+                Corpse corpse = base.SelThing as Corpse;
+                if (corpse != null)
+                {
+                    return corpse.innerPawn;
+                }
+                throw new InvalidOperationException("Gear tab on non-pawn non-corpse " + base.SelThing);
+            }
+        }
+
         public override void OnOpen()
         {
             Find.WindowStack.Add(new Window_Pawn_GearScore());
@@ -25,14 +43,14 @@ namespace Outfitter
 
         protected override void FillTab()
         {
-            var pawnSave = MapComponent_Outfitter.Get.GetCache(SelPawn);
+            var pawnSave = MapComponent_Outfitter.Get.GetCache(SelPawnForGear);
 
             // Outfit + Status button
-            Rect rectStatus = new Rect(10f, 10f, 120f, 30f);
+            Rect rectStatus = new Rect(10f, 15f, 120f, 30f);
 
             // select outfit
 
-            if (Widgets.ButtonText(rectStatus, SelPawn.outfits.CurrentOutfit.label, true, false))
+            if (Widgets.ButtonText(rectStatus, SelPawnForGear.outfits.CurrentOutfit.label, true, false))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 foreach (Outfit current in Current.Game.outfitDatabase.AllOutfits)
@@ -40,7 +58,7 @@ namespace Outfitter
                     Outfit localOut = current;
                     list.Add(new FloatMenuOption(localOut.label, delegate
                     {
-                        SelPawn.outfits.CurrentOutfit = localOut;
+                        SelPawnForGear.outfits.CurrentOutfit = localOut;
                     }));
                 }
                 Find.WindowStack.Add(new FloatMenu(list));
@@ -51,13 +69,11 @@ namespace Outfitter
 
             if (Widgets.ButtonText(rectStatus, "OutfitterEditOutfit".Translate(), true, false))
             {
-                Find.WindowStack.Add(new Dialog_ManageOutfits(SelPawn.outfits.CurrentOutfit));
+                Find.WindowStack.Add(new Dialog_ManageOutfits(SelPawnForGear.outfits.CurrentOutfit));
             }
 
             //show outfit
             rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
-
-
 
             if (Widgets.ButtonText(rectStatus, "OutfitShow".Translate(), true, false))
             {
@@ -66,11 +82,31 @@ namespace Outfitter
 
 
             // Status checkboxes
-            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, (size.x - 30f) / 2, rectStatus.height);
+            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, 130f, rectStatus.height);
             Text.Font= GameFont.Small;
-            pawnSave.AddWorkStats = GUI.Toggle(new Rect(rectCheckboxes), pawnSave.AddWorkStats, "AddWorkStats".Translate());
-            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(rectCheckboxes.xMax+10f, rectCheckboxes.y,rectCheckboxes.width,rectCheckboxes.height),
+            pawnSave.AddWorkStats = GUI.Toggle(new Rect(10f, rectCheckboxes.y, 120f, rectCheckboxes.height), pawnSave.AddWorkStats, "AddWorkStats".Translate());
+            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(140f, rectCheckboxes.y,rectCheckboxes.width+10f,rectCheckboxes.height),
                 pawnSave.AddIndividualStats, "AddIndividualStats".Translate());
+
+            Rect setWorkRect = new Rect(290f, rectCheckboxes.y, rectCheckboxes.width, rectCheckboxes.height);
+            if (Widgets.ButtonText(setWorkRect, pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
+            {
+                List<FloatMenuOption> options = new List<FloatMenuOption>();
+                foreach (SaveablePawn.MainJob mainJob in Enum.GetValues(typeof(SaveablePawn.MainJob)))
+                {
+                    options.Add(new FloatMenuOption(mainJob.ToString().Replace("00", " - ").Replace("_", " "), delegate
+                    {
+                        pawnSave.mainJob = mainJob;
+                        pawnSave.forceStatUpdate = true;
+                        
+                        SelPawnForGear.mindState.nextApparelOptimizeTick = -99999;
+                        //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
+                    }));
+                }
+                FloatMenu window = new FloatMenu(options, "MainJob".Translate());
+
+                Find.WindowStack.Add(window);
+            }
 
             // main canvas
             Rect canvas = new Rect(0f, 60f, size.x, size.y-60f).ContractedBy(20f);
@@ -94,12 +130,12 @@ namespace Outfitter
 
             // temperature slider
             //    SaveablePawn pawnStatCache = MapComponent_Outfitter.Get.GetCache(SelPawn);
-            ApparelStatCache pawnStatCache = SelPawn.GetApparelStatCache();
+            ApparelStatCache pawnStatCache = SelPawnForGear.GetApparelStatCache();
             FloatRange targetTemps = pawnStatCache.TargetTemperatures;
             FloatRange minMaxTemps = ApparelStatsHelper.MinMaxTemperatureRange;
             Rect sliderRect = new Rect(cur.x, cur.y, canvas.width - 20f, 40f);
             Rect tempResetRect = new Rect(sliderRect.xMax + 4f, cur.y + 10f, 16f, 16f);
-            cur.y += 60f; // includes padding 
+            cur.y += 40f; // includes padding 
 
             // current temperature settings
             GUI.color = pawnSave.TargetTemperaturesOverride ? Color.white : Color.grey;
@@ -123,6 +159,9 @@ namespace Outfitter
                 }
                 TooltipHandler.TipRegion(tempResetRect, "TemperatureRangeReset".Translate());
             }
+            Text.Font = GameFont.Small;
+            TryDrawComfyTemperatureRange(ref cur.y, canvas.width);
+
 
 
             // header
@@ -138,11 +177,11 @@ namespace Outfitter
             if (Widgets.ButtonImage(addStatRect, OutfitterTextures.addButton))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
-                foreach (StatDef def in SelPawn.NotYetAssignedStatDefs().OrderBy(i => i.label.ToString()))
+                foreach (StatDef def in SelPawnForGear.NotYetAssignedStatDefs().OrderBy(i => i.label.ToString()))
                 {
                     options.Add(new FloatMenuOption(def.LabelCap, delegate
                   {
-                      SelPawn.GetApparelStatCache().StatCache.Insert(0, new ApparelStatCache.StatPriority(def, 0f, StatAssignment.Manual));
+                      SelPawnForGear.GetApparelStatCache().StatCache.Insert(0, new ApparelStatCache.StatPriority(def, 0f, StatAssignment.Manual));
                       //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
                   }));
                 }
@@ -161,7 +200,7 @@ namespace Outfitter
             // main content in scrolling view
             Rect contentRect = new Rect(cur.x, cur.y, canvas.width, canvas.height - cur.y);
             Rect viewRect = contentRect;
-            viewRect.height = SelPawn.GetApparelStatCache().StatCache.Count * 30f + 10f;
+            viewRect.height = SelPawnForGear.GetApparelStatCache().StatCache.Count * 30f + 10f;
             if (viewRect.height > contentRect.height)
             {
                 viewRect.width -= 20f;
@@ -172,7 +211,7 @@ namespace Outfitter
             cur = Vector2.zero;
 
             // none label
-            if (!SelPawn.GetApparelStatCache().StatCache.Any())
+            if (!SelPawnForGear.GetApparelStatCache().StatCache.Any())
             {
                 Rect noneLabel = new Rect(cur.x, cur.y, viewRect.width, 30f);
                 GUI.color = Color.grey;
@@ -198,10 +237,10 @@ namespace Outfitter
                 cur.y += 15f;
 
                 // stat weight sliders
-                foreach (ApparelStatCache.StatPriority stat in SelPawn.GetApparelStatCache().StatCache)
+                foreach (ApparelStatCache.StatPriority stat in SelPawnForGear.GetApparelStatCache().StatCache)
                 {
                     bool stop_UI;
-                    ApparelStatCache.DrawStatRow(ref cur, viewRect.width, stat, SelPawn, out stop_UI);
+                    ApparelStatCache.DrawStatRow(ref cur, viewRect.width, stat, SelPawnForGear, out stop_UI);
                     if (stop_UI)
                     {
                         // DrawStatRow can change the StatCache, invalidating the loop. So if it does that, stop looping - we'll redraw on the next tick.
@@ -245,5 +284,26 @@ namespace Outfitter
                 return true;
             }
         }
+
+        private void TryDrawComfyTemperatureRange(ref float curY, float width)
+        {
+            if (this.SelPawnForGear.Dead)
+            {
+                return;
+            }
+            Rect rect = new Rect(0f, curY, width, 22f);
+            float statValue = this.SelPawnForGear.GetStatValue(StatDefOf.ComfyTemperatureMin, true);
+            float statValue2 = this.SelPawnForGear.GetStatValue(StatDefOf.ComfyTemperatureMax, true);
+            Widgets.Label(rect, string.Concat(new string[]
+            {
+                "ComfyTemperatureRange".Translate(),
+                ": ",
+                statValue.ToStringTemperature("F0"),
+                " ~ ",
+                statValue2.ToStringTemperature("F0")
+            }));
+            curY += 22f;
+        }
+
     }
 }
