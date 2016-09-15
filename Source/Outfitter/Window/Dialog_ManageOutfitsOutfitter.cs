@@ -105,9 +105,9 @@ namespace Outfitter.Window
                         {
                             Messages.Message(acceptanceReport.Reason, MessageSound.RejectInput);
                         }
-                        else if (localOut == this.SelectedOutfit)
+                        else if (localOut == SelectedOutfit)
                         {
-                            this.SelectedOutfit = null;
+                            SelectedOutfit = null;
                         }
                     }, MenuOptionPriority.Medium, null, null, 0f, null));
                 }

@@ -10,6 +10,7 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using static UnityEngine.GUILayout;
 
 namespace Outfitter
 {
@@ -544,6 +545,13 @@ namespace Outfitter
 
                     pawnSave.TargetTemperatures = new FloatRange(Math.Max(temp - 7.5f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min(temp + 7.5f, ApparelStatsHelper.MinMaxTemperatureRange.max));
+
+                    if (pawnSave.TargetTemperatures.min >= 10)
+                        pawnSave.TargetTemperatures.min = 10;
+
+                    if (pawnSave.TargetTemperatures.max <= 20)
+                        pawnSave.TargetTemperatures.max = 20;
+
                     _lastTempUpdate = Find.TickManager.TicksGame;
                 }
 
@@ -679,7 +687,7 @@ namespace Outfitter
                     GUI.color = Color.white;
                     break;
             }
-            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -1.5f, 1.5f);
+            float weight = HorizontalSlider(stat.Weight, -1.5f, 1.5f);
             if (Mathf.Abs(weight - stat.Weight) > 1e-4)
             {
                 stat.Weight = weight;
