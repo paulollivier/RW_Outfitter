@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Outfitter;
+using UnityEngine;
 using Verse;
 // Toggle in Hospitality Properties
 #if NoCCL
@@ -68,6 +68,9 @@ namespace Outfitter
                 def.inspectorTabsResolved.Add(ITabManager.GetSharedInstance(typeof(ITab_Pawn_Outfitter)));
             }
 
+            GameObject initializer = new GameObject("OutfitterMapComponentInjector");
+            initializer.AddComponent<MapComponentInjector>();
+            UnityEngine.Object.DontDestroyOnLoad(initializer);
 
             return true;
         }

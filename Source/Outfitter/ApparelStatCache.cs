@@ -10,7 +10,6 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using static UnityEngine.GUILayout;
 
 namespace Outfitter
 {
@@ -687,7 +686,7 @@ namespace Outfitter
                     GUI.color = Color.white;
                     break;
             }
-            float weight = HorizontalSlider(stat.Weight, -1.5f, 1.5f);
+            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -1.5f, 1.5f);
             if (Mathf.Abs(weight - stat.Weight) > 1e-4)
             {
                 stat.Weight = weight;

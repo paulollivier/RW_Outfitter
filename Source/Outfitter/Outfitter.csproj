@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="DetourAttribute.cs" />
+    <Compile Include="MapComponentInjector.cs" />
     <Compile Include="NoCCL\Detours.cs" />
     <Compile Include="NoCCL\SpecialInjector.cs" />
     <Compile Include="OF_SpecialInjector.cs" />
