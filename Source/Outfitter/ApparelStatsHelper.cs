@@ -428,10 +428,11 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.GiftImpact, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, 0.2f);
                     yield break;
+
                 case "Handling":
                     if (pawnSave.mainJob == Handler)
                     {
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.9f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, 3f);
@@ -445,7 +446,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 0.6f);
                         yield break;
                     }
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, 1f);
