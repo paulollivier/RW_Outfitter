@@ -169,20 +169,17 @@ namespace Outfitter
 
         public static void DoApparelScoreRaw_PawnStatsHandlers(Pawn pawn, Apparel apparel, StatDef statDef, ref float num)
         {
-            if (ApparelScoreRaw_PawnStatsHandlers != null)
-                ApparelScoreRaw_PawnStatsHandlers(pawn, apparel, statDef, ref num);
+            ApparelScoreRaw_PawnStatsHandlers?.Invoke(pawn, apparel, statDef, ref num);
         }
 
         public static void FillIgnoredInfused_PawnStatsHandlers(ref List<StatDef> _allApparelStats)
         {
-            if (Ignored_WTHandlers != null)
-                Ignored_WTHandlers(ref _allApparelStats);
+            Ignored_WTHandlers?.Invoke(ref _allApparelStats);
         }
 
         public static void FillInfusionHashset_PawnStatsHandlers(Pawn pawn, Apparel apparel, StatDef statDef)
         {
-            if (ApparelScoreRaw_InfusionHandlers != null)
-                ApparelScoreRaw_InfusionHandlers(pawn, apparel, statDef);
+            ApparelScoreRaw_InfusionHandlers?.Invoke(pawn, apparel, statDef);
         }
 
         public ApparelStatCache(Pawn pawn)
@@ -236,8 +233,6 @@ namespace Outfitter
                 if (statBases.Contains(statPriority.Stat))
                 {
                     float statValue = apparel.GetStatValue(statPriority.Stat);
-                    //        statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
-                    //        DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
 
                     // add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
 
@@ -253,19 +248,6 @@ namespace Outfitter
 
                     score += statValue * statPriority.Weight;
 
-                    // base value
-                    float norm = apparel.GetStatValue(statPriority.Stat);
-                    float adjusted = norm;
-
-                    // add offset
-                    adjusted += apparel.def.equippedStatOffsets.GetStatOffsetFromList(statPriority.Stat) *
-                                statPriority.Weight;
-
-                    // normalize
-                    if (norm != 0)
-                    {
-                        adjusted /= norm;
-                    }
 
                     // multiply score to favour items with multiple offsets
                     //     score *= adjusted;

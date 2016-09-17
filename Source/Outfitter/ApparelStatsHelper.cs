@@ -18,6 +18,7 @@ namespace Outfitter
     {
         private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches = new Dictionary<Pawn, ApparelStatCache>();
         private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
+        private const float ScoreFactorIfNotReplacing = 10f;
 
         public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
 
@@ -310,7 +311,7 @@ namespace Outfitter
             // increase score if this piece can be worn without replacing existing gear.
             if (!willReplace)
             {
-                candidateScore *= 10f;
+                candidateScore *= ScoreFactorIfNotReplacing;
             }
 
             return candidateScore;
@@ -393,8 +394,10 @@ namespace Outfitter
             {
                 case "Firefighter":
                     yield break;
+
                 case "PatientEmergency":
                     yield break;
+
                 case "Doctor":
                     if (pawnSave.mainJob == Doctor)
                     {
@@ -412,8 +415,10 @@ namespace Outfitter
 
                 case "PatientBedRest":
                     yield break;
+
                 case "Flicker":
                     yield break;
+
                 case "Warden":
                     if (pawnSave.mainJob == Warden)
                     {
@@ -461,6 +466,7 @@ namespace Outfitter
                     //         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CarryWeight"), 0.25f); // CR
                     //         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CarryBulk"), 0.25f); // CR
                     yield break;
+
                 case "Cooking":
                     if (pawnSave.mainJob == Cook)
                     {
@@ -483,6 +489,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"), 1f);
                     yield break;
+
                 case "Hunting":
                     if (pawnSave.mainJob == Hunter)
                     {
@@ -515,6 +522,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 0.4f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -0.8f);
                     yield break;
+
                 case "Construction":
                     if (pawnSave.mainJob == Constructor)
                     {
@@ -531,25 +539,28 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SmoothingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.25f);
                     yield break;
+
                 case "Repair":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingFailChance, -1f);
                     yield break;
+
                 case "Growing":
                     if (pawnSave.mainJob == Grower)
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, 3f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.HarvestFailChance, -1.5f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.HarvestFailChance, -3f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, 1f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.HarvestFailChance, -0.5f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.HarvestFailChance, -1f);
                     yield break;
+
                 case "Mining":
                     if (pawnSave.mainJob == Miner)
                     {
@@ -564,10 +575,12 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.25f);
                     yield break;
+
                 case "PlantCutting":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, 0.5f);
                     yield break;
+
                 case "Smithing":
                     if (pawnSave.mainJob == Smith)
                     {
@@ -577,6 +590,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmithingSpeed"), 1f);
                     yield break;
+
                 case "Tailoring":
                     if (pawnSave.mainJob == Tailor)
                     {
@@ -587,6 +601,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TailoringSpeed"), 1f);
                     yield break;
+
                 case "Art":
                     if (pawnSave.mainJob == Artist)
                     {
@@ -597,6 +612,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SculptingSpeed"), 1f);
                     yield break;
+
                 case "Crafting":
                     if (pawnSave.mainJob == Crafter)
                     {
@@ -613,6 +629,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryMechanoidSpeed"), 0.5f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"), 0.5f);
                     yield break;
+
                 case "Hauling":
                     if (pawnSave.mainJob == Hauler)
                     {
@@ -623,10 +640,12 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.25f);
                     yield break;
+
                 case "Cleaning":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.5f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.25f);
                     yield break;
+
                 case "Research":
                     if (pawnSave.mainJob == Researcher)
                     {
@@ -637,10 +656,12 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ResearchSpeed, 1f);
                     yield break;
+
                 case "Managing":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 0.25f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ManagingSpeed"), 0.5f);
                     yield break;
+
                 default:
                     if (!IgnoredWorktypeDefs.Contains(worktype.defName))
                     {

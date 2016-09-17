@@ -7,12 +7,12 @@ using static UnityEngine.GUILayout;
 
 namespace Outfitter
 {
-    public class Window_PawnApparelDetail : Verse.Window
+    public class Window_Pawn_ApparelDetail : Verse.Window
     {
         private readonly Pawn _pawn;
         private readonly Apparel _apparel;
 
-        public Window_PawnApparelDetail(Pawn pawn, Apparel apparel)
+        public Window_Pawn_ApparelDetail(Pawn pawn, Apparel apparel)
         {
             doCloseX = true;
             closeOnEscapeKey = true;
@@ -25,7 +25,7 @@ namespace Outfitter
 
         private Pawn SelPawn => Find.Selector.SingleSelectedThing as Pawn;
 
-        public bool IsVisible
+        private bool IsVisible
         {
             get
             {

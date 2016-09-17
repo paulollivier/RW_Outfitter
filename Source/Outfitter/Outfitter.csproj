@@ -45,10 +45,6 @@
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Community Core Library">
-      <HintPath>..\..\..\..\..\..\workshop\content\294100\729577707\Assemblies\Community Core Library.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -63,6 +59,7 @@
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="DetourAttribute.cs" />
+    <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
     <Compile Include="MapComponentInjector.cs" />
     <Compile Include="NoCCL\Detours.cs" />
     <Compile Include="NoCCL\SpecialInjector.cs" />
@@ -74,7 +71,7 @@
     <Compile Include="Buttons\OutfitterTextures.cs" />
     <Compile Include="Buttons\LocalTextures.cs" />
     <None Include="Initializer\Bootstrap.cs" />
-    <Compile Include="Window\Window_Pawn_GearScore.cs" />
+    <Compile Include="Window\Window_Pawn_ApparelList.cs" />
     <Compile Include="Window\ITab_Pawn_Outfitter.cs" />
     <Compile Include="MainTabWindow_Outfitter.cs" />
     <Compile Include="MapComponent_Outfitter.cs" />

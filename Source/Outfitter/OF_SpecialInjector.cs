@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using RimWorld;
 using UnityEngine;
 using Verse;
 // Toggle in Hospitality Properties
@@ -50,6 +51,14 @@ namespace Outfitter
                 }
             }
             #endregion
+
+            /*
+            MethodInfo coreMethod = typeof(JobGiver_OptimizeApparel).GetMethod("TryGiveJob", BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo autoEquipMethod = typeof(Outfitter_JobGiver_OptimizeApparel).GetMethod("TryGiveJob", BindingFlags.Instance | BindingFlags.NonPublic);
+
+            if (!Detours.TryDetourFromTo(coreMethod, autoEquipMethod))
+                Log.Error("Could not Detour AutoEquip.");
+            */
 
             // inject ITab into all humanlikes
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.category == ThingCategory.Pawn && td.race.Humanlike))

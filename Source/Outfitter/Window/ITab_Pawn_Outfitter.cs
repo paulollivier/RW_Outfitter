@@ -38,12 +38,12 @@ namespace Outfitter
 
         public override void OnOpen()
         {
-            Find.WindowStack.Add(new Window_Pawn_GearScore());
+            Find.WindowStack.Add(new Window_Pawn_ApparelList());
         }
 
         protected override void FillTab()
         {
-            var pawnSave = MapComponent_Outfitter.Get.GetCache(selPawnForGear);
+            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(selPawnForGear);
 
             // Outfit + Status button
             Rect rectStatus = new Rect(10f, 15f, 120f, 30f);
@@ -77,7 +77,7 @@ namespace Outfitter
 
             if (Widgets.ButtonText(rectStatus, "OutfitShow".Translate(), true, false))
             {
-                Find.WindowStack.Add(new Window_Pawn_GearScore());
+                Find.WindowStack.Add(new Window_Pawn_ApparelList());
             }
 
 
@@ -99,8 +99,7 @@ namespace Outfitter
                         pawnSave.mainJob = mainJob;
                         pawnSave.forceStatUpdate = true;
 
-                        selPawnForGear.mindState.nextApparelOptimizeTick = -99999;
-
+                        selPawnForGear.mindState.Notify_OutfitChanged();
                     }));
                 }
                 FloatMenu window = new FloatMenu(options, "MainJob".Translate());
@@ -254,7 +253,65 @@ namespace Outfitter
 
             GUI.EndGroup();
         }
+        /*
+        private Job WearApparel()
+        {
+                Outfit currentOutfit = selPawnForGear.outfits.CurrentOutfit;
+                List<Apparel> wornApparel = selPawnForGear.apparel.WornApparel;
+                for (int i = wornApparel.Count - 1; i >= 0; i--)
+                {
+                    if (!currentOutfit.filter.Allows(wornApparel[i]) &&
+                        selPawnForGear.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
+                    {
+                        return new Job(JobDefOf.RemoveApparel, wornApparel[i])
+                        {
+                            haulDroppedApparel = true
+                        };
+                    }
+                }
+                Thing thing = null;
+                float num = 0f;
+                List<Thing> list = Find.ListerThings.ThingsInGroup(ThingRequestGroup.Apparel);
+                if (list.Count == 0)
+                {
+                    return null;
+                }
+                foreach (Thing apparelthing in list)
+                {
+                    Apparel apparel = (Apparel) apparelthing;
+                    if (currentOutfit.filter.Allows(apparel))
+                    {
+                        if (Find.SlotGroupManager.SlotGroupAt(apparel.Position) != null)
+                        {
+                            if (!apparel.IsForbidden(selPawnForGear))
+                            {
+                                float num2 = ApparelStatsHelper.ApparelScoreGain(selPawnForGear, apparel);
 
+                                if (num2 >= 0.09f && num2 >= num)
+                                {
+                                    if (ApparelUtility.HasPartsToWear(selPawnForGear, apparel.def))
+                                    {
+                                        if (selPawnForGear.CanReserveAndReach(apparel, PathEndMode.OnCell,
+                                            selPawnForGear.NormalMaxDanger(), 1))
+                                        {
+                                            thing = apparel;
+                                            num = num2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (thing == null)
+                {
+                    return null;
+                }
+                return new Job(JobDefOf.Wear, thing);
+            
+        }
+*/
         public override bool IsVisible
         {
             get
@@ -264,8 +321,8 @@ namespace Outfitter
                 // thing selected is a pawn
                 if (selectedPawn == null)
                 {
-                    Find.WindowStack.TryRemove(typeof(Window_PawnApparelDetail), false);
-                    Find.WindowStack.TryRemove(typeof(Window_Pawn_GearScore), false);
+                    Find.WindowStack.TryRemove(typeof(Window_Pawn_ApparelDetail), false);
+                    Find.WindowStack.TryRemove(typeof(Window_Pawn_ApparelList), false);
 
                     return false;
                 }

@@ -10,7 +10,7 @@ using Verse.Sound;
 
 namespace Outfitter
 {
-    public sealed class Window_Pawn_GearScore : Verse.Window
+    public sealed class Window_Pawn_ApparelList : Verse.Window
     {
         #region Modded 1
         private bool CanEdit { get { return SelPawn.IsColonistPlayerControlled; } }
@@ -34,7 +34,7 @@ namespace Outfitter
         private static readonly Color HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
 
-        public bool IsVisible
+        private bool IsVisible
         {
             get
             {
@@ -72,7 +72,7 @@ namespace Outfitter
             }
         }
 
-        public Window_Pawn_GearScore()
+        public Window_Pawn_ApparelList()
         {
             doCloseX = true;
             preventCameraMotion = false;
@@ -204,7 +204,7 @@ namespace Outfitter
                 //Left Mouse Button Menu
                 if (Event.current.button == 0)
                 {
-                    Find.WindowStack.Add(new Window_PawnApparelDetail(SelPawn, apparel));
+                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(SelPawn, apparel));
                 }
 
                 // RMB menu

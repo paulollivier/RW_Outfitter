@@ -7,15 +7,15 @@ namespace Outfitter
 {
      class MapComponent_Outfitter : MapComponent
     {
-        public List<SaveablePawn> PawnCache = new List<SaveablePawn>();
+         private List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
 
         public SaveablePawn GetCache(Pawn pawn)
         {
-            foreach (SaveablePawn c in PawnCache)
+            foreach (SaveablePawn c in _pawnCache)
                 if (c.Pawn == pawn)
                     return c;
             SaveablePawn n = new SaveablePawn { Pawn = pawn };
-            PawnCache.Add(n);
+            _pawnCache.Add(n);
             return n;
 
             // if (!PawnApparelStatCaches.ContainsKey(pawn))
@@ -30,11 +30,9 @@ namespace Outfitter
             get
             {
                 MapComponent_Outfitter getComponent = Find.Map.components.OfType<MapComponent_Outfitter>().FirstOrDefault();
-                if (getComponent == null)
-                {
-                    getComponent = new MapComponent_Outfitter();
-                    Find.Map.components.Add(getComponent);
-                }
+                if (getComponent != null) return getComponent;
+                getComponent = new MapComponent_Outfitter();
+                Find.Map.components.Add(getComponent);
 
                 return getComponent;
             }
@@ -43,12 +41,12 @@ namespace Outfitter
 
         public override void ExposeData()
         {
-            Scribe_Collections.LookList(ref PawnCache, "Pawns", LookMode.Deep);
+            Scribe_Collections.LookList(ref _pawnCache, "Pawns", LookMode.Deep);
 
             base.ExposeData();
 
-            if (PawnCache == null)
-                PawnCache = new List<SaveablePawn>();
+            if (_pawnCache == null)
+                _pawnCache = new List<SaveablePawn>();
         }
     }
 }

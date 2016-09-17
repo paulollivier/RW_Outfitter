@@ -259,7 +259,7 @@ namespace Outfitter.Window
                 {
                     Close(true);
                     Find.MainTabsRoot.EscapeCurrentTab(true);
-                    Find.WindowStack.Add(new Window_PawnApparelDetail(_pawn, apparelThing));
+                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(_pawn, apparelThing));
                     return;
                 }
             }
