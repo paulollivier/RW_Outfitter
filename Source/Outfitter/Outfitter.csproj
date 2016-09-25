@@ -59,7 +59,7 @@
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="DetourAttribute.cs" />
-    <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
+    <None Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
     <Compile Include="MapComponentInjector.cs" />
     <Compile Include="NoCCL\Detours.cs" />
     <Compile Include="NoCCL\SpecialInjector.cs" />

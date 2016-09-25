@@ -78,7 +78,7 @@ namespace Outfitter
                                 priorityAdjust = 0.125f;
                                 break;
                             default:
-                                priorityAdjust = 0.125f;
+                                priorityAdjust = 0.5f;
                                 break;
                         }
 
@@ -140,8 +140,8 @@ namespace Outfitter
                 float max = dict.Values.Select(Math.Abs).Max();
                 foreach (StatDef key in new List<StatDef>(dict.Keys))
                 {
-                    // normalize max of absolute weigths to be 1
-                    dict[key] /= max / 1f;
+                    // normalize max of absolute weigths to be 1.5
+                    dict[key] /= max / 1.5f;
                 }
             }
 

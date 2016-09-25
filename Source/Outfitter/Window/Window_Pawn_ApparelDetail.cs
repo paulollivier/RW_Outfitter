@@ -29,10 +29,6 @@ namespace Outfitter
         {
             get
             {
-                if (!typeof(ITab_Pawn_Outfitter).IsVisible)
-                {
-                    return false;
-                }
 
                 // thing selected is a pawn
                 if (SelPawn == null)

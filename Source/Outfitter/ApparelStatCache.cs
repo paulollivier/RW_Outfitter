@@ -668,7 +668,7 @@ namespace Outfitter
                     GUI.color = Color.white;
                     break;
             }
-            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -1.5f, 1.5f);
+            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -2.5f, 2.5f);
             if (Mathf.Abs(weight - stat.Weight) > 1e-4)
             {
                 stat.Weight = weight;

@@ -27,8 +27,6 @@ namespace Outfitter
 
         private Vector2 scrollPosition = Vector2.zero;
 
-        private float scrollViewHeight;
-
         private static readonly Color ThingLabelColor = new Color(0.9f, 0.9f, 0.9f, 1f);
 
         private static readonly Color HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -98,55 +96,6 @@ namespace Outfitter
 
         public override void DoWindowContents(Rect rect)
         {
-            // main canvas
-            Text.Font = GameFont.Small;
-            //     Rect rect2 = rect.ContractedBy(10f);
-            Rect calcScore = new Rect(rect.x, rect.y, rect.width, rect.height);
-            GUI.BeginGroup(calcScore);
-            Text.Font = GameFont.Small;
-            GUI.color = Color.white;
-            Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
-            Rect viewRect = outRect;
-            viewRect.height = scrollViewHeight;
-            if (viewRect.height > outRect.height)
-            {
-                viewRect.width -= 20f;
-            }
-            Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect);
-            float num = 0f;
-
-            if (SelPawn.apparel != null)
-            {
-                Widgets.ListSeparator(ref num, viewRect.width, "Apparel".Translate());
-                foreach (Apparel current2 in from ap in SelPawn.apparel.WornApparel
-                                             orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
-                                             select ap)
-                {
-                    var bp = "";
-                    var layer = "";
-                    foreach (var apparelLayer in current2.def.apparel.layers)
-                    {
-                        foreach (var bodyPartGroupDef in current2.def.apparel.bodyPartGroups)
-                        {
-                            bp += bodyPartGroupDef.LabelCap + " - ";
-                        }
-                        layer = apparelLayer.ToString();
-                    }
-                    Widgets.ListSeparator(ref num, viewRect.width, bp + layer);
-                    DrawThingRowModded(ref num, viewRect.width, current2);
-                }
-
-            }
-
-
-            if (Event.current.type == EventType.Layout)
-            {
-                scrollViewHeight = num + 30f;
-            }
-            Widgets.EndScrollView();
-            GUI.EndGroup();
-            GUI.color = Color.white;
-            Text.Anchor = TextAnchor.UpperLeft;
         }
 
         private static readonly Color _highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);

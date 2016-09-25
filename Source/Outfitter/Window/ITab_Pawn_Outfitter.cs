@@ -1,21 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Outfitter.Window;
 using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using Verse.Sound;
 
 namespace Outfitter
 {
     public class ITab_Pawn_Outfitter : ITab
     {
         private Vector2 _scrollPosition = Vector2.zero;
+        private Vector2 scrollPosition = Vector2.zero;
+
+        private float scrollViewHeight;
+        private bool CanControl { get { return SelPawn.IsColonistPlayerControlled; } }
+        private const float ThingIconSize = 30f;
+        private static readonly Color ThingLabelColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+        private static readonly Color HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+        private const float ThingRowHeight = 64f;
+
+        private const float ThingLeftX = 40f;
 
 
         public ITab_Pawn_Outfitter()
         {
-            size = new Vector2(432f, 550f);
+            size = new Vector2(770f, 550f);
             labelKey = "OutfitterTab";
         }
 
@@ -35,14 +48,36 @@ namespace Outfitter
                 throw new InvalidOperationException("Gear tab on non-pawn non-corpse " + SelThing);
             }
         }
-
-        public override void OnOpen()
+        GUIStyle Headline = new GUIStyle
         {
-            Find.WindowStack.Add(new Window_Pawn_ApparelList());
-        }
+            fontStyle = FontStyle.Bold,
+            fontSize = 16,
+            normal = { textColor = Color.white },
+            padding = new RectOffset(0, 0, 12, 6)
+        };
+
+        GUIStyle FontBold = new GUIStyle
+        {
+            fontStyle = FontStyle.Bold,
+            normal = { textColor = Color.white },
+            padding = new RectOffset(0, 0, 12, 6)
+        };
+
+
+
+        GUIStyle hoverBox = new GUIStyle
+        {
+            hover = { background = OutfitterTextures.BGColor }
+        };
+        GUIStyle whiteLine = new GUIStyle
+        {
+            normal = { background = OutfitterTextures.White }
+        };
 
         protected override void FillTab()
         {
+            #region Base Tab
+
             SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(selPawnForGear);
 
             // Outfit + Status button
@@ -83,9 +118,9 @@ namespace Outfitter
 
             // Status checkboxes
             Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, 130f, rectStatus.height);
-            Text.Font= GameFont.Small;
+            Text.Font = GameFont.Small;
             pawnSave.AddWorkStats = GUI.Toggle(new Rect(10f, rectCheckboxes.y, 120f, rectCheckboxes.height), pawnSave.AddWorkStats, "AddWorkStats".Translate());
-            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(140f, rectCheckboxes.y,rectCheckboxes.width+10f,rectCheckboxes.height),
+            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(140f, rectCheckboxes.y, rectCheckboxes.width + 10f, rectCheckboxes.height),
                 pawnSave.AddIndividualStats, "AddIndividualStats".Translate());
 
             Rect setWorkRect = new Rect(290f, rectCheckboxes.y, rectCheckboxes.width, rectCheckboxes.height);
@@ -100,6 +135,10 @@ namespace Outfitter
                         pawnSave.forceStatUpdate = true;
 
                         selPawnForGear.mindState.Notify_OutfitChanged();
+                        if ((selPawnForGear.jobs.curJob != null) && selPawnForGear.drafter.CanTakeOrderedJob())
+                        {
+                            selPawnForGear.jobs.EndCurrentJob(JobCondition.InterruptForced);
+                        }
                     }));
                 }
                 FloatMenu window = new FloatMenu(options, "MainJob".Translate());
@@ -108,7 +147,7 @@ namespace Outfitter
             }
 
             // main canvas
-            Rect canvas = new Rect(0f, 60f, size.x, size.y-60f).ContractedBy(20f);
+            Rect canvas = new Rect(0f, 60f, 432, size.y - 60f).ContractedBy(20f);
             GUI.BeginGroup(canvas);
             Vector2 cur = Vector2.zero;
 
@@ -227,9 +266,9 @@ namespace Outfitter
                 Text.Font = GameFont.Tiny;
                 GUI.color = Color.grey;
                 Text.Anchor = TextAnchor.LowerLeft;
-                Widgets.Label(legendRect, "-1.5");
+                Widgets.Label(legendRect, "-2.5");
                 Text.Anchor = TextAnchor.LowerRight;
-                Widgets.Label(legendRect, "1.5");
+                Widgets.Label(legendRect, "2.5");
                 Text.Anchor = TextAnchor.UpperLeft;
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;
@@ -252,6 +291,65 @@ namespace Outfitter
             Widgets.EndScrollView();
 
             GUI.EndGroup();
+
+            #endregion
+
+            #region Apparel List 
+
+            // main canvas
+
+            Rect rect =new Rect(432,20,338,530);
+
+            Text.Font = GameFont.Small;
+            //     Rect rect2 = rect.ContractedBy(10f);
+            Rect calcScore = new Rect(rect.x, rect.y, rect.width, rect.height);
+            GUI.BeginGroup(calcScore);
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
+            Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
+            Rect viewRect1 = outRect;
+            viewRect1.height = scrollViewHeight;
+            if (viewRect1.height > outRect.height)
+            {
+                viewRect1.width -= 20f;
+            }
+            Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect1);
+            float num = 0f;
+
+            if (SelPawn.apparel != null)
+            {
+                Widgets.ListSeparator(ref num, viewRect1.width, "Apparel".Translate());
+                foreach (Apparel current2 in from ap in SelPawn.apparel.WornApparel
+                                             orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
+                                             select ap)
+                {
+                    var bp = "";
+                    var layer = "";
+                    foreach (var apparelLayer in current2.def.apparel.layers)
+                    {
+                        foreach (var bodyPartGroupDef in current2.def.apparel.bodyPartGroups)
+                        {
+                            bp += bodyPartGroupDef.LabelCap + " - ";
+                        }
+                        layer = apparelLayer.ToString();
+                    }
+                    Widgets.ListSeparator(ref num, viewRect1.width, bp + layer);
+                    DrawThingRowModded(ref num, viewRect1.width, current2);
+                }
+
+            }
+
+
+            if (Event.current.type == EventType.Layout)
+            {
+                scrollViewHeight = num + 30f;
+            }
+            Widgets.EndScrollView();
+            GUI.EndGroup();
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            #endregion
         }
         /*
         private Job WearApparel()
@@ -312,6 +410,8 @@ namespace Outfitter
             
         }
 */
+
+            
         public override bool IsVisible
         {
             get
@@ -355,5 +455,217 @@ namespace Outfitter
             curY += 22f;
         }
 
+        private void DrawThingRowModded(ref float y, float width, Thing thing)
+        {
+            Apparel apparel = thing as Apparel;
+
+            if (apparel == null)
+            {
+                DrawThingRowVanilla(ref y, width, thing);
+                return;
+            }
+
+
+
+            Rect rect = new Rect(0f, y, width, ThingRowHeight);
+
+            if (Mouse.IsOver(rect))
+            {
+                GUI.color = HighlightColor;
+                GUI.DrawTexture(rect, TexUI.HighlightTex);
+            }
+            GUI.color = ThingLabelColor;
+
+            #region Button Clicks
+
+            // LMB doubleclick
+
+            if (Widgets.ButtonInvisible(rect))
+            {
+                //Left Mouse Button Menu
+                if (Event.current.button == 0)
+                {
+                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(SelPawn, apparel));
+                }
+
+                // RMB menu
+                else if (Event.current.button == 1)
+                {
+                    List<FloatMenuOption> floatOptionList = new List<FloatMenuOption>();
+                    floatOptionList.Add(new FloatMenuOption("ThingInfo".Translate(), delegate
+                    {
+                        Find.WindowStack.Add(new Dialog_InfoCard(thing));
+                    }));
+
+                    floatOptionList.Add(new FloatMenuOption("OutfitterComparer".Translate(), delegate
+                    {
+                        Find.WindowStack.Add(new Dialog_PawnApparelComparer(SelPawn, apparel));
+                    }));
+
+                    if (CanControl)
+                    {
+                        Action dropApparel = delegate
+                        {
+                            SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                            InterfaceDrop(thing);
+                        };
+                        Action dropApparelHaul = delegate
+                        {
+                            SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                            InterfaceDropHaul(thing);
+                        };
+                        floatOptionList.Add(new FloatMenuOption("DropThing".Translate(), dropApparel));
+                        floatOptionList.Add(new FloatMenuOption("DropThingHaul".Translate(), dropApparelHaul));
+                    }
+
+                    FloatMenu window = new FloatMenu(floatOptionList, "");
+                    Find.WindowStack.Add(window);
+                }
+            }
+
+            #endregion Button Clicks
+
+
+            if (thing.def.DrawMatSingle != null && thing.def.DrawMatSingle.mainTexture != null)
+            {
+                Widgets.ThingIcon(new Rect(4f, y + 5f, ThingIconSize, ThingIconSize), thing);
+            }
+            Text.Anchor = TextAnchor.MiddleLeft;
+            GUI.color = ThingLabelColor;
+            Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight - Text.LineHeight);
+            Rect scoreRect = new Rect(ThingLeftX, textRect.yMax, width - ThingLeftX, Text.LineHeight);
+            #region Modded
+            ApparelStatCache conf = new ApparelStatCache(SelPawn);
+            string text = thing.LabelCap;
+            string text_Score = Math.Round(conf.ApparelScoreRaw(apparel, SelPawn), 2).ToString("N2");
+
+            #endregion
+
+
+            if (thing is Apparel && SelPawn.outfits != null && SelPawn.outfits.forcedHandler.IsForced((Apparel)thing))
+            {
+                text = text + ", " + "ApparelForcedLower".Translate();
+                Widgets.Label(textRect, text);
+            }
+            else
+            {
+                GUI.color = new Color(0.75f, 0.75f, 0.75f);
+                if (apparel.def.useHitPoints)
+                {
+                    float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
+                    if (x < 0.5f)
+                    {
+                        GUI.color = Color.yellow;
+                    }
+                    if (x < 0.2f)
+                    {
+                        GUI.color = Color.red;
+                    }
+                }
+                Widgets.Label(textRect, text);
+                GUI.color = Color.white;
+                Widgets.Label(scoreRect, text_Score);
+            }
+
+            y += ThingRowHeight;
+
+        }
+
+        private void DrawThingRowVanilla(ref float y, float width, Thing thing)
+        {
+            Rect rect = new Rect(0f, y, width, 28f);
+            if (Mouse.IsOver(rect))
+            {
+                GUI.color = (HighlightColor);
+                GUI.DrawTexture(rect, TexUI.HighlightTex);
+            }
+            GUI.color = ThingLabelColor;
+            Rect rect2a = new Rect(rect.width - 24f, y, 24f, 24f);
+            UIHighlighter.HighlightOpportunity(rect, "InfoCard");
+            TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
+            if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
+            {
+                Find.WindowStack.Add(new Dialog_InfoCard(thing));
+            }
+            if (CanControl)
+            {
+                Rect rect2 = new Rect(rect.width - 24f, y, 24f, 24f);
+                TooltipHandler.TipRegion(rect2, "DropThing".Translate());
+                if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
+                {
+                    SoundDefOf.TickHigh.PlayOneShotOnCamera();
+                    InterfaceDrop(thing);
+                }
+                rect.width -= 24f;
+            }
+
+            if (thing.def.DrawMatSingle != null && thing.def.DrawMatSingle.mainTexture != null)
+            {
+                Widgets.ThingIcon(new Rect(4f, y, 28f, 28f), thing);
+            }
+            Text.Anchor = TextAnchor.MiddleLeft;
+            GUI.color = ThingLabelColor;
+            Rect rect3 = new Rect(ThingLeftX, y, width - ThingLeftX, 28f);
+            string text = thing.LabelCap;
+            if (thing is Apparel && SelPawn.outfits != null && SelPawn.outfits.forcedHandler.IsForced((Apparel)thing))
+            {
+                text = text + ", " + "ApparelForcedLower".Translate();
+            }
+            Widgets.Label(rect3, text);
+            y += ThingRowHeight;
+        }
+
+        private void InterfaceDrop(Thing t)
+        {
+            ThingWithComps thingWithComps = t as ThingWithComps;
+            Apparel apparel = t as Apparel;
+            if (apparel != null)
+            {
+                Pawn selPawnForGear = SelPawn;
+                if (selPawnForGear.drafter.CanTakeOrderedJob())
+                {
+                    Job job = new Job(JobDefOf.RemoveApparel, apparel);
+                    job.playerForced = true;
+                    selPawnForGear.drafter.TakeOrderedJob(job);
+                }
+            }
+            else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
+            {
+                ThingWithComps thingWithComps2;
+                SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, SelPawn.Position);
+            }
+            else if (!t.def.destroyOnDrop)
+            {
+                Thing thing;
+                SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing);
+            }
+        }
+
+        private void InterfaceDropHaul(Thing t)
+        {
+            ThingWithComps thingWithComps = t as ThingWithComps;
+            Apparel apparel = t as Apparel;
+            if (apparel != null)
+            {
+                Pawn selPawnForGear = SelPawn;
+                if (selPawnForGear.drafter.CanTakeOrderedJob())
+                {
+                    Job job = new Job(JobDefOf.RemoveApparel, apparel);
+                    job.playerForced = true;
+                    job.haulDroppedApparel = true;
+                    selPawnForGear.drafter.TakeOrderedJob(job);
+                }
+            }
+            else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
+            {
+                ThingWithComps thingWithComps2;
+                SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, SelPawn.Position);
+            }
+            else if (!t.def.destroyOnDrop)
+            {
+                Thing thing;
+                SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing);
+            }
+        }
     }
 }
