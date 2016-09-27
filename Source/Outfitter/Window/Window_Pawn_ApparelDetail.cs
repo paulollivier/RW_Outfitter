@@ -132,7 +132,7 @@ namespace Outfitter
 
             Rect conRect = new Rect(windowRect);
 
-            conRect.height -= 80f;
+            conRect.height -= 50f;
 
             BeginArea(conRect);
             // begin main group

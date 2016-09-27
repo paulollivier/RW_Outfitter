@@ -107,24 +107,16 @@ namespace Outfitter
                 Find.WindowStack.Add(new Dialog_ManageOutfits(selPawnForGear.outfits.CurrentOutfit));
             }
 
-            //show outfit
+            ////show outfit
+            //rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
+            //
+            //if (Widgets.ButtonText(rectStatus, "OutfitShow".Translate(), true, false))
+            //{
+            //    Find.WindowStack.Add(new Window_Pawn_ApparelList());
+            //}
+
             rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
-
-            if (Widgets.ButtonText(rectStatus, "OutfitShow".Translate(), true, false))
-            {
-                Find.WindowStack.Add(new Window_Pawn_ApparelList());
-            }
-
-
-            // Status checkboxes
-            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, 130f, rectStatus.height);
-            Text.Font = GameFont.Small;
-            pawnSave.AddWorkStats = GUI.Toggle(new Rect(10f, rectCheckboxes.y, 120f, rectCheckboxes.height), pawnSave.AddWorkStats, "AddWorkStats".Translate());
-            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(140f, rectCheckboxes.y, rectCheckboxes.width + 10f, rectCheckboxes.height),
-                pawnSave.AddIndividualStats, "AddIndividualStats".Translate());
-
-            Rect setWorkRect = new Rect(290f, rectCheckboxes.y, rectCheckboxes.width, rectCheckboxes.height);
-            if (Widgets.ButtonText(setWorkRect, pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
+            if (Widgets.ButtonText(rectStatus, pawnSave.mainJob == SaveablePawn.MainJob.Anything ? "MainJob".Translate() : pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (SaveablePawn.MainJob mainJob in Enum.GetValues(typeof(SaveablePawn.MainJob)))
@@ -145,6 +137,17 @@ namespace Outfitter
 
                 Find.WindowStack.Add(window);
             }
+
+
+
+
+            // Status checkboxes
+            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax + 15f, 130f, rectStatus.height);
+            Text.Font = GameFont.Small;
+            pawnSave.AddWorkStats = GUI.Toggle(new Rect(10f, rectCheckboxes.y, 120f, rectCheckboxes.height), pawnSave.AddWorkStats, "AddWorkStats".Translate());
+            pawnSave.AddIndividualStats = GUI.Toggle(new Rect(140f, rectCheckboxes.y, rectCheckboxes.width + 10f, rectCheckboxes.height),
+                pawnSave.AddIndividualStats, "AddIndividualStats".Translate());
+
 
             // main canvas
             Rect canvas = new Rect(0f, 60f, 432, size.y - 60f).ContractedBy(20f);
@@ -298,7 +301,7 @@ namespace Outfitter
 
             // main canvas
 
-            Rect rect =new Rect(432,20,338,530);
+            Rect rect = new Rect(432, 20, 338, 530);
 
             Text.Font = GameFont.Small;
             //     Rect rect2 = rect.ContractedBy(10f);
@@ -411,7 +414,7 @@ namespace Outfitter
         }
 */
 
-            
+
         public override bool IsVisible
         {
             get
@@ -422,7 +425,7 @@ namespace Outfitter
                 if (selectedPawn == null)
                 {
                     Find.WindowStack.TryRemove(typeof(Window_Pawn_ApparelDetail), false);
-                    Find.WindowStack.TryRemove(typeof(Window_Pawn_ApparelList), false);
+             //       Find.WindowStack.TryRemove(typeof(Window_Pawn_ApparelList), false);
 
                     return false;
                 }
