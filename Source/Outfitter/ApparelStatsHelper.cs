@@ -95,6 +95,11 @@ namespace Outfitter
                     }
                 }
 
+                if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("ToxicFallout")))
+                {
+                    dict.Add(StatDefOf.ToxicSensitivity, -1f);
+                }
+
                 foreach (StatDef key in new List<StatDef>(dict.Keys))
                 {
                     if (key == StatDefOf.MoveSpeed)
