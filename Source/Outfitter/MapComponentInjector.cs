@@ -10,12 +10,13 @@ namespace Outfitter       // Replace with yours.
     [StaticConstructorOnStartup]
     public class MapComponentInjector : MonoBehaviour
     {
-        private static Type outfitter = typeof(MapComponent_Outfitter);
+        private static readonly Type outfitter = typeof(MapComponent_Outfitter);
 
 
         #region No editing required
 
 
+        // ReSharper disable once UnusedMember.Global
         public void FixedUpdate()
         {
             if (Current.ProgramState != ProgramState.MapPlaying)

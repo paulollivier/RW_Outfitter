@@ -20,7 +20,13 @@ namespace Outfitter
     {
         bool useApparelSense = false;
 
-        private static Assembly Assembly { get { return Assembly.GetAssembly(typeof(OF_SpecialInjector)); } }
+        private static Assembly Assembly
+        {
+            get
+            {
+                return Assembly.GetAssembly(typeof(OF_SpecialInjector));
+            }
+        }
 
         private static readonly BindingFlags[] bindingFlagCombos = {
             BindingFlags.Instance | BindingFlags.Public, BindingFlags.Static | BindingFlags.Public,
@@ -98,16 +104,16 @@ namespace Outfitter
 
             #region Automatic hookup
             // Loop through all detour attributes and try to hook them up
-            foreach (var targetType in Assembly.GetTypes())
+            foreach (Type targetType in Assembly.GetTypes())
             {
-                foreach (var bindingFlags in bindingFlagCombos)
+                foreach (BindingFlags bindingFlags in bindingFlagCombos)
                 {
-                    foreach (var targetMethod in targetType.GetMethods(bindingFlags))
+                    foreach (MethodInfo targetMethod in targetType.GetMethods(bindingFlags))
                     {
                         foreach (DetourAttribute detour in targetMethod.GetCustomAttributes(typeof(DetourAttribute), true))
                         {
-                            var flags = detour.bindingFlags != default(BindingFlags) ? detour.bindingFlags : bindingFlags;
-                            var sourceMethod = detour.source.GetMethod(targetMethod.Name, flags);
+                            BindingFlags flags = detour.bindingFlags != default(BindingFlags) ? detour.bindingFlags : bindingFlags;
+                            MethodInfo sourceMethod = detour.source.GetMethod(targetMethod.Name, flags);
                             if (sourceMethod == null)
                             {
                                 Log.Error(string.Format("Outfitter :: Detours :: Can't find source method '{0} with bindingflags {1}", targetMethod.Name, flags));
@@ -189,7 +195,7 @@ namespace Outfitter
                             cat = CreateCategory(bodyPart.label, "BP");
                         }
 
-                        foreach (var layer in apparel.layers)
+                        foreach (ApparelLayer layer in apparel.layers)
                         {
                             // get or create category
                             ThingCategoryDef childCat = DefDatabase<ThingCategoryDef>.GetNamedSilentFail(GetChildCatName(bodyPart.label, layer.ToString(), "CC"));

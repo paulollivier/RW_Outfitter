@@ -159,21 +159,21 @@ namespace Outfitter.Window
                     Widgets.ThingIcon(fieldRect, apparelThing);
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close(true);
-                    Find.MainTabsRoot.EscapeCurrentTab(true);
+                    Close();
+                    Find.MainTabsRoot.EscapeCurrentTab();
                     if (apparelEquipedThing != null)
                     {
                         Find.CameraDriver.JumpTo(apparelEquipedThing.PositionHeld);
                         Find.Selector.ClearSelection();
                         if (apparelEquipedThing.Spawned)
-                            Find.Selector.Select(apparelEquipedThing, true, true);
+                            Find.Selector.Select(apparelEquipedThing);
                     }
                     else
                     {
                         Find.CameraDriver.JumpTo(apparelThing.PositionHeld);
                         Find.Selector.ClearSelection();
                         if (apparelThing.Spawned)
-                            Find.Selector.Select(apparelThing, true, true);
+                            Find.Selector.Select(apparelThing);
                     }
                     return;
                 }
@@ -199,12 +199,12 @@ namespace Outfitter.Window
                     Widgets.ThingIcon(fieldRect, apparelEquipedThing);
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close(true);
-                    Find.MainTabsRoot.EscapeCurrentTab(true);
+                    Close();
+                    Find.MainTabsRoot.EscapeCurrentTab();
                     Find.CameraDriver.JumpTo(apparelEquipedThing.PositionHeld);
                     Find.Selector.ClearSelection();
                     if (apparelEquipedThing.Spawned)
-                        Find.Selector.Select(apparelEquipedThing, true, true);
+                        Find.Selector.Select(apparelEquipedThing);
                     return;
                 }
             }
@@ -229,12 +229,12 @@ namespace Outfitter.Window
                     Widgets.ThingIcon(fieldRect, apparelOwnerThing);
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close(true);
-                    Find.MainTabsRoot.EscapeCurrentTab(true);
+                    Close();
+                    Find.MainTabsRoot.EscapeCurrentTab();
                     Find.CameraDriver.JumpTo(apparelOwnerThing.PositionHeld);
                     Find.Selector.ClearSelection();
                     if (apparelOwnerThing.Spawned)
-                        Find.Selector.Select(apparelOwnerThing, true, true);
+                        Find.Selector.Select(apparelOwnerThing);
                     return;
                 }
             }
@@ -257,8 +257,8 @@ namespace Outfitter.Window
                 Text.Anchor = TextAnchor.UpperLeft;
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close(true);
-                    Find.MainTabsRoot.EscapeCurrentTab(true);
+                    Close();
+                    Find.MainTabsRoot.EscapeCurrentTab();
                     Find.WindowStack.Add(new Window_Pawn_ApparelDetail(_pawn, apparelThing));
                     return;
                 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Outfitter.Textures;
 using Outfitter.Window;
 using RimWorld;
 using UnityEngine;
@@ -85,7 +86,7 @@ namespace Outfitter
 
             // select outfit
 
-            if (Widgets.ButtonText(rectStatus, selPawnForGear.outfits.CurrentOutfit.label, true, false))
+            if (Widgets.ButtonText(rectStatus, selPawnForGear.outfits.CurrentOutfit.label))
             {
                 List<FloatMenuOption> list = new List<FloatMenuOption>();
                 foreach (Outfit current in Current.Game.outfitDatabase.AllOutfits)
@@ -102,7 +103,7 @@ namespace Outfitter
             //edit outfit
             rectStatus = new Rect(rectStatus.xMax + 10f, rectStatus.y, rectStatus.width, rectStatus.height);
 
-            if (Widgets.ButtonText(rectStatus, "OutfitterEditOutfit".Translate(), true, false))
+            if (Widgets.ButtonText(rectStatus, "OutfitterEditOutfit".Translate()))
             {
                 Find.WindowStack.Add(new Dialog_ManageOutfits(selPawnForGear.outfits.CurrentOutfit));
             }
@@ -326,11 +327,11 @@ namespace Outfitter
                                              orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
                                              select ap)
                 {
-                    var bp = "";
-                    var layer = "";
-                    foreach (var apparelLayer in current2.def.apparel.layers)
+                    string bp = "";
+                    string layer = "";
+                    foreach (ApparelLayer apparelLayer in current2.def.apparel.layers)
                     {
-                        foreach (var bodyPartGroupDef in current2.def.apparel.bodyPartGroups)
+                        foreach (BodyPartGroupDef bodyPartGroupDef in current2.def.apparel.bodyPartGroups)
                         {
                             bp += bodyPartGroupDef.LabelCap + " - ";
                         }
@@ -452,8 +453,8 @@ namespace Outfitter
                 return;
             }
             Rect rect = new Rect(0f, curY, width, 22f);
-            float statValue = selPawnForGear.GetStatValue(StatDefOf.ComfyTemperatureMin, true);
-            float statValue2 = selPawnForGear.GetStatValue(StatDefOf.ComfyTemperatureMax, true);
+            float statValue = selPawnForGear.GetStatValue(StatDefOf.ComfyTemperatureMin);
+            float statValue2 = selPawnForGear.GetStatValue(StatDefOf.ComfyTemperatureMax);
             Widgets.Label(rect, string.Concat("ComfyTemperatureRange".Translate(), ": ", statValue.ToStringTemperature("F0"), " ~ ", statValue2.ToStringTemperature("F0")));
             curY += 22f;
         }
@@ -586,7 +587,7 @@ namespace Outfitter
             Rect rect2a = new Rect(rect.width - 24f, y, 24f, 24f);
             UIHighlighter.HighlightOpportunity(rect, "InfoCard");
             TooltipHandler.TipRegion(rect2a, "DefInfoTip".Translate());
-            if (Widgets.ButtonImage(rect2a, LocalTextures.Info))
+            if (Widgets.ButtonImage(rect2a, OutfitterTextures.Info))
             {
                 Find.WindowStack.Add(new Dialog_InfoCard(thing));
             }
@@ -594,7 +595,7 @@ namespace Outfitter
             {
                 Rect rect2 = new Rect(rect.width - 24f, y, 24f, 24f);
                 TooltipHandler.TipRegion(rect2, "DropThing".Translate());
-                if (Widgets.ButtonImage(rect2, LocalTextures.Drop))
+                if (Widgets.ButtonImage(rect2, OutfitterTextures.Drop))
                 {
                     SoundDefOf.TickHigh.PlayOneShotOnCamera();
                     InterfaceDrop(thing);

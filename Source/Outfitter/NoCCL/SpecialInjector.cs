@@ -8,6 +8,7 @@ namespace Outfitter.NoCCL
     {
 
 #if NoCCL
+        // ReSharper disable once UnusedMemberInSuper.Global
         public virtual bool Inject()
         {
             Log.Error("This should never be called.");
@@ -16,6 +17,7 @@ namespace Outfitter.NoCCL
     }
 
     [StaticConstructorOnStartup]
+    // ReSharper disable once UnusedMember.Global
     internal static class DetourInjector
     {
         private static Assembly Assembly { get { return Assembly.GetAssembly(typeof(DetourInjector)); } }
@@ -27,7 +29,7 @@ namespace Outfitter.NoCCL
 
         private static void Inject()
         {
-            var injector = new OF_SpecialInjector();
+            OF_SpecialInjector injector = new OF_SpecialInjector();
             if (injector.Inject()) Log.Message(AssemblyName + " injected.");
             else Log.Error(AssemblyName + " failed to get injected properly.");
         }

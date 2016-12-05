@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Outfitter.Textures;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -97,10 +98,11 @@ namespace Outfitter
                 return _apparel.LabelCap;
             ThingDef thingDef = Def as ThingDef;
             if (thingDef != null)
-                return GenLabel.ThingLabel(thingDef, stuff, 1).CapitalizeFirst();
+                return GenLabel.ThingLabel(thingDef, stuff).CapitalizeFirst();
             return Def.LabelCap;
         }
-        GUIStyle Headline = new GUIStyle
+
+        readonly GUIStyle Headline = new GUIStyle
         {
             fontStyle = FontStyle.Bold,
             fontSize = 16,
@@ -108,7 +110,7 @@ namespace Outfitter
             padding = new RectOffset(0, 0, 12, 6)
         };
 
-        GUIStyle FontBold = new GUIStyle
+        readonly GUIStyle FontBold = new GUIStyle
         {
             fontStyle = FontStyle.Bold,
             normal = { textColor = Color.white },
@@ -116,12 +118,12 @@ namespace Outfitter
         };
 
 
-
-        GUIStyle hoverBox = new GUIStyle
+        readonly GUIStyle hoverBox = new GUIStyle
         {
             hover = { background = OutfitterTextures.BGColor }
         };
-        GUIStyle whiteLine = new GUIStyle
+
+        readonly GUIStyle whiteLine = new GUIStyle
         {
             normal = { background = OutfitterTextures.White }
         };

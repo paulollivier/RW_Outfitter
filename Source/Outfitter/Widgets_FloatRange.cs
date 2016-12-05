@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Outfitter.Textures;
+using UnityEngine;
 using Verse;
 
 namespace Outfitter
@@ -53,9 +54,9 @@ namespace Outfitter
 
             // draw handles 
             Rect minHandleRect = new Rect(minHandlePos - 16f, sliderRect.center.y - 8f, 16f, 16f);
-            GUI.DrawTexture(minHandleRect, LocalTextures.FloatRangeSliderTex);
+            GUI.DrawTexture(minHandleRect, OutfitterTextures.FloatRangeSliderTex);
             Rect maxHandleRect = new Rect(maxHandlePos + 16f, sliderRect.center.y - 8f, -16f, 16f);
-            GUI.DrawTexture(maxHandleRect, LocalTextures.FloatRangeSliderTex);
+            GUI.DrawTexture(maxHandleRect, OutfitterTextures.FloatRangeSliderTex);
 
             // interactions
             Rect interactionRect = canvas;

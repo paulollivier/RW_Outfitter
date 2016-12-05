@@ -57,7 +57,7 @@ namespace Outfitter.Helper
             #region StorageSearch
             if (filterText != null && filterText.Length > 2)
             {
-                var rootNode = new TreeNode_ThingCategory(new ThingCategoryDef());
+                TreeNode_ThingCategory rootNode = new TreeNode_ThingCategory(new ThingCategoryDef());
 
                 node.catDef.DescendantThingDefs.Where(td => td.label.ToLower().Contains(filterText.ToLower()));
 

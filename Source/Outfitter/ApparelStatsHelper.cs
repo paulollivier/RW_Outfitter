@@ -47,7 +47,7 @@ namespace Outfitter
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
-            var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
 
             //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
             //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
@@ -151,7 +151,7 @@ namespace Outfitter
         public static Dictionary<StatDef, float> GetWeightedApparelIndividualStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
-            var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
 
             //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
             //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
@@ -272,6 +272,7 @@ namespace Outfitter
         }
 
         [Detour(typeof(JobGiver_OptimizeApparel), bindingFlags = (BindingFlags.Static | BindingFlags.Public))]
+        // ReSharper disable once UnusedMember.Global
         public static float ApparelScoreGain(Pawn pawn, Apparel ap)
         {
             // only allow shields to be considered if a primary weapon is equipped and is melee
@@ -281,6 +282,8 @@ namespace Outfitter
             {
                 return -1000f;
             }
+
+
             ApparelStatCache conf = new ApparelStatCache(pawn);
 
             // get the score of the considered apparel
@@ -319,7 +322,7 @@ namespace Outfitter
 
         private static List<StatDef> _allApparelStats;
 
-        public static List<StatDef> AllStatDefsModifiedByAnyApparel
+        private static List<StatDef> AllStatDefsModifiedByAnyApparel
         {
             get
             {
@@ -358,9 +361,9 @@ namespace Outfitter
                     .ToList();
         }
 
-        public static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType(Pawn pawn, WorkTypeDef worktype)
+        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType(Pawn pawn, WorkTypeDef worktype)
         {
-            var pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
 
             if (pawnSave.mainJob == Soldier00Close_Combat)
             {

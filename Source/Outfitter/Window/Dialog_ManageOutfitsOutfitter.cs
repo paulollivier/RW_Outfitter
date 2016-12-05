@@ -68,29 +68,29 @@ namespace Outfitter.Window
         [Detour(typeof(Dialog_ManageOutfits), bindingFlags = (BindingFlags.Instance | BindingFlags.Public))]
         public override void DoWindowContents(Rect inRect)
         {
-            var num = 0f;
-            var rect = new Rect(0f, 0f, 150f, 35f);
+            float num = 0f;
+            Rect rect = new Rect(0f, 0f, 150f, 35f);
             num += 150f;
             if (Widgets.ButtonText(rect, "SelectOutfit".Translate(), true, false))
             {
-                var list = new List<FloatMenuOption>();
-                foreach (var current in Current.Game.outfitDatabase.AllOutfits)
+                List<FloatMenuOption> list = new List<FloatMenuOption>();
+                foreach (Outfit current in Current.Game.outfitDatabase.AllOutfits)
                 {
-                    var localOut = current;
+                    Outfit localOut = current;
                     list.Add(new FloatMenuOption(localOut.label, delegate { SelectedOutfit = localOut; },
                         MenuOptionPriority.Medium, null, null));
                 }
                 Find.WindowStack.Add(new FloatMenu(list));
             }
             num += 10f;
-            var rect2 = new Rect(num, 0f, 150f, 35f);
+            Rect rect2 = new Rect(num, 0f, 150f, 35f);
             num += 150f;
             if (Widgets.ButtonText(rect2, "NewOutfit".Translate(), true, false))
             {
                 SelectedOutfit = Current.Game.outfitDatabase.MakeNewOutfit();
             }
             num += 10f;
-            var rect3 = new Rect(num, 0f, 150f, 35f);
+            Rect rect3 = new Rect(num, 0f, 150f, 35f);
             num += 150f;
             if (Widgets.ButtonText(rect3, "DeleteOutfit".Translate(), true, false, true))
             {
@@ -113,7 +113,7 @@ namespace Outfitter.Window
                 }
                 Find.WindowStack.Add(new FloatMenu(list2));
             }
-            var rect4 = new Rect(0f, 40f, 300f, inRect.height - 40f - CloseButSize.y).ContractedBy(10f);
+            Rect rect4 = new Rect(0f, 40f, 300f, inRect.height - 40f - CloseButSize.y).ContractedBy(10f);
             if (SelectedOutfit == null)
             {
                 GUI.color = Color.grey;
@@ -124,20 +124,20 @@ namespace Outfitter.Window
                 return;
             }
             GUI.BeginGroup(rect4);
-            var rect5 = new Rect(0f, 0f, 180f, 30f);
+            Rect rect5 = new Rect(0f, 0f, 180f, 30f);
             DoNameInputRect(rect5, ref SelectedOutfit.label, 30);
 
             #region Storage Search
 
-            var clearSearchRect = new Rect(rect4.width - 20f, (29f - 14f) / 2f, 14f, 14f);
-            var shouldClearSearch = (Widgets.ButtonImage(clearSearchRect, Widgets.CheckboxOffTex));
+            Rect clearSearchRect = new Rect(rect4.width - 20f, (29f - 14f) / 2f, 14f, 14f);
+            bool shouldClearSearch = (Widgets.ButtonImage(clearSearchRect, Widgets.CheckboxOffTex));
 
-            var searchRect = new Rect(rect5.width + 10f, 0f, rect4.width - rect5.width - 10f, 29f);
+            Rect searchRect = new Rect(rect5.width + 10f, 0f, rect4.width - rect5.width - 10f, 29f);
             var watermark = (searchText != string.Empty || isFocused) ? searchText : "Search";
 
 
-            var escPressed = (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape);
-            var clickedOutside = (!Mouse.IsOver(searchRect) && Event.current.type == EventType.MouseDown);
+            bool escPressed = (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape);
+            bool clickedOutside = (!Mouse.IsOver(searchRect) && Event.current.type == EventType.MouseDown);
 
             if (!isFocused)
             {
@@ -145,7 +145,7 @@ namespace Outfitter.Window
             }
 
             GUI.SetNextControlName("StorageSearchInput");
-            var searchInput = Widgets.TextField(searchRect, watermark);
+            string searchInput = Widgets.TextField(searchRect, watermark);
             GUI.color = Color.white;
 
             if (isFocused)
@@ -180,7 +180,7 @@ namespace Outfitter.Window
             #endregion
 
 
-            var rect6 = new Rect(0f, 40f, rect4.width, rect4.height - 45f - 10f);
+            Rect rect6 = new Rect(0f, 40f, rect4.width, rect4.height - 45f - 10f);
 
             // fix for the filter
 
@@ -214,7 +214,7 @@ namespace Outfitter.Window
 
         private static void DoNameInputRect(Rect rect, ref string name, int maxLength)
         {
-            var text = Widgets.TextField(rect, name);
+            string text = Widgets.TextField(rect, name);
             if (text.Length <= maxLength && ValidNameRegex.IsMatch(text))
             {
                 name = text;
@@ -225,8 +225,8 @@ namespace Outfitter.Window
         {
             Widgets.DrawMenuSection(rect, true);
             Text.Font = GameFont.Tiny;
-            var num = rect.width - 2f;
-            var rect2 = new Rect(rect.x + 1f, rect.y + 1f, num / 2f, 24f);
+            float num = rect.width - 2f;
+            Rect rect2 = new Rect(rect.x + 1f, rect.y + 1f, num / 2f, 24f);
             if (Widgets.ButtonText(rect2, "ClearAll".Translate(), true, false))
                 stats.Clear();
 
@@ -247,7 +247,7 @@ namespace Outfitter.Window
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
 
-            var position = new Rect(rect2.xMin + rect2.width / 2, rect.yMin + 5f, 1f, rect.height - 10f);
+            Rect position = new Rect(rect2.xMin + rect2.width / 2, rect.yMin + 5f, 1f, rect.height - 10f);
             GUI.DrawTexture(position, BaseContent.GreyTex);
 
             rect.width -= 2;
@@ -280,21 +280,21 @@ namespace Outfitter.Window
 
             }
 
-            var viewRect = new Rect(rect.xMin, rect.yMin, rect.width - 16f,
+            Rect viewRect = new Rect(rect.xMin, rect.yMin, rect.width - 16f,
                 sortedDefs.Count * Text.LineHeight * 1.2f + stats.Count * 60);
 
             Widgets.BeginScrollView(rect, ref scrollPosition, viewRect);
 
-            var rect6 = viewRect.ContractedBy(4f);
+            Rect rect6 = viewRect.ContractedBy(4f);
 
             rect6.yMin += 12f;
 
-            var listingStandard = new Listing_Standard(rect6);
+            Listing_Standard listingStandard = new Listing_Standard(rect6);
             listingStandard.ColumnWidth = rect6.width;
 
 
 
-            foreach (var stat in sortedDefs)
+            foreach (StatDef stat in sortedDefs)
                 DrawStat(stats, listingStandard, stat);
 
             listingStandard.End();
@@ -305,8 +305,8 @@ namespace Outfitter.Window
 
         private static void DrawStat(List<Saveable_Pawn_StatDef> stats, Listing_Standard listingStandard, StatDef stat)
         {
-            var outfitStat = stats.FirstOrDefault(i => i.Stat == stat);
-            var active = outfitStat != null;
+            Saveable_Pawn_StatDef outfitStat = stats.FirstOrDefault(i => i.Stat == stat);
+            bool active = outfitStat != null;
             listingStandard.CheckboxLabeled(stat.label, ref active);
 
             if (active)
