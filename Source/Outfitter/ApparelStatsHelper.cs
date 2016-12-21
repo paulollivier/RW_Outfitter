@@ -56,7 +56,9 @@ namespace Outfitter
             if (pawnSave.AddWorkStats)
             {
                 // add weights for all worktypes, multiplied by job priority
-                foreach (WorkTypeDef workType in DefDatabase<WorkTypeDef>.AllDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)))
+                List<WorkTypeDef> allDefsListForReading = DefDatabase<WorkTypeDef>.AllDefsListForReading;
+
+                foreach (WorkTypeDef workType in allDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)))
                 {
                     foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(pawn, workType))
                     {
@@ -95,11 +97,13 @@ namespace Outfitter
                     }
                 }
 
-                if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("ToxicFallout")))
+                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDef.Named("ToxicFallout")))
                 {
-                    dict.Add(StatDefOf.ToxicSensitivity, -1f);
+                    dict.Add(StatDefOf.ToxicSensitivity, -1.5f);
+                    dict.Add(StatDefOf.HealingSpeed, 0.5f);
                 }
 
+                // adjustments for traits
                 foreach (StatDef key in new List<StatDef>(dict.Keys))
                 {
                     if (key == StatDefOf.MoveSpeed)
@@ -165,9 +169,9 @@ namespace Outfitter
             {
                 #region MapConditions
 
-                if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicDrone")))
+                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicDrone")))
                 {
-                    if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                    if (pawn.Map.mapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
                     {
                         switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
                         {
@@ -195,9 +199,9 @@ namespace Outfitter
                     }
                 }
 
-                if (Find.MapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicSoothe")))
+                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicSoothe")))
                 {
-                    if (Find.MapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                    if (pawn.Map.mapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
                     {
                         switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
                         {
@@ -322,6 +326,11 @@ namespace Outfitter
                 candidateScore *= ScoreFactorIfNotReplacing;
             }
 
+            if (ap.WornByCorpse && candidateScore > 0f)
+            {
+                candidateScore *= 0.1f;
+            }
+
             return candidateScore;
         }
 
@@ -411,13 +420,13 @@ namespace Outfitter
                     {
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 3f);
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BaseHealingQuality"), 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingQuality, 3f);
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HealingSpeed"), 1.5f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BaseHealingQuality"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingQuality, 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HealingSpeed"), 0.5f);
                     yield break;
 

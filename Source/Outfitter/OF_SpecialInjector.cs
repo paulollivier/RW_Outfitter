@@ -140,7 +140,7 @@ namespace Outfitter
                 if (def.inspectorTabs == null || def.inspectorTabs.Count == 0)
                 {
                     def.inspectorTabs = new List<Type>();
-                    def.inspectorTabsResolved = new List<ITab>();
+                    def.inspectorTabsResolved = new List<InspectTabBase>();
                 }
                 if (def.inspectorTabs.Contains(typeof(ITab_Pawn_Outfitter)))
                 {
@@ -148,12 +148,10 @@ namespace Outfitter
                 }
 
                 def.inspectorTabs.Add(typeof(ITab_Pawn_Outfitter));
-                def.inspectorTabsResolved.Add(ITabManager.GetSharedInstance(typeof(ITab_Pawn_Outfitter)));
+                def.inspectorTabsResolved.Add(InspectTabManager.GetSharedInstance(typeof(ITab_Pawn_Outfitter)));
             }
 
-            GameObject initializer = new GameObject("OutfitterMapComponentInjector");
-            initializer.AddComponent<MapComponentInjector>();
-            UnityEngine.Object.DontDestroyOnLoad(initializer);
+
 
             if (useApparelSense)
             {
@@ -236,5 +234,7 @@ namespace Outfitter
 
             return true;
         }
+
+
     }
 }

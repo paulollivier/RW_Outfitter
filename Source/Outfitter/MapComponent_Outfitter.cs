@@ -29,10 +29,13 @@ namespace Outfitter
         {
             get
             {
-                MapComponent_Outfitter getComponent = Find.Map.components.OfType<MapComponent_Outfitter>().FirstOrDefault();
-                if (getComponent != null) return getComponent;
-                getComponent = new MapComponent_Outfitter();
-                Find.Map.components.Add(getComponent);
+                MapComponent_Outfitter getComponent = Find.VisibleMap.components.OfType<MapComponent_Outfitter>().FirstOrDefault();
+                if (getComponent != null)
+                {
+                    return getComponent;
+                }
+                getComponent = new MapComponent_Outfitter(Find.VisibleMap);
+                Find.VisibleMap.components.Add(getComponent);
 
                 return getComponent;
             }
@@ -47,6 +50,12 @@ namespace Outfitter
 
             if (_pawnCache == null)
                 _pawnCache = new List<SaveablePawn>();
+        }
+
+        public MapComponent_Outfitter(Map map)
+            : base(map)
+        {
+            this.map = map;
         }
     }
 }

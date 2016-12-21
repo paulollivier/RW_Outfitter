@@ -44,36 +44,12 @@ namespace Outfitter
                 Corpse corpse = SelThing as Corpse;
                 if (corpse != null)
                 {
-                    return corpse.innerPawn;
+                    return corpse.InnerPawn;
                 }
                 throw new InvalidOperationException("Gear tab on non-pawn non-corpse " + SelThing);
             }
         }
-        GUIStyle Headline = new GUIStyle
-        {
-            fontStyle = FontStyle.Bold,
-            fontSize = 16,
-            normal = { textColor = Color.white },
-            padding = new RectOffset(0, 0, 12, 6)
-        };
 
-        GUIStyle FontBold = new GUIStyle
-        {
-            fontStyle = FontStyle.Bold,
-            normal = { textColor = Color.white },
-            padding = new RectOffset(0, 0, 12, 6)
-        };
-
-
-
-        GUIStyle hoverBox = new GUIStyle
-        {
-            hover = { background = OutfitterTextures.BGColor }
-        };
-        GUIStyle whiteLine = new GUIStyle
-        {
-            normal = { background = OutfitterTextures.White }
-        };
 
         protected override void FillTab()
         {
@@ -128,7 +104,7 @@ namespace Outfitter
                         pawnSave.forceStatUpdate = true;
 
                         selPawnForGear.mindState.Notify_OutfitChanged();
-                        if ((selPawnForGear.jobs.curJob != null) && selPawnForGear.drafter.CanTakeOrderedJob())
+                        if ((selPawnForGear.jobs.curJob != null) && selPawnForGear.jobs.CanTakeOrderedJob())
                         {
                             selPawnForGear.jobs.EndCurrentJob(JobCondition.InterruptForced);
                         }
@@ -626,11 +602,11 @@ namespace Outfitter
             if (apparel != null)
             {
                 Pawn selPawnForGear = SelPawn;
-                if (selPawnForGear.drafter.CanTakeOrderedJob())
+                if (selPawnForGear.jobs.CanTakeOrderedJob())
                 {
                     Job job = new Job(JobDefOf.RemoveApparel, apparel);
                     job.playerForced = true;
-                    selPawnForGear.drafter.TakeOrderedJob(job);
+                    selPawnForGear.jobs.TryTakeOrderedJob(job);
                 }
             }
             else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
@@ -641,7 +617,7 @@ namespace Outfitter
             else if (!t.def.destroyOnDrop)
             {
                 Thing thing;
-                SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing);
+                SelPawn.inventory.innerContainer.TryDrop(t, ThingPlaceMode.Near, out thing);
             }
         }
 
@@ -652,12 +628,12 @@ namespace Outfitter
             if (apparel != null)
             {
                 Pawn selPawnForGear = SelPawn;
-                if (selPawnForGear.drafter.CanTakeOrderedJob())
+                if (selPawnForGear.jobs.CanTakeOrderedJob())
                 {
                     Job job = new Job(JobDefOf.RemoveApparel, apparel);
                     job.playerForced = true;
                     job.haulDroppedApparel = true;
-                    selPawnForGear.drafter.TakeOrderedJob(job);
+                    selPawnForGear.jobs.TryTakeOrderedJob(job);
                 }
             }
             else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
@@ -668,7 +644,7 @@ namespace Outfitter
             else if (!t.def.destroyOnDrop)
             {
                 Thing thing;
-                SelPawn.inventory.container.TryDrop(t, SelPawn.Position, ThingPlaceMode.Near, out thing);
+                SelPawn.inventory.innerContainer.TryDrop(t,  ThingPlaceMode.Near, out thing);
             }
         }
     }

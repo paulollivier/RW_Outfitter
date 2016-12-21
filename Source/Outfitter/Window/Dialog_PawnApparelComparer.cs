@@ -35,8 +35,8 @@ namespace Outfitter.Window
         {
             MapComponent_Outfitter mapComponent = MapComponent_Outfitter.Get;
             ApparelStatCache apparelStatCache = new ApparelStatCache(mapComponent.GetCache(_pawn));
-            List<Apparel> allApparels = new List<Apparel>(Find.ListerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
-            foreach (Pawn pawn in Find.Map.mapPawns.FreeColonists)
+            List<Apparel> allApparels = new List<Apparel>(this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
+            foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
             {
                 foreach (Apparel pawnApparel in pawn.apparel.WornApparel)
                     if (pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(pawnApparel))
@@ -92,7 +92,7 @@ namespace Outfitter.Window
                 Pawn equiped = null;
                 Pawn target = null;
 
-                foreach (Pawn pawn in Find.Map.mapPawns.FreeColonists)
+                foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
                 {
                     foreach (Apparel a in pawn.apparel.WornApparel)
                         if (a == currentAppel)

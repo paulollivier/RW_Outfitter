@@ -525,7 +525,7 @@ namespace Outfitter
                 // get desired temperatures
                 if (!pawnSave.TargetTemperaturesOverride)
                 {
-                    float temp = GenTemperature.OutdoorTemp;
+                    float temp = this._pawn.Map.mapTemperature.OutdoorTemp;
 
                     pawnSave.TargetTemperatures = new FloatRange(Math.Max(temp - 7.5f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min(temp + 7.5f, ApparelStatsHelper.MinMaxTemperatureRange.max));
@@ -547,21 +547,21 @@ namespace Outfitter
                 pawnSave.RealComfyTemperatures.min = _pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin);
                 pawnSave.RealComfyTemperatures.max = _pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax);
 
-                if (_pawn.story.traits.DegreeOfTrait(TraitDef.Named("TemperaturePreference")) != 0)
-                {
-                    //calculating trait offset because there's no way to get comfytemperaturemin without clothes
-                    List<Trait> traitList = (
-                        from trait in _pawn.story.traits.allTraits
-                        where trait.CurrentData.statOffsets != null && trait.CurrentData.statOffsets.Any(se => se.stat == StatDefOf.ComfyTemperatureMin || se.stat == StatDefOf.ComfyTemperatureMax)
-                        select trait
-                        ).ToList();
-
-                    foreach (Trait t in traitList)
-                    {
-                        pawnSave.RealComfyTemperatures.min += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMin).value;
-                        pawnSave.RealComfyTemperatures.max += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMax).value;
-                    }
-                }
+              //if (_pawn.story.traits.DegreeOfTrait(TraitDef.Named("TemperaturePreference")) != 0)
+              //{
+              //    //calculating trait offset because there's no way to get comfytemperaturemin without clothes
+              //    List<Trait> traitList = (
+              //        from trait in _pawn.story.traits.allTraits
+              //        where trait.CurrentData.statOffsets != null && trait.CurrentData.statOffsets.Any(se => se.stat == StatDefOf.ComfyTemperatureMin || se.stat == StatDefOf.ComfyTemperatureMax)
+              //        select trait
+              //        ).ToList();
+              //
+              //    foreach (Trait t in traitList)
+              //    {
+              //        pawnSave.RealComfyTemperatures.min += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMin).value;
+              //        pawnSave.RealComfyTemperatures.max += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMax).value;
+              //    }
+              //}
                 pawnSave.SetRealComfyTemperatures = true;
             }
 
