@@ -157,6 +157,18 @@ namespace Outfitter
             return dict;
         }
 
+        // RimWorld.ThoughtWorker_PsychicDrone
+        private static Building ExtantShipPart(Map map)
+        {
+            List<Thing> list = map.listerThings.ThingsOfDef(ThingDefOf.CrashedPsychicEmanatorShipPart);
+            if (list.Count == 0)
+            {
+                return null;
+            }
+            return (Building)list[0];
+        }
+
+
         public static Dictionary<StatDef, float> GetWeightedApparelIndividualStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
@@ -169,37 +181,47 @@ namespace Outfitter
             {
                 #region MapConditions
 
-                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicDrone")))
+                bool activeDrone = false;
+
+                PsychicDroneLevel psychicDroneLevel = PsychicDroneLevel.None;
+                Building building_PsychicEmanator = ExtantShipPart(pawn.Map);
+                if (building_PsychicEmanator != null)
                 {
-                    if (pawn.Map.mapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                    activeDrone = true;
+                }
+                MapCondition_PsychicEmanation activeCondition = pawn.Map.mapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>();
+                if (activeCondition != null && activeCondition.gender == pawn.gender && activeCondition.def.droneLevel > psychicDroneLevel)
+                {
+                    activeDrone = true;
+                }
+                if (activeDrone)
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
                     {
-                        switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
-                        {
-                            case -1:
-                                {
-                                    dict.Add(StatDefOf.PsychicSensitivity, -0.25f);
-                                    break;
-                                }
-                            case 0:
-                                {
-                                    dict.Add(StatDefOf.PsychicSensitivity, -0.5f);
-                                    break;
-                                }
-                            case 1:
-                                {
-                                    dict.Add(StatDefOf.PsychicSensitivity, -0.75f);
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    dict.Add(StatDefOf.PsychicSensitivity, -1f);
-                                    break;
-                                }
-                        }
+                        case -1:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -0.25f);
+                                break;
+                            }
+                        case 0:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -0.5f);
+                                break;
+                            }
+                        case 1:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -0.75f);
+                                break;
+                            }
+                        case 2:
+                            {
+                                dict.Add(StatDefOf.PsychicSensitivity, -1f);
+                                break;
+                            }
                     }
                 }
 
-                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDef.Named("PsychicSoothe")))
+                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDefOf.PsychicSoothe))
                 {
                     if (pawn.Map.mapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
                     {
@@ -228,6 +250,7 @@ namespace Outfitter
                         }
                     }
                 }
+
                 #endregion
 
 
@@ -272,8 +295,8 @@ namespace Outfitter
                 float max = dict.Values.Select(Math.Abs).Max();
                 foreach (StatDef key in new List<StatDef>(dict.Keys))
                 {
-                    // normalize max of absolute weigths to be 0.5
-                    dict[key] /= max / 0.5f;
+                    // normalize max of absolute weigths to be 1.5
+                    dict[key] /= max / 1.5f;
                 }
             }
 
@@ -603,6 +626,7 @@ namespace Outfitter
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmithingSpeed"), 3f);
+                        yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmithingSpeed"), 1f);
