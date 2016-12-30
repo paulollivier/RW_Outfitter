@@ -97,7 +97,7 @@ namespace Outfitter
                     }
                 }
 
-                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDef.Named("ToxicFallout")))
+                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDefOf.ToxicFallout))
                 {
                     dict.Add(StatDefOf.ToxicSensitivity, -1.5f);
                     dict.Add(StatDefOf.HealingSpeed, 0.5f);
@@ -124,7 +124,7 @@ namespace Outfitter
 
                     if (key == StatDefOf.WorkSpeedGlobal)
                     {
-                        switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Industriousness")))
+                        switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Industriousness))
                         {
                             case -2:
                                 dict[key] *= 2f;
@@ -254,7 +254,7 @@ namespace Outfitter
                 #endregion
 
 
-                switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Nerves")))
+                switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Nerves))
                 {
                     case -1:
                         dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
