@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using RimWorld;
@@ -9,17 +10,13 @@ namespace Outfitter
 {
     public class Outfitter_JobGiver_OptimizeApparel : ThinkNode_JobGiver
     {
-        private const int ApparelOptimizeCheckInterval = 3000;
+        private const float MinScoreGainToCare = 0.09f;
+        private const int ApparelOptimizeCheckIntervalMin = 6000;
 
-        private const float MinScoreGainToCare = 0.05f;
-
+        private const int ApparelOptimizeCheckIntervalMax = 9000;
         private static StringBuilder debugSb;
 
-        private void SetNextOptimizeTick(Pawn pawn)
-        {
-            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame + ApparelOptimizeCheckInterval;
-        }
-
+        [Detour(typeof(JobGiver_OptimizeApparel), bindingFlags = (BindingFlags.Instance | BindingFlags.NonPublic))]
         protected override Job TryGiveJob(Pawn pawn)
         {
             if (pawn.outfits == null)
@@ -42,7 +39,13 @@ namespace Outfitter
             else
             {
                 debugSb = new StringBuilder();
-                debugSb.AppendLine(string.Concat("Scanning for ", pawn, " at ", pawn.Position));
+                debugSb.AppendLine(string.Concat(new object[]
+                {
+            "Scanning for ",
+            pawn,
+            " at ",
+            pawn.Position
+                }));
             }
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
@@ -57,8 +60,8 @@ namespace Outfitter
                 }
             }
             Thing thing = null;
-            float score = 0f;
-            List<Thing> list = Find.ListerThings.ThingsInGroup(ThingRequestGroup.Apparel);
+            float num = 0f;
+            List<Thing> list = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
             if (list.Count == 0)
             {
                 SetNextOptimizeTick(pawn);
@@ -69,23 +72,23 @@ namespace Outfitter
                 Apparel apparel = (Apparel)list[j];
                 if (currentOutfit.filter.Allows(apparel))
                 {
-                    if (Find.SlotGroupManager.SlotGroupAt(apparel.Position) != null)
+                    if (apparel.Map.slotGroupManager.SlotGroupAt(apparel.Position) != null)
                     {
                         if (!apparel.IsForbidden(pawn))
                         {
-                            float apparelScoreGain = ApparelStatsHelper.ApparelScoreGain(pawn, apparel);
+                            float gain = ApparelStatsHelper.ApparelScoreGain(pawn, apparel);
                             if (DebugViewSettings.debugApparelOptimize)
                             {
-                                debugSb.AppendLine(apparel.LabelCap + ": " + apparelScoreGain.ToString("F2"));
+                                debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
                             }
-                            if (apparelScoreGain >= MinScoreGainToCare && apparelScoreGain >= score)
+                            if (gain >= MinScoreGainToCare && gain >= num)
                             {
                                 if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
                                 {
                                     if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
                                     {
                                         thing = apparel;
-                                        score = apparelScoreGain;
+                                        num = gain;
                                     }
                                 }
                             }
@@ -101,39 +104,15 @@ namespace Outfitter
             }
             if (thing == null)
             {
-                SetNextOptimizeTick(pawn);
+                this.SetNextOptimizeTick(pawn);
                 return null;
             }
             return new Job(JobDefOf.Wear, thing);
         }
-        /*
-        public static float ApparelScoreGain(Pawn pawn, Apparel ap)
+
+        private void SetNextOptimizeTick(Pawn pawn)
         {
-            if (ap.def == ThingDefOf.Apparel_PersonalShield && pawn.equipment.Primary != null && !pawn.equipment.Primary.def.Verbs[0].MeleeRange)
-            {
-                return -1000f;
-            }
-            float num = JobGiver_OptimizeApparel.ApparelScoreRaw(ap);
-            List<Apparel> wornApparel = pawn.apparel.WornApparel;
-            bool flag = false;
-            for (int i = 0; i < wornApparel.Count; i++)
-            {
-                if (!ApparelUtility.CanWearTogether(wornApparel[i].def, ap.def))
-                {
-                    if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
-                    {
-                        return -1000f;
-                    }
-                    num -= JobGiver_OptimizeApparel.ApparelScoreRaw(wornApparel[i]);
-                    flag = true;
-                }
-            }
-            if (!flag)
-            {
-                num *= ScoreFactorIfNotReplacing;
-            }
-            return num;
+            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame + UnityEngine.Random.Range(ApparelOptimizeCheckIntervalMin, ApparelOptimizeCheckIntervalMax);
         }
-        */
     }
 }

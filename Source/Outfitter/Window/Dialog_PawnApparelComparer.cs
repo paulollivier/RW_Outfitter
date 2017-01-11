@@ -39,8 +39,9 @@ namespace Outfitter.Window
             foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
             {
                 foreach (Apparel pawnApparel in pawn.apparel.WornApparel)
+                {
                     if (pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(pawnApparel))
-                        allApparels.Add(pawnApparel);
+                        allApparels.Add(pawnApparel);}
             }
 
             allApparels = allApparels.Where(i => !ApparelUtility.CanWearTogether(_apparel.def, i.def)).ToList();

@@ -86,61 +86,18 @@ namespace Outfitter
 
                         float weight = stat.Value * priorityAdjust;
 
-                        if (dict.ContainsKey(stat.Key))
-                        {
-                            dict[stat.Key] += weight;
-                        }
-                        else
-                        {
-                            dict.Add(stat.Key, weight);
-                        }
+                        AddStatToDict(stat.Key, weight, ref dict);
                     }
                 }
 
                 if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDefOf.ToxicFallout))
                 {
-                    dict.Add(StatDefOf.ToxicSensitivity, -1.5f);
-                    dict.Add(StatDefOf.HealingSpeed, 0.5f);
+                    AddStatToDict(StatDefOf.ToxicSensitivity, -1.5f, ref dict);
+                    AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
                 }
 
                 // adjustments for traits
-                foreach (StatDef key in new List<StatDef>(dict.Keys))
-                {
-                    if (key == StatDefOf.MoveSpeed)
-                    {
-                        switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("SpeedOffset")))
-                        {
-                            case -1:
-                                dict[key] *= 1.5f;
-                                break;
-                            case 1:
-                                dict[key] *= 0.5f;
-                                break;
-                            case 2:
-                                dict[key] *= 0.25f;
-                                break;
-                        }
-                    }
-
-                    if (key == StatDefOf.WorkSpeedGlobal)
-                    {
-                        switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Industriousness))
-                        {
-                            case -2:
-                                dict[key] *= 2f;
-                                break;
-                            case -1:
-                                dict[key] *= 1.5f;
-                                break;
-                            case 1:
-                                dict[key] *= 0.5f;
-                                break;
-                            case 2:
-                                dict[key] *= 0.25f;
-                                break;
-                        }
-                    }
-                }
+                AdjustStatsForTraits(pawn, ref dict);
             }
 
             if (dict.Count > 0)
@@ -155,6 +112,59 @@ namespace Outfitter
             }
 
             return dict;
+        }
+
+        private static void AdjustStatsForTraits(Pawn pawn, ref Dictionary<StatDef, float> dict)
+        {
+            foreach (StatDef key in new List<StatDef>(dict.Keys))
+            {
+                if (key == StatDefOf.MoveSpeed)
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("SpeedOffset")))
+                    {
+                        case -1:
+                            dict[key] *= 1.5f;
+                            break;
+                        case 1:
+                            dict[key] *= 0.5f;
+                            break;
+                        case 2:
+                            dict[key] *= 0.25f;
+                            break;
+                    }
+                }
+
+                if (key == StatDefOf.WorkSpeedGlobal)
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Industriousness))
+                    {
+                        case -2:
+                            dict[key] *= 2f;
+                            break;
+                        case -1:
+                            dict[key] *= 1.5f;
+                            break;
+                        case 1:
+                            dict[key] *= 0.5f;
+                            break;
+                        case 2:
+                            dict[key] *= 0.25f;
+                            break;
+                    }
+                }
+            }
+        }
+
+        private static void AddStatToDict(StatDef stat, float weight, ref Dictionary<StatDef, float> dict)
+        {
+            if (dict.ContainsKey(stat))
+            {
+                dict[stat] += weight;
+            }
+            else
+            {
+                dict.Add(stat, weight);
+            }
         }
 
         // RimWorld.ThoughtWorker_PsychicDrone
@@ -200,22 +210,22 @@ namespace Outfitter
                     {
                         case -1:
                             {
-                                dict.Add(StatDefOf.PsychicSensitivity, -0.25f);
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.25f, ref dict);
                                 break;
                             }
                         case 0:
                             {
-                                dict.Add(StatDefOf.PsychicSensitivity, -0.5f);
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.5f, ref dict);
                                 break;
                             }
                         case 1:
                             {
-                                dict.Add(StatDefOf.PsychicSensitivity, -0.75f);
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.75f, ref dict);
                                 break;
                             }
                         case 2:
                             {
-                                dict.Add(StatDefOf.PsychicSensitivity, -1f);
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -1f, ref dict);
                                 break;
                             }
                     }
@@ -229,22 +239,22 @@ namespace Outfitter
                         {
                             case -1:
                                 {
-                                    dict.Add(StatDefOf.PsychicSensitivity, 1f);
+                                    AddStatToDict(StatDefOf.PsychicSensitivity, 1f, ref dict);
                                     break;
                                 }
                             case 0:
                                 {
-                                    dict.Add(StatDefOf.PsychicSensitivity, 0.75f);
+                                    AddStatToDict(StatDefOf.PsychicSensitivity, 0.75f, ref dict);
                                     break;
                                 }
                             case 1:
                                 {
-                                    dict.Add(StatDefOf.PsychicSensitivity, 0.5f);
+                                    AddStatToDict(StatDefOf.PsychicSensitivity, 0.5f, ref dict);
                                     break;
                                 }
                             case 2:
                                 {
-                                    dict.Add(StatDefOf.PsychicSensitivity, 0.25f);
+                                    AddStatToDict(StatDefOf.PsychicSensitivity, 0.25f, ref dict);
                                     break;
                                 }
                         }
@@ -257,34 +267,21 @@ namespace Outfitter
                 switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Nerves))
                 {
                     case -1:
-                        dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.5f, ref dict);
                         break;
                     case -2:
-                        dict.Add(StatDefOf.MentalBreakThreshold, -1f);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.1f, ref dict);
                         break;
                 }
 
                 switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Neurotic")))
                 {
                     case 1:
-                        if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
-                        {
-                            dict[StatDefOf.MentalBreakThreshold] += -0.5f;
-                        }
-                        else
-                        {
-                            dict.Add(StatDefOf.MentalBreakThreshold, -0.5f);
-                        }
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.5f, ref dict);
                         break;
                     case 2:
-                        if (dict.ContainsKey(StatDefOf.MentalBreakThreshold))
-                        {
-                            dict[StatDefOf.MentalBreakThreshold] += -1f;
-                        }
-                        else
-                        {
-                            dict.Add(StatDefOf.MentalBreakThreshold, -1f);
-                        }
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -1f, ref dict);
+
                         break;
                 }
             }
@@ -303,7 +300,6 @@ namespace Outfitter
             return dict;
         }
 
-        [Detour(typeof(JobGiver_OptimizeApparel), bindingFlags = (BindingFlags.Static | BindingFlags.Public))]
         // ReSharper disable once UnusedMember.Global
         public static float ApparelScoreGain(Pawn pawn, Apparel ap)
         {
@@ -343,16 +339,14 @@ namespace Outfitter
                 }
             }
 
+
             // increase score if this piece can be worn without replacing existing gear.
             if (!willReplace)
             {
                 candidateScore *= ScoreFactorIfNotReplacing;
             }
 
-            if (ap.WornByCorpse && candidateScore > 0f)
-            {
-                candidateScore *= 0.1f;
-            }
+
 
             return candidateScore;
         }
@@ -444,13 +438,13 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 3f);
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingQuality, 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HealingSpeed"), 1.5f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingSpeed, 1.5f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingQuality, 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("HealingSpeed"), 0.5f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingSpeed, 0.5f);
                     yield break;
 
                 case "PatientBedRest":
@@ -464,14 +458,10 @@ namespace Outfitter
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 1.5f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.RecruitPrisonerChance, 3f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.GiftImpact, 0.6f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, 0.6f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 0.5f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.RecruitPrisonerChance, 1f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.GiftImpact, 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, 0.2f);
                     yield break;
 
                 case "Handling":
@@ -569,15 +559,19 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructionSpeed, 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructFailChance, -3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.SmoothingSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.75f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingFailChance, -3f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructionSpeed, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructFailChance, -1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SmoothingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.25f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingFailChance, -1f);
                     yield break;
 
                 case "Repair":
@@ -698,9 +692,17 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ResearchSpeed, 1f);
                     yield break;
 
+                // Colony Manager
                 case "Managing":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 0.25f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ManagingSpeed"), 0.5f);
+                    yield break;
+
+                // Hospitality
+                case "Diplomat":
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 0.5f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.GiftImpact, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, 1f);
                     yield break;
 
                 default:

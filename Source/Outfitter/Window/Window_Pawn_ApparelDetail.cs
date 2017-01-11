@@ -306,7 +306,7 @@ namespace Outfitter
             {
                 // durability on 0-1 scale
                 float x = _apparel.HitPoints / (float)_apparel.MaxHitPoints;
-                score = score * 0.15f + score * 0.85f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
+                score = score * 0.25f + score * 0.75f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
 
                 DrawLine(
                 "OutfitterHitPoints".Translate(), labelWidth,

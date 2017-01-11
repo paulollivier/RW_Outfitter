@@ -58,9 +58,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
-    <Compile Include="Class1.cs" />
-    <Compile Include="DetourAttribute.cs" />
-    <None Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
+    <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
+    <Compile Include="NoCCL\DetourAttribute.cs" />
+    <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
     <Compile Include="MapComponentInjector.cs" />
     <Compile Include="NoCCL\Detours.cs" />
     <Compile Include="NoCCL\SpecialInjector.cs" />
@@ -91,6 +91,7 @@
     </Content>
     <Content Include="..\..\Defs\SpecialThingFilterDefs\SpecialThingFilters.xml">
       <Link>SpecialThingFilters.xml</Link>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="..\..\Languages\English\Keyed\Outfitter_Keyed.xml">
       <Link>Languages\English\Outfitter_Keyed.xml</Link>

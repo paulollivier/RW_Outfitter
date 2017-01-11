@@ -209,7 +209,7 @@ namespace Outfitter
                     equippedOffsets.Add(equippedStatOffset.stat);
                 }
             }
-
+            
             HashSet<StatDef> statBases = new HashSet<StatDef>();
             if (apparel.def.statBases != null)
             {
@@ -274,6 +274,8 @@ namespace Outfitter
 
             }
 
+            score += apparel.GetSpecialApparelScoreOffset();
+
             score += ApparelScoreRaw_Temperature(apparel, pawn);
 
             score += 0.05f * ApparelScoreRaw_ProtectionBaseStat(apparel);
@@ -282,10 +284,16 @@ namespace Outfitter
             if (apparel.def.useHitPoints)
             {
                 float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
-                score = score * 0.15f + score * 0.85f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
+                score = score * 0.25f + score * 0.75f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
-
-
+            if (apparel.WornByCorpse)
+            {
+                score -= 0.5f;
+                if (score > 0f)
+                {
+                    score *= 0.1f;
+                }
+            }
             return score;
         }
 
@@ -353,7 +361,7 @@ namespace Outfitter
             DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, StatDefOf.ComfyTemperatureMax, ref insulationHeat);
 
             // if this gear is currently worn, we need to make sure the contribution to the pawn's comfy temps is removed so the gear is properly scored
-            //if (pawn.apparel.WornApparel.Contains(apparel))
+            if (pawn.apparel.WornApparel.Contains(apparel))
             {
                 List<Apparel> wornApparel = pawn.apparel.WornApparel;
 
@@ -376,8 +384,8 @@ namespace Outfitter
                     }
                 }
 
-                //minComfyTemperature -= insulationCold;
-                //maxComfyTemperature -= insulationHeat;
+                minComfyTemperature -= insulationCold;
+                maxComfyTemperature -= insulationHeat;
             }
 
             // now for the interesting bit.
@@ -530,11 +538,11 @@ namespace Outfitter
                     pawnSave.TargetTemperatures = new FloatRange(Math.Max(temp - 7.5f, ApparelStatsHelper.MinMaxTemperatureRange.min),
                                                           Math.Min(temp + 7.5f, ApparelStatsHelper.MinMaxTemperatureRange.max));
 
-                    if (pawnSave.TargetTemperatures.min >= 10)
-                        pawnSave.TargetTemperatures.min = 10;
+                    if (pawnSave.TargetTemperatures.min >= 12)
+                        pawnSave.TargetTemperatures.min = 12;
 
-                    if (pawnSave.TargetTemperatures.max <= 20)
-                        pawnSave.TargetTemperatures.max = 20;
+                    if (pawnSave.TargetTemperatures.max <= 32)
+                        pawnSave.TargetTemperatures.max = 32;
 
                     _lastTempUpdate = Find.TickManager.TicksGame;
                 }
@@ -783,6 +791,9 @@ namespace Outfitter
                     willReplace = true;
                 }
             }
+
+            candidateScore += apparel.GetSpecialApparelScoreOffset();
+
 
             // increase score if this piece can be worn without replacing existing gear.
             if (!willReplace)
