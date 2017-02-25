@@ -154,7 +154,7 @@ namespace Outfitter
             DrawLine(
                 "Status", labelWidth,
                 "Base", baseValue,
-                "Strengh", multiplierWidth,
+                "Strength", multiplierWidth,
                 "Score", finalValue, FontBold);
 
             Space(6f);
