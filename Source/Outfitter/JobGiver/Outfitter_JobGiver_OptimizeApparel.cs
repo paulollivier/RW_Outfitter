@@ -62,6 +62,49 @@ namespace Outfitter
             Thing thing = null;
             float num = 0f;
             List<Thing> list = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
+            List<Thing> weaponList = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Weapon);
+
+            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            if (pawnSave.AutoEquipWeapon && !pawn.story.WorkTagIsDisabled(WorkTags.Violent))
+            {
+                bool equipWeapon = true;
+                if (pawn.equipment == null)
+                {
+                    equipWeapon = false;
+                }
+
+                if (pawn.RaceProps.Humanlike && pawn.story.WorkTagIsDisabled(WorkTags.Violent))
+                {
+                    equipWeapon = false;
+                }
+                if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                {
+                    equipWeapon = false;
+                }
+                if (pawn.GetRegion() == null)
+                {
+                    equipWeapon = false;
+                }
+                Thing newWeapon = null;
+                float newScore = 0f;
+
+                foreach (var wep in weaponList)
+                {
+                    float scoreGain = WeaponStatsHelper.WeaponScoreGain(pawn, wep);
+                    if (scoreGain > 0f && scoreGain > newScore && pawn.CanReserveAndReach(wep, PathEndMode.ClosestTouch, Danger.Some))
+                    {
+                        newWeapon = wep;
+                        newScore = scoreGain;
+                    }
+
+                }
+
+                if (newWeapon != null && equipWeapon)
+                {
+                    return new Job(JobDefOf.Equip, newWeapon);
+                }
+            }
+
             if (list.Count == 0)
             {
                 SetNextOptimizeTick(pawn);
@@ -102,6 +145,7 @@ namespace Outfitter
                 Log.Message(debugSb.ToString());
                 debugSb = null;
             }
+
             if (thing == null)
             {
                 this.SetNextOptimizeTick(pawn);

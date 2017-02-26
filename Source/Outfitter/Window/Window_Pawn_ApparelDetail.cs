@@ -196,13 +196,13 @@ namespace Outfitter
                 string statLabel = statPriority.Stat.LabelCap;
                 // statbases, e.g. armor
 
-                //     ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat, ref currentStat);
+                //     StatCache.DoApparelScoreRaw_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat, ref currentStat);
 
                 if (statBases.Contains(statPriority.Stat))
                 {
                     float statValue = _apparel.GetStatValue(statPriority.Stat);
 
-                    //        statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
+                    //        statValue += StatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
 
                     float statScore = statValue * statPriority.Weight;
                     score += statScore;
@@ -220,7 +220,7 @@ namespace Outfitter
                 {
                     float statValue = ApparelStatCache.GetEquippedStatValue(_apparel, statPriority.Stat) - 1;
 
-                    //       statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
+                    //       statValue += StatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
 
                     float statScore = statValue * statPriority.Weight;
                     score += statScore;
@@ -245,7 +245,7 @@ namespace Outfitter
                 if (ApparelStatCache.infusedOffsets.Contains(statPriority.Stat))
                 {
 
-                    //     float statInfused = ApparelStatCache.StatInfused(infusionSet, statPriority, ref dontcare);
+                    //     float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
                     float statValue = 0f;
                     ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat, ref statValue);
 

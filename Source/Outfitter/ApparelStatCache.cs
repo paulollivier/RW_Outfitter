@@ -1,4 +1,4 @@
-﻿// Outfitter/ApparelStatCache.cs
+﻿// Outfitter/StatCache.cs
 // 
 // Copyright Karel Kroeze, 2016.
 // 
@@ -249,7 +249,7 @@ namespace Outfitter
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
                     float statValue = GetEquippedStatValue(apparel, statPriority.Stat) - 1;
-                    //  statValue += ApparelStatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
+                    //  statValue += StatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
                     //DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
 
                     score += statValue * statPriority.Weight;
@@ -434,7 +434,7 @@ namespace Outfitter
         {
             // temperature
 
-            FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
+            FloatRange targetTemperatures = pawn.GetWeaponStatCache().TargetTemperatures;
 
             float minComfyTemperature = pawn.SafeTemperatureRange().min;
             float maxComfyTemperature = pawn.SafeTemperatureRange().max;
@@ -475,7 +475,7 @@ namespace Outfitter
 
             // now for the interesting bit.
             float temperatureScoreOffset = 0f;
-            float tempWeight = pawn.GetApparelStatCache().TemperatureWeight;
+            float tempWeight = pawn.GetWeaponStatCache().TemperatureWeight;
             // isolation_cold is given as negative numbers < 0 means we're underdressed
             float neededInsulation_Cold = targetTemperatures.min - minComfyTemperature;
             // isolation_warm is given as positive numbers.
@@ -770,7 +770,7 @@ namespace Outfitter
 
             // get the score of the considered apparel
             candidateScore = score;
-            //    float candidateScore = ApparelStatCache.ApparelScoreRaw(ap, pawn);
+            //    float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
 
 
 

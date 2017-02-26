@@ -57,7 +57,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WeaponStatCache.cs" />
     <Compile Include="ApparelStatCache.cs" />
+    <Compile Include="WeaponStatsHelper.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
     <Compile Include="NoCCL\DetourAttribute.cs" />
     <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />

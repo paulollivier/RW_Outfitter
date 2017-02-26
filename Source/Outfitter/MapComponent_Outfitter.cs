@@ -20,7 +20,7 @@ namespace Outfitter
 
             // if (!PawnApparelStatCaches.ContainsKey(pawn))
             // {
-            //     PawnApparelStatCaches.Add(pawn, new ApparelStatCache(pawn));
+            //     PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
             // }
             // return PawnApparelStatCaches[pawn];
         }

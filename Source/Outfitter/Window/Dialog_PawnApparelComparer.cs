@@ -34,7 +34,7 @@ namespace Outfitter.Window
         public override void DoWindowContents(Rect windowRect)
         {
             MapComponent_Outfitter mapComponent = MapComponent_Outfitter.Get;
-            ApparelStatCache apparelStatCache = new ApparelStatCache(mapComponent.GetCache(_pawn));
+            ApparelStatCache weaponStatCache = new ApparelStatCache(mapComponent.GetCache(_pawn));
             List<Apparel> allApparels = new List<Apparel>(this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
             foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
             {
@@ -79,7 +79,7 @@ namespace Outfitter.Window
 
             Widgets.BeginScrollView(groupRect, ref scrollPosition, viewRect);
 
-            allApparels = allApparels.OrderByDescending(i => { float g; if (apparelStatCache.CalculateApparelScoreGain(i, out g)) return g; return -1000f; }).ToList();
+            allApparels = allApparels.OrderByDescending(i => { float g; if (weaponStatCache.CalculateApparelScoreGain(i, out g)) return g; return -1000f; }).ToList();
 
             foreach (Apparel currentAppel in allApparels)
             {
@@ -115,19 +115,19 @@ namespace Outfitter.Window
                 }
 
                 float gain;
-                if (apparelStatCache.CalculateApparelScoreGain(currentAppel, out gain))
+                if (weaponStatCache.CalculateApparelScoreGain(currentAppel, out gain))
                     DrawLine(ref itemRect,
                         currentAppel, currentAppel.LabelCap, apparelLabelWidth,
                         equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
                         target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, _pawn).ToString("N5"), apparelScoreWidth,
+                        weaponStatCache.ApparelScoreRaw(currentAppel, _pawn).ToString("N5"), apparelScoreWidth,
                         gain.ToString("N5"), apparelGainWidth);
                 else
                     DrawLine(ref itemRect,
                         currentAppel, currentAppel.LabelCap, apparelLabelWidth,
                         equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
                         target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, _pawn).ToString("N5"), apparelScoreWidth,
+                        weaponStatCache.ApparelScoreRaw(currentAppel, _pawn).ToString("N5"), apparelScoreWidth,
                         "No Allow", apparelGainWidth);
 
                 listRect.yMin = itemRect.yMax;

@@ -43,7 +43,9 @@ namespace Outfitter
         public MainJob mainJob;
 
         public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
+        public List<Saveable_Pawn_StatDef> WeaponStats = new List<Saveable_Pawn_StatDef>();
         public bool SetRealComfyTemperatures;
+        public bool AutoEquipWeapon;
 
         //  public SaveablePawn(Pawn pawn)
         //    {
@@ -63,6 +65,7 @@ namespace Outfitter
             Scribe_Values.LookValue(ref RealComfyTemperatures, "RealComfyTemperatures");
             Scribe_Values.LookValue(ref Temperatureweight, "Temperatureweight");
             Scribe_Collections.LookList(ref Stats, "Stats", LookMode.Deep);
+            Scribe_Collections.LookList(ref WeaponStats, "WeaponStats", LookMode.Deep);
             Scribe_Values.LookValue(ref AddWorkStats, "AddWorkStats", true);
             Scribe_Values.LookValue(ref AddIndividualStats, "AddIndividualStats", true);
             Scribe_Values.LookValue(ref mainJob, "mainJob");

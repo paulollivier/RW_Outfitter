@@ -1,4 +1,4 @@
-﻿// Outfitter/ApparelStatsHelper.cs
+﻿// Outfitter/WeaponStatsHelper.cs
 // 
 // Copyright Karel Kroeze, 2016.
 // 
@@ -313,7 +313,7 @@ namespace Outfitter
 
             // get the score of the considered apparel
             float candidateScore = conf.ApparelScoreRaw(ap, pawn);
-            //    float candidateScore = ApparelStatCache.ApparelScoreRaw(ap, pawn);
+            //    float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
 
             // get the current list of worn apparel
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
