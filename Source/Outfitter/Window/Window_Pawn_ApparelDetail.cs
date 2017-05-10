@@ -62,7 +62,7 @@ namespace Outfitter
 
         protected override void SetInitialSizeAndPosition()
         {
-            MainTabWindow_Inspect inspectWorker = (MainTabWindow_Inspect)MainTabDefOf.Inspect.Window;
+            MainTabWindow_Inspect inspectWorker = (MainTabWindow_Inspect)MainButtonDefOf.Inspect.TabWindow;
             windowRect = new Rect(770f, (inspectWorker.PaneTopY - 30f - InitialSize.y), InitialSize.x, InitialSize.y).Rounded();
         }
 

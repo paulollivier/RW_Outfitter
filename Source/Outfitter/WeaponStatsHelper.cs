@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using RimWorld;
 using Verse;
-using static Outfitter.SaveablePawn.MainJob;
+using static Outfitter.CompOutfit.MainJob;
 
 namespace Outfitter
 {
@@ -43,13 +43,13 @@ namespace Outfitter
         public static Dictionary<StatDef, float> GetWeightedWeaponStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
-            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            CompOutfit pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
 
             //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
             //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
 
 
-            foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(pawn))
+            foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWeaponType(pawn))
             {
 
                 float weight = stat.Value;
@@ -180,9 +180,9 @@ namespace Outfitter
                     .ToList();
         }
 
-        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType(Pawn pawn)
+        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWeaponType(Pawn pawn)
         {
-            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+            CompOutfit pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
 
             if (pawnSave.mainJob == Soldier00Close_Combat)
             {

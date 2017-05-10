@@ -27,9 +27,9 @@ namespace Outfitter
 
         public void ExposeData()
         {
-            Scribe_Defs.LookDef(ref Stat, "Stat");
-            Scribe_Values.LookValue(ref Assignment, "Assignment");
-            Scribe_Values.LookValue(ref Weight, "Weight");
+            Scribe_Defs.Look(ref Stat, "Stat");
+            Scribe_Values.Look(ref Assignment, "Assignment");
+            Scribe_Values.Look(ref Weight, "Weight");
         }
     }
 }

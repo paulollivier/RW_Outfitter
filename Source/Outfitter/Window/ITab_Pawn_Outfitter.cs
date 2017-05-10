@@ -50,7 +50,7 @@ namespace Outfitter
             }
         }
 
-        bool apparel = true;
+        bool isApparel = true;
 
         protected override void FillTab()
         {
@@ -98,7 +98,7 @@ namespace Outfitter
                         pawnSave.forceStatUpdate = true;
 
                         selPawnForGear.mindState.Notify_OutfitChanged();
-                        if ((selPawnForGear.jobs.curJob != null) && selPawnForGear.jobs.CanTakeOrderedJob())
+                        if ((selPawnForGear.jobs.curJob != null) && selPawnForGear.jobs.IsCurrentJobPlayerInterruptible())
                         {
                             selPawnForGear.jobs.EndCurrentJob(JobCondition.InterruptForced);
                         }
@@ -134,18 +134,18 @@ namespace Outfitter
 
             //update outfit
             if (GUILayout.Button("ApparelStats".Translate()))
-                apparel = true;
+                isApparel = true;
 
             if (!peacefulPawn)
                 if (GUILayout.Button("WeaponStats".Translate()))
-                    apparel = false;
+                    isApparel = false;
 
             GUILayout.FlexibleSpace();
-
             if (GUILayout.Button("OutfitterUpdateOutfit".Translate()))
             {
+                var parms = new JobIssueParams();
                 selPawnForGear.mindState.nextApparelOptimizeTick = -5000;
-                new Outfitter_JobGiver_OptimizeApparel().TryIssueJobPackage(selPawnForGear);
+                new Outfitter_JobGiver_OptimizeApparel().TryIssueJobPackage(selPawnForGear, parms);
             }
 
 
@@ -162,11 +162,11 @@ namespace Outfitter
             Vector2 cur = Vector2.zero;
 
 
-            if (apparel)
+            if (isApparel)
                 DrawApparelStats(pawnSave, cur, canvas);
             else
             {
-                DrawWeaponStats(pawnSave, cur, canvas);
+                //         DrawWeaponStats(pawnSave, cur, canvas);
             }
         }
 
@@ -368,155 +368,155 @@ namespace Outfitter
 
             #endregion
         }
-
-        private void DrawWeaponStats(SaveablePawn pawnSave, Vector2 cur, Rect canvas)
-        {
-           
-            // header
-            Rect statsHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
-            cur.y += 30f;
-            Text.Anchor = TextAnchor.LowerLeft;
-            Text.Font = GameFont.Small;
-            Widgets.Label(statsHeaderRect, "PreferredWeaponStats".Translate());
-            Text.Anchor = TextAnchor.UpperLeft;
-
-            // add button
-            Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f);
-            if (Widgets.ButtonImage(addStatRect, OutfitterTextures.addButton))
-            {
-                List<FloatMenuOption> options = new List<FloatMenuOption>();
-                foreach (StatDef def in selPawnForGear.NotYetAssignedWeaponStatDefs().OrderBy(i => i.label.ToString()))
-                {
-                    options.Add(new FloatMenuOption(def.LabelCap, delegate
-                    {
-                        selPawnForGear.GetWeaponStatCache()
-                            .StatCache.Insert(0, new WeaponStatCache.StatPriority(def, 0f, StatAssignment.Manual));
-                        //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
-                    }));
-                }
-                Find.WindowStack.Add(new FloatMenu(options));
-            }
-            TooltipHandler.TipRegion(addStatRect, "StatPriorityAdd".Translate());
-
-            // line
-            GUI.color = Color.grey;
-            Widgets.DrawLineHorizontal(cur.x, cur.y, canvas.width);
-            GUI.color = Color.white;
-
-            // some padding
-            cur.y += 10f;
-
-            // main content in scrolling view
-            Rect contentRect = new Rect(cur.x, cur.y, canvas.width, canvas.height - cur.y);
-            Rect viewRect = contentRect;
-            viewRect.height = selPawnForGear.GetWeaponStatCache().StatCache.Count * 30f + 10f;
-            if (viewRect.height > contentRect.height)
-            {
-                viewRect.width -= 20f;
-            }
-
-            Widgets.BeginScrollView(contentRect, ref _scrollPosition, viewRect);
-            GUI.BeginGroup(viewRect);
-            cur = Vector2.zero;
-
-            // none label
-            if (!selPawnForGear.GetWeaponStatCache().StatCache.Any())
-            {
-                Rect noneLabel = new Rect(cur.x, cur.y, viewRect.width, 30f);
-                GUI.color = Color.grey;
-                Text.Anchor = TextAnchor.MiddleCenter;
-                Widgets.Label(noneLabel, "None".Translate());
-                Text.Anchor = TextAnchor.UpperLeft;
-                GUI.color = Color.white;
-                cur.y += 30f;
-            }
-            else
-            {
-                // legend kind of thingy.
-                Rect legendRect = new Rect(cur.x + (viewRect.width - 24) / 2, cur.y, (viewRect.width - 24) / 2, 20f);
-                Text.Font = GameFont.Tiny;
-                GUI.color = Color.grey;
-                Text.Anchor = TextAnchor.LowerLeft;
-                Widgets.Label(legendRect, "-2.5");
-                Text.Anchor = TextAnchor.LowerRight;
-                Widgets.Label(legendRect, "2.5");
-                Text.Anchor = TextAnchor.UpperLeft;
-                Text.Font = GameFont.Small;
-                GUI.color = Color.white;
-                cur.y += 15f;
-
-                // stat weight sliders
-                foreach (WeaponStatCache.StatPriority stat in selPawnForGear.GetWeaponStatCache().StatCache)
-                {
-                    bool stop_UI;
-                    WeaponStatCache.DrawWeaponStatRow(ref cur, viewRect.width, stat, selPawnForGear, out stop_UI);
-                    if (stop_UI)
-                    {
-                        // DrawWeaponStatRow can change the StatCache, invalidating the loop. So if it does that, stop looping - we'll redraw on the next tick.
-                        break;
-                    }
-                }
-            }
-
-            GUI.EndGroup();
-            Widgets.EndScrollView();
-
-            GUI.EndGroup();
-
-
-            #region Weapon List 
-
-            // main canvas
-
-            Rect rect = new Rect(432, 20, 338, 530);
-
-            Text.Font = GameFont.Small;
-            //     Rect rect2 = rect.ContractedBy(10f);
-            Rect calcScore = new Rect(rect.x, rect.y, rect.width, rect.height);
-            GUI.BeginGroup(calcScore);
-            Text.Font = GameFont.Small;
-            GUI.color = Color.white;
-            Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
-            Rect viewRect1 = outRect;
-            viewRect1.height = scrollViewHeight;
-            if (viewRect1.height > outRect.height)
-            {
-                viewRect1.width -= 20f;
-            }
-            Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect1);
-            float num = 0f;
-
-            {
-                Widgets.ListSeparator(ref num, viewRect1.width, "Weapons".Translate());
-                if (selPawnForGear.equipment.Primary!=null)
-                {
-                    DrawThingRowModded(ref num, viewRect1.width, selPawnForGear.equipment.Primary);
-
-                }
-                List<Thing> weaponList = selPawnForGear.Map.listerThings.ThingsInGroup(ThingRequestGroup.Weapon);
-
-                foreach (Thing current2 in  weaponList)
-                {
-                    string bp = "";
-                    string layer = "";
-
-                    DrawThingRowModded(ref num, viewRect1.width, current2);
-                }
-            }
-
-
-            if (Event.current.type == EventType.Layout)
-            {
-                scrollViewHeight = num + 30f;
-            }
-            Widgets.EndScrollView();
-            GUI.EndGroup();
-            GUI.color = Color.white;
-            Text.Anchor = TextAnchor.UpperLeft;
-
-            #endregion
-        }
-
+        //   
+        // private void DrawWeaponStats(SaveablePawn pawnSave, Vector2 cur, Rect canvas)
+        // {
+        //    
+        //     // header
+        //     Rect statsHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
+        //     cur.y += 30f;
+        //     Text.Anchor = TextAnchor.LowerLeft;
+        //     Text.Font = GameFont.Small;
+        //     Widgets.Label(statsHeaderRect, "PreferredWeaponStats".Translate());
+        //     Text.Anchor = TextAnchor.UpperLeft;
+        //
+        //     // add button
+        //     Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f);
+        //     if (Widgets.ButtonImage(addStatRect, OutfitterTextures.addButton))
+        //     {
+        //         List<FloatMenuOption> options = new List<FloatMenuOption>();
+        //         foreach (StatDef def in selPawnForGear.NotYetAssignedWeaponStatDefs().OrderBy(i => i.label.ToString()))
+        //         {
+        //             options.Add(new FloatMenuOption(def.LabelCap, delegate
+        //             {
+        //                 selPawnForGear.GetWeaponStatCache()
+        //                     .StatCache.Insert(0, new WeaponStatCache.StatPriority(def, 0f, StatAssignment.Manual));
+        //                 //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
+        //             }));
+        //         }
+        //         Find.WindowStack.Add(new FloatMenu(options));
+        //     }
+        //     TooltipHandler.TipRegion(addStatRect, "StatPriorityAdd".Translate());
+        //
+        //     // line
+        //     GUI.color = Color.grey;
+        //     Widgets.DrawLineHorizontal(cur.x, cur.y, canvas.width);
+        //     GUI.color = Color.white;
+        //
+        //     // some padding
+        //     cur.y += 10f;
+        //
+        //     // main content in scrolling view
+        //     Rect contentRect = new Rect(cur.x, cur.y, canvas.width, canvas.height - cur.y);
+        //     Rect viewRect = contentRect;
+        //     viewRect.height = selPawnForGear.GetWeaponStatCache().StatCache.Count * 30f + 10f;
+        //     if (viewRect.height > contentRect.height)
+        //     {
+        //         viewRect.width -= 20f;
+        //     }
+        //
+        //     Widgets.BeginScrollView(contentRect, ref _scrollPosition, viewRect);
+        //     GUI.BeginGroup(viewRect);
+        //     cur = Vector2.zero;
+        //
+        //     // none label
+        //     if (!selPawnForGear.GetWeaponStatCache().StatCache.Any())
+        //     {
+        //         Rect noneLabel = new Rect(cur.x, cur.y, viewRect.width, 30f);
+        //         GUI.color = Color.grey;
+        //         Text.Anchor = TextAnchor.MiddleCenter;
+        //         Widgets.Label(noneLabel, "None".Translate());
+        //         Text.Anchor = TextAnchor.UpperLeft;
+        //         GUI.color = Color.white;
+        //         cur.y += 30f;
+        //     }
+        //     else
+        //     {
+        //         // legend kind of thingy.
+        //         Rect legendRect = new Rect(cur.x + (viewRect.width - 24) / 2, cur.y, (viewRect.width - 24) / 2, 20f);
+        //         Text.Font = GameFont.Tiny;
+        //         GUI.color = Color.grey;
+        //         Text.Anchor = TextAnchor.LowerLeft;
+        //         Widgets.Label(legendRect, "-2.5");
+        //         Text.Anchor = TextAnchor.LowerRight;
+        //         Widgets.Label(legendRect, "2.5");
+        //         Text.Anchor = TextAnchor.UpperLeft;
+        //         Text.Font = GameFont.Small;
+        //         GUI.color = Color.white;
+        //         cur.y += 15f;
+        //
+        //         // stat weight sliders
+        //         foreach (WeaponStatCache.StatPriority stat in selPawnForGear.GetWeaponStatCache().StatCache)
+        //         {
+        //             bool stop_UI;
+        //             WeaponStatCache.DrawWeaponStatRow(ref cur, viewRect.width, stat, selPawnForGear, out stop_UI);
+        //             if (stop_UI)
+        //             {
+        //                 // DrawWeaponStatRow can change the StatCache, invalidating the loop. So if it does that, stop looping - we'll redraw on the next tick.
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //
+        //     GUI.EndGroup();
+        //     Widgets.EndScrollView();
+        //
+        //     GUI.EndGroup();
+        //
+        //
+        //     #region Weapon List 
+        //
+        //     // main canvas
+        //
+        //     Rect rect = new Rect(432, 20, 338, 530);
+        //
+        //     Text.Font = GameFont.Small;
+        //     //     Rect rect2 = rect.ContractedBy(10f);
+        //     Rect calcScore = new Rect(rect.x, rect.y, rect.width, rect.height);
+        //     GUI.BeginGroup(calcScore);
+        //     Text.Font = GameFont.Small;
+        //     GUI.color = Color.white;
+        //     Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
+        //     Rect viewRect1 = outRect;
+        //     viewRect1.height = scrollViewHeight;
+        //     if (viewRect1.height > outRect.height)
+        //     {
+        //         viewRect1.width -= 20f;
+        //     }
+        //     Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect1);
+        //     float num = 0f;
+        //
+        //     {
+        //         Widgets.ListSeparator(ref num, viewRect1.width, "Weapons".Translate());
+        //         if (selPawnForGear.equipment.Primary!=null)
+        //         {
+        //             DrawThingRowModded(ref num, viewRect1.width, selPawnForGear.equipment.Primary);
+        //
+        //         }
+        //         List<Thing> weaponList = selPawnForGear.Map.listerThings.ThingsInGroup(ThingRequestGroup.Weapon);
+        //
+        //         foreach (Thing current2 in  weaponList)
+        //         {
+        //             string bp = "";
+        //             string layer = "";
+        //
+        //             DrawThingRowModded(ref num, viewRect1.width, current2);
+        //         }
+        //     }
+        //
+        //
+        //     if (Event.current.type == EventType.Layout)
+        //     {
+        //         scrollViewHeight = num + 30f;
+        //     }
+        //     Widgets.EndScrollView();
+        //     GUI.EndGroup();
+        //     GUI.color = Color.white;
+        //     Text.Anchor = TextAnchor.UpperLeft;
+        //
+        //     #endregion
+        // }
+        //
 
         private static void DrawCheckBoxArea(string name, ref bool stat)
         {
@@ -656,7 +656,7 @@ namespace Outfitter
 
 
                 // RMB menu
-                 if (Event.current.button == 1)
+                if (Event.current.button == 1)
                 {
                     List<FloatMenuOption> floatOptionList = new List<FloatMenuOption>();
                     floatOptionList.Add(new FloatMenuOption("ThingInfo".Translate(), delegate
@@ -701,9 +701,9 @@ namespace Outfitter
 
             #region Modded
 
-           WeaponStatCache conf = new WeaponStatCache(SelPawn);
+            ApparelStatCache conf = new ApparelStatCache(SelPawn);
             string text = thing.LabelCap;
-            string text_Score = Math.Round(conf.WeaponScoreRaw(thing, SelPawn), 2).ToString("N2");
+            string text_Score = Math.Round(conf.ApparelScoreRaw(thing as Apparel, SelPawn), 2).ToString("N2");
 
             #endregion
 
@@ -788,14 +788,14 @@ namespace Outfitter
             if (apparel != null)
             {
                 Pawn selPawnForGear = SelPawn;
-                if (selPawnForGear.jobs.CanTakeOrderedJob())
+                if (selPawnForGear.jobs.IsCurrentJobPlayerInterruptible())
                 {
                     Job job = new Job(JobDefOf.RemoveApparel, apparel);
                     job.playerForced = true;
                     selPawnForGear.jobs.TryTakeOrderedJob(job);
                 }
             }
-            else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
+            else if (thingWithComps != null && SelPawn.equipment.AllEquipmentListForReading.Contains(thingWithComps))
             {
                 ThingWithComps thingWithComps2;
                 SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, SelPawn.Position);
@@ -814,7 +814,7 @@ namespace Outfitter
             if (apparel != null)
             {
                 Pawn selPawnForGear = SelPawn;
-                if (selPawnForGear.jobs.CanTakeOrderedJob())
+                if (selPawnForGear.jobs.IsCurrentJobPlayerInterruptible())
                 {
                     Job job = new Job(JobDefOf.RemoveApparel, apparel);
                     job.playerForced = true;
@@ -822,7 +822,7 @@ namespace Outfitter
                     selPawnForGear.jobs.TryTakeOrderedJob(job);
                 }
             }
-            else if (thingWithComps != null && SelPawn.equipment.AllEquipment.Contains(thingWithComps))
+            else if (thingWithComps != null && SelPawn.equipment.AllEquipmentListForReading.Contains(thingWithComps))
             {
                 ThingWithComps thingWithComps2;
                 SelPawn.equipment.TryDropEquipment(thingWithComps, out thingWithComps2, SelPawn.Position);

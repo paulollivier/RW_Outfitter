@@ -44,9 +44,9 @@ namespace Outfitter
 
         public override void ExposeData()
         {
-            Scribe_Collections.LookList(ref _pawnCache, "Pawns", LookMode.Deep);
-
             base.ExposeData();
+
+            Scribe_Collections.Look(ref _pawnCache, "Pawns", LookMode.Deep);
 
             if (_pawnCache == null)
                 _pawnCache = new List<SaveablePawn>();

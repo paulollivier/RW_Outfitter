@@ -58,17 +58,17 @@ namespace Outfitter
 
         public void ExposeData()
         {
-            Scribe_References.LookReference(ref Pawn, "Pawn");
-            Scribe_Values.LookValue(ref TargetTemperaturesOverride, "targetTemperaturesOverride");
-            Scribe_Values.LookValue(ref TargetTemperatures, "TargetTemperatures");
-            Scribe_Values.LookValue(ref SetRealComfyTemperatures, "SetRealComfyTemperatures");
-            Scribe_Values.LookValue(ref RealComfyTemperatures, "RealComfyTemperatures");
-            Scribe_Values.LookValue(ref Temperatureweight, "Temperatureweight");
-            Scribe_Collections.LookList(ref Stats, "Stats", LookMode.Deep);
-            Scribe_Collections.LookList(ref WeaponStats, "WeaponStats", LookMode.Deep);
-            Scribe_Values.LookValue(ref AddWorkStats, "AddWorkStats", true);
-            Scribe_Values.LookValue(ref AddIndividualStats, "AddIndividualStats", true);
-            Scribe_Values.LookValue(ref mainJob, "mainJob");
+            Scribe_References.Look(ref Pawn, "Pawn");
+            Scribe_Values.Look(ref TargetTemperaturesOverride, "targetTemperaturesOverride");
+            Scribe_Values.Look(ref TargetTemperatures, "TargetTemperatures");
+            Scribe_Values.Look(ref SetRealComfyTemperatures, "SetRealComfyTemperatures");
+            Scribe_Values.Look(ref RealComfyTemperatures, "RealComfyTemperatures");
+            Scribe_Values.Look(ref Temperatureweight, "Temperatureweight");
+            Scribe_Collections.Look(ref Stats, "Stats", LookMode.Deep);
+            Scribe_Collections.Look(ref WeaponStats, "WeaponStats", LookMode.Deep);
+            Scribe_Values.Look(ref AddWorkStats, "AddWorkStats", true);
+            Scribe_Values.Look(ref AddIndividualStats, "AddIndividualStats", true);
+            Scribe_Values.Look(ref mainJob, "mainJob");
 
 
         }

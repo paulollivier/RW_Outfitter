@@ -87,7 +87,7 @@ namespace Outfitter
                     }
                 }
 
-                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDefOf.ToxicFallout))
+                if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.ToxicFallout))
                 {
                     AddStatToDict(StatDefOf.ToxicSensitivity, -1.5f, ref dict);
                     AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
@@ -196,7 +196,7 @@ namespace Outfitter
                 {
                     activeDrone = true;
                 }
-                MapCondition_PsychicEmanation activeCondition = pawn.Map.mapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>();
+                GameCondition_PsychicEmanation activeCondition = pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>();
                 if (activeCondition != null && activeCondition.gender == pawn.gender && activeCondition.def.droneLevel > psychicDroneLevel)
                 {
                     activeDrone = true;
@@ -228,9 +228,9 @@ namespace Outfitter
                     }
                 }
 
-                if (pawn.Map.mapConditionManager.ConditionIsActive(MapConditionDefOf.PsychicSoothe))
+                if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicSoothe))
                 {
-                    if (pawn.Map.mapConditionManager.GetActiveCondition<MapCondition_PsychicEmanation>().gender == pawn.gender)
+                    if (pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>().gender == pawn.gender)
                     {
                         switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
                         {
@@ -301,7 +301,7 @@ namespace Outfitter
         public static float ApparelScoreGain(Pawn pawn, Apparel ap)
         {
             // only allow shields to be considered if a primary weapon is equipped and is melee
-            if (ap.def == ThingDefOf.Apparel_PersonalShield &&
+            if (ap.def == ThingDefOf.Apparel_ShieldBelt &&
                  pawn.equipment.Primary != null &&
                  !pawn.equipment.Primary.def.Verbs[0].MeleeRange)
             {
@@ -433,15 +433,15 @@ namespace Outfitter
                     if (pawnSave.mainJob == Doctor)
                     {
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingQuality, 3f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingSpeed, 1.5f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, 1.5f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SurgerySuccessChance"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingQuality, 1f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.HealingSpeed, 0.5f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, 0.5f);
                     yield break;
 
                 case "PatientBedRest":
@@ -556,25 +556,25 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructionSpeed, 3f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructFailChance, -3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructSuccessChance, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.SmoothingSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.75f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingFailChance, -3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, 3f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructionSpeed, 1f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructFailChance, -1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructSuccessChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SmoothingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.25f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingFailChance, -1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, 1f);
                     yield break;
 
                 case "Repair":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingFailChance, -1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, 1f);
                     yield break;
 
                 case "Growing":
@@ -583,13 +583,13 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, 3f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.HarvestFailChance, -3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, 3f);
                         yield break;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, 1f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.HarvestFailChance, -1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, 1f);
                     yield break;
 
                 case "Mining":

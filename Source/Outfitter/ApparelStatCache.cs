@@ -760,7 +760,7 @@ namespace Outfitter
         private bool CalculateApparelScoreGain(Apparel apparel, float score, out float candidateScore)
         {
             // only allow shields to be considered if a primary weapon is equipped and is melee
-            if (apparel.def == ThingDefOf.Apparel_PersonalShield &&
+            if (apparel.def == ThingDefOf.Apparel_ShieldBelt &&
                  _pawn.equipment.Primary != null &&
                  !_pawn.equipment.Primary.def.Verbs[0].MeleeRange)
             {

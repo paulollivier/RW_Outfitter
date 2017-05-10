@@ -36,7 +36,7 @@ namespace Outfitter
         {
             get
             {
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
+                CompOutfit pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
 
                 // update auto stat priorities roughly between every vanilla gear check cycle
                 if (Find.TickManager.TicksGame - _lastStatUpdate > 1900 || pawnSave.forceStatUpdate)
@@ -139,14 +139,9 @@ namespace Outfitter
             ApparelScoreRaw_InfusionHandlers?.Invoke(pawn, wep, statDef);
         }
 
-        public WeaponStatCache(Pawn pawn)
-            : this(MapComponent_Outfitter.Get.GetCache(pawn))
+        public WeaponStatCache(CompOutfit compOutfit)
         {
-        }
-
-        public WeaponStatCache(SaveablePawn saveablePawn)
-        {
-            _pawn = saveablePawn.Pawn;
+            _pawn = compOutfit.Pawn;
             _cache = new List<StatPriority>();
             _lastStatUpdate = -5000;
             _lastTempUpdate = -5000;
@@ -391,7 +386,7 @@ namespace Outfitter
             {
                 pawn.GetWeaponStatCache()._cache.Remove(this);
 
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+                CompOutfit pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
                 pawnSave.WeaponStats.RemoveAll(i => i.Stat == Stat);
             }
 
@@ -406,7 +401,7 @@ namespace Outfitter
                 }
 
 
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+                CompOutfit pawnSave = pawn.TryGetComp<CompOutfit>();
                 pawnSave.WeaponStats.RemoveAll(i => i.Stat == Stat);
             }
         }
@@ -422,7 +417,7 @@ namespace Outfitter
         private bool CalculateApparelScoreGain(Apparel apparel, float score, out float candidateScore)
         {
             // only allow shields to be considered if a primary weapon is equipped and is melee
-            if (apparel.def == ThingDefOf.Apparel_PersonalShield &&
+            if (apparel.def == ThingDefOf.Apparel_ShieldBelt &&
                  _pawn.equipment.Primary != null &&
                  !_pawn.equipment.Primary.def.Verbs[0].MeleeRange)
             {
