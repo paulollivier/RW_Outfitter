@@ -198,22 +198,22 @@ namespace Outfitter
             _lastWeightUpdate = -5000;
         }
 
-        public float ApparelScoreRaw(Apparel apparel, Pawn pawn)
+        public float ApparelScoreRaw(Apparel ap, Pawn pawn)
         {
             // relevant apparel stats
             HashSet<StatDef> equippedOffsets = new HashSet<StatDef>();
-            if (apparel.def.equippedStatOffsets != null)
+            if (ap.def.equippedStatOffsets != null)
             {
-                foreach (StatModifier equippedStatOffset in apparel.def.equippedStatOffsets)
+                foreach (StatModifier equippedStatOffset in ap.def.equippedStatOffsets)
                 {
                     equippedOffsets.Add(equippedStatOffset.stat);
                 }
             }
             
             HashSet<StatDef> statBases = new HashSet<StatDef>();
-            if (apparel.def.statBases != null)
+            if (ap.def.statBases != null)
             {
-                foreach (StatModifier statBase in apparel.def.statBases)
+                foreach (StatModifier statBase in ap.def.statBases)
                 {
                     statBases.Add(statBase.stat);
                 }
@@ -221,7 +221,7 @@ namespace Outfitter
 
             infusedOffsets = new HashSet<StatDef>();
             foreach (StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
-                FillInfusionHashset_PawnStatsHandlers(_pawn, apparel, statPriority.Stat);
+                FillInfusionHashset_PawnStatsHandlers(_pawn, ap, statPriority.Stat);
 
             // start score at 1
             float score = 1;
@@ -237,7 +237,7 @@ namespace Outfitter
 
                 if (statBases.Contains(statPriority.Stat))
                 {
-                    float statValue = apparel.GetStatValue(statPriority.Stat);
+                    float statValue = ap.GetStatValue(statPriority.Stat);
 
                     // add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
 
@@ -248,7 +248,7 @@ namespace Outfitter
                 // equipped offsets, e.g. movement speeds
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
-                    float statValue = GetEquippedStatValue(apparel, statPriority.Stat) - 1;
+                    float statValue = GetEquippedStatValue(ap, statPriority.Stat) - 1;
                     //  statValue += StatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
                     //DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
 
@@ -266,7 +266,7 @@ namespace Outfitter
                 {
                     //  float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
                     float statInfused = 0f;
-                    DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statInfused);
+                    DoApparelScoreRaw_PawnStatsHandlers(_pawn, ap, statPriority.Stat, ref statInfused);
 
                     score += statInfused * statPriority.Weight;
                 }
@@ -274,24 +274,40 @@ namespace Outfitter
 
             }
 
-            score += apparel.GetSpecialApparelScoreOffset();
+            score += ap.GetSpecialApparelScoreOffset();
 
-            score += ApparelScoreRaw_Temperature(apparel, pawn);
+            score += ApparelScoreRaw_Temperature(ap, pawn);
 
-            score += 0.05f * ApparelScoreRaw_ProtectionBaseStat(apparel);
+            score += 0.05f * ApparelScoreRaw_ProtectionBaseStat(ap);
 
             // offset for apparel hitpoints 
-            if (apparel.def.useHitPoints)
+            if (ap.def.useHitPoints)
             {
-                float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
+                float x = ap.HitPoints / (float)ap.MaxHitPoints;
                 score = score * 0.25f + score * 0.75f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
-            if (apparel.WornByCorpse)
+
+            if (ap.WornByCorpse && (pawn == null || ThoughtUtility.CanGetThought(pawn, ThoughtDefOf.DeadMansApparel)))
             {
                 score -= 0.5f;
                 if (score > 0f)
                 {
                     score *= 0.1f;
+                }
+            }
+            if (ap.Stuff == ThingDefOf.Human.race.leatherDef)
+            {
+                if (pawn == null || ThoughtUtility.CanGetThought(pawn, ThoughtDefOf.HumanLeatherApparelSad))
+                {
+                    score -= 0.5f;
+                    if (score > 0f)
+                    {
+                        score *= 0.1f;
+                    }
+                }
+                if (pawn != null && ThoughtUtility.CanGetThought(pawn, ThoughtDefOf.HumanLeatherApparelHappy))
+                {
+                    score += 0.12f;
                 }
             }
             return score;

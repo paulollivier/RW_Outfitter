@@ -123,8 +123,8 @@ namespace Outfitter
             GUILayout.BeginHorizontal();
             DrawCheckBoxArea("AddWorkStats".Translate(), ref pawnSave.AddWorkStats);
             DrawCheckBoxArea("AddIndividualStats".Translate(), ref pawnSave.AddIndividualStats);
-            if (!peacefulPawn)
-                DrawCheckBoxArea("AutoEquipWeapon".Translate(), ref pawnSave.AutoEquipWeapon);
+         // if (!peacefulPawn)
+         //     DrawCheckBoxArea("AutoEquipWeapon".Translate(), ref pawnSave.AutoEquipWeapon);
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
             GUILayout.Space(5f);
@@ -132,14 +132,14 @@ namespace Outfitter
             GUILayout.BeginHorizontal();
 
 
+         // if (GUILayout.Button("ApparelStats".Translate()))
+         //     isApparel = true;
+         //
+         // if (!peacefulPawn)
+         //     if (GUILayout.Button("WeaponStats".Translate()))
+         //         isApparel = false;
+
             //update outfit
-            if (GUILayout.Button("ApparelStats".Translate()))
-                isApparel = true;
-
-            if (!peacefulPawn)
-                if (GUILayout.Button("WeaponStats".Translate()))
-                    isApparel = false;
-
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("OutfitterUpdateOutfit".Translate()))
             {
@@ -627,12 +627,12 @@ namespace Outfitter
             curY += 22f;
         }
 
-        private void DrawThingRowModded(ref float y, float width, Thing thing)
+        private void DrawThingRowModded(ref float y, float width, Apparel apparel)
         {
 
-            if (thing == null)
+            if (apparel == null)
             {
-                DrawThingRowVanilla(ref y, width, thing);
+                DrawThingRowVanilla(ref y, width, apparel);
                 return;
             }
 
@@ -653,7 +653,11 @@ namespace Outfitter
 
             if (Widgets.ButtonInvisible(rect))
             {
-
+                //Left Mouse Button Menu
+                if (Event.current.button == 0)
+                {
+                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(SelPawn, apparel));
+                }
 
                 // RMB menu
                 if (Event.current.button == 1)
@@ -661,7 +665,7 @@ namespace Outfitter
                     List<FloatMenuOption> floatOptionList = new List<FloatMenuOption>();
                     floatOptionList.Add(new FloatMenuOption("ThingInfo".Translate(), delegate
                     {
-                        Find.WindowStack.Add(new Dialog_InfoCard(thing));
+                        Find.WindowStack.Add(new Dialog_InfoCard(apparel));
                     }));
 
 
@@ -671,12 +675,12 @@ namespace Outfitter
                         Action dropApparel = delegate
                         {
                             SoundDefOf.TickHigh.PlayOneShotOnCamera();
-                            InterfaceDrop(thing);
+                            InterfaceDrop(apparel);
                         };
                         Action dropApparelHaul = delegate
                         {
                             SoundDefOf.TickHigh.PlayOneShotOnCamera();
-                            InterfaceDropHaul(thing);
+                            InterfaceDropHaul(apparel);
                         };
                         floatOptionList.Add(new FloatMenuOption("DropThing".Translate(), dropApparel));
                         floatOptionList.Add(new FloatMenuOption("DropThingHaul".Translate(), dropApparelHaul));
@@ -690,9 +694,9 @@ namespace Outfitter
             #endregion Button Clicks
 
 
-            if (thing.def.DrawMatSingle != null && thing.def.DrawMatSingle.mainTexture != null)
+            if (apparel.def.DrawMatSingle != null && apparel.def.DrawMatSingle.mainTexture != null)
             {
-                Widgets.ThingIcon(new Rect(4f, y + 5f, ThingIconSize, ThingIconSize), thing);
+                Widgets.ThingIcon(new Rect(4f, y + 5f, ThingIconSize, ThingIconSize), apparel);
             }
             Text.Anchor = TextAnchor.MiddleLeft;
             GUI.color = ThingLabelColor;
@@ -702,13 +706,13 @@ namespace Outfitter
             #region Modded
 
             ApparelStatCache conf = new ApparelStatCache(SelPawn);
-            string text = thing.LabelCap;
-            string text_Score = Math.Round(conf.ApparelScoreRaw(thing as Apparel, SelPawn), 2).ToString("N2");
+            string text = apparel.LabelCap;
+            string text_Score = Math.Round(conf.ApparelScoreRaw(apparel as Apparel, SelPawn), 2).ToString("N2");
 
             #endregion
 
 
-            if (thing is Apparel && SelPawn.outfits != null && SelPawn.outfits.forcedHandler.IsForced((Apparel)thing))
+            if (apparel is Apparel && SelPawn.outfits != null && SelPawn.outfits.forcedHandler.IsForced((Apparel)apparel))
             {
                 text = text + ", " + "ApparelForcedLower".Translate();
                 Widgets.Label(textRect, text);
@@ -716,9 +720,9 @@ namespace Outfitter
             else
             {
                 GUI.color = new Color(0.75f, 0.75f, 0.75f);
-                if (thing.def.useHitPoints)
+                if (apparel.def.useHitPoints)
                 {
-                    float x = thing.HitPoints / (float)thing.MaxHitPoints;
+                    float x = apparel.HitPoints / (float)apparel.MaxHitPoints;
                     if (x < 0.5f)
                     {
                         GUI.color = Color.yellow;
