@@ -71,7 +71,6 @@
     <Compile Include="Window\Window_Pawn_ApparelDetail.cs" />
     <Compile Include="Textures\OutfitterTextures.cs" />
     <None Include="Initializer\Bootstrap.cs" />
-    <None Include="Window\Window_Pawn_ApparelList.cs" />
     <Compile Include="Window\ITab_Pawn_Outfitter.cs" />
     <None Include="MainTabWindow_Outfitter.cs" />
     <Compile Include="MapComponent_Outfitter.cs" />

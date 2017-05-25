@@ -663,6 +663,11 @@ namespace Outfitter
 
                     if (CanControl)
                     {
+                        floatOptionList.Add(new FloatMenuOption("OutfitterComparer".Translate(), delegate
+                        {
+                            Find.WindowStack.Add(new Dialog_PawnApparelComparer(selPawnForGear, apparel));
+                        }));
+
                         Action dropApparel = delegate
                         {
                             SoundDefOf.TickHigh.PlayOneShotOnCamera();
