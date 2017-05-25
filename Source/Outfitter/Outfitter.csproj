@@ -57,9 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="WeaponStatCache.cs" />
     <Compile Include="ApparelStatCache.cs" />
-    <None Include="WeaponStatsHelper.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
     <Compile Include="NoCCL\DetourAttribute.cs" />
     <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
@@ -97,6 +95,7 @@
     </Content>
     <Content Include="..\..\Languages\English\Keyed\Outfitter_Keyed.xml">
       <Link>Languages\English\Outfitter_Keyed.xml</Link>
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

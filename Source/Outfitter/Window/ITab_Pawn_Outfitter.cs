@@ -50,8 +50,6 @@ namespace Outfitter
             }
         }
 
-        bool isApparel = true;
-
         protected override void FillTab()
         {
 
@@ -87,7 +85,7 @@ namespace Outfitter
 
 
             ////show outfit
-            if (GUILayout.Button(pawnSave.mainJob == SaveablePawn.MainJob.Anything ? "MainJob".Translate() : "PreferredGear:".Translate() + " " + pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
+            if (GUILayout.Button(pawnSave.mainJob == SaveablePawn.MainJob.Anything ? "MainJob".Translate() : "PreferedGear".Translate() + " " + pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (SaveablePawn.MainJob mainJob in Enum.GetValues(typeof(SaveablePawn.MainJob)))
@@ -115,7 +113,6 @@ namespace Outfitter
 
 
             // Status checkboxes
-            bool peacefulPawn = selPawnForGear.story.WorkTagIsDisabled(WorkTags.Violent);
 
             Rect rectCheckboxes = new Rect(10f, rectStatus.yMax, rectStatus.width, 60f);
             GUILayout.BeginArea(rectCheckboxes);
@@ -123,8 +120,8 @@ namespace Outfitter
             GUILayout.BeginHorizontal();
             DrawCheckBoxArea("AddWorkStats".Translate(), ref pawnSave.AddWorkStats);
             DrawCheckBoxArea("AddIndividualStats".Translate(), ref pawnSave.AddIndividualStats);
-         // if (!peacefulPawn)
-         //     DrawCheckBoxArea("AutoEquipWeapon".Translate(), ref pawnSave.AutoEquipWeapon);
+            // if (!peacefulPawn)
+            //     DrawCheckBoxArea("AutoEquipWeapon".Translate(), ref pawnSave.AutoEquipWeapon);
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
             GUILayout.Space(5f);
@@ -132,12 +129,12 @@ namespace Outfitter
             GUILayout.BeginHorizontal();
 
 
-         // if (GUILayout.Button("ApparelStats".Translate()))
-         //     isApparel = true;
-         //
-         // if (!peacefulPawn)
-         //     if (GUILayout.Button("WeaponStats".Translate()))
-         //         isApparel = false;
+            // if (GUILayout.Button("ApparelStats".Translate()))
+            //     isApparel = true;
+            //
+            // if (!peacefulPawn)
+            //     if (GUILayout.Button("WeaponStats".Translate()))
+            //         isApparel = false;
 
             //update outfit
             GUILayout.FlexibleSpace();
@@ -161,13 +158,7 @@ namespace Outfitter
             GUI.BeginGroup(canvas);
             Vector2 cur = Vector2.zero;
 
-
-            if (isApparel)
-                DrawApparelStats(pawnSave, cur, canvas);
-            else
-            {
-                //         DrawWeaponStats(pawnSave, cur, canvas);
-            }
+            DrawApparelStats(pawnSave, cur, canvas);
         }
 
         private void DrawApparelStats(SaveablePawn pawnSave, Vector2 cur, Rect canvas)
@@ -226,7 +217,7 @@ namespace Outfitter
             cur.y += 30f;
             Text.Anchor = TextAnchor.LowerLeft;
             Text.Font = GameFont.Small;
-            Widgets.Label(statsHeaderRect, "PreferredStats".Translate());
+            Widgets.Label(statsHeaderRect, "PreferedStats".Translate());
             Text.Anchor = TextAnchor.UpperLeft;
 
             // add button

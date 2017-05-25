@@ -2,7 +2,7 @@
 <LanguageData>
 
   <PreferedTemperature>Temperature range</PreferedTemperature>
-  <PreferredStats>Stat priorities</PreferredStats>
+  <PreferedStats>Stat priorities</PreferedStats>
   <StatPriorityReset>Reset priority for {0} to work priorities</StatPriorityReset>
   <StatPriorityDelete>Remove priority for {0}</StatPriorityDelete>
   <StatPriorityAdd>Add new priority</StatPriorityAdd>
@@ -28,6 +28,7 @@
   <AddWorkStats>Add Work Stats</AddWorkStats>
   <AddIndividualStats>Add Individual Stats</AddIndividualStats>
   <DropThingHaul>Drop and Haul</DropThingHaul>
-  <MainJob>Set Preferred Gear</MainJob>
+  <MainJob>Set Prefered Gear</MainJob>
+  <PreferedGear>Prefered Gear :</PreferedGear>
   <OutfitterComparer>Compare Apparel Score</OutfitterComparer>
 </LanguageData>
