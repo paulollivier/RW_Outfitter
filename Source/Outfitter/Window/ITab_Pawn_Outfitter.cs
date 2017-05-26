@@ -133,7 +133,7 @@ namespace Outfitter
             //     isApparel = true;
             //
             // if (!peacefulPawn)
-            //     if (GUILayout.Button("WeaponStats".Translate()))
+            //     if (GUILayout.Button("ApparelStats".Translate()))
             //         isApparel = false;
 
             //update outfit
@@ -292,7 +292,7 @@ namespace Outfitter
                     ApparelStatCache.DrawStatRow(ref cur, viewRect.width, stat, selPawnForGear, out stop_UI);
                     if (stop_UI)
                     {
-                        // DrawWeaponStatRow can change the StatCache, invalidating the loop. So if it does that, stop looping - we'll redraw on the next tick.
+                        // DrawWApparelStatRow can change the StatCache, invalidating the loop. So if it does that, stop looping - we'll redraw on the next tick.
                         break;
                     }
                 }
@@ -359,221 +359,11 @@ namespace Outfitter
 
             #endregion
         }
-        //   
-        // private void DrawWeaponStats(SaveablePawn pawnSave, Vector2 cur, Rect canvas)
-        // {
-        //    
-        //     // header
-        //     Rect statsHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
-        //     cur.y += 30f;
-        //     Text.Anchor = TextAnchor.LowerLeft;
-        //     Text.Font = GameFont.Small;
-        //     Widgets.Label(statsHeaderRect, "PreferredWeaponStats".Translate());
-        //     Text.Anchor = TextAnchor.UpperLeft;
-        //
-        //     // add button
-        //     Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f);
-        //     if (Widgets.ButtonImage(addStatRect, OutfitterTextures.addButton))
-        //     {
-        //         List<FloatMenuOption> options = new List<FloatMenuOption>();
-        //         foreach (StatDef def in selPawnForGear.NotYetAssignedWeaponStatDefs().OrderBy(i => i.label.ToString()))
-        //         {
-        //             options.Add(new FloatMenuOption(def.LabelCap, delegate
-        //             {
-        //                 selPawnForGear.GetWeaponStatCache()
-        //                     .StatCache.Insert(0, new WeaponStatCache.StatPriority(def, 0f, StatAssignment.Manual));
-        //                 //pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
-        //             }));
-        //         }
-        //         Find.WindowStack.Add(new FloatMenu(options));
-        //     }
-        //     TooltipHandler.TipRegion(addStatRect, "StatPriorityAdd".Translate());
-        //
-        //     // line
-        //     GUI.color = Color.grey;
-        //     Widgets.DrawLineHorizontal(cur.x, cur.y, canvas.width);
-        //     GUI.color = Color.white;
-        //
-        //     // some padding
-        //     cur.y += 10f;
-        //
-        //     // main content in scrolling view
-        //     Rect contentRect = new Rect(cur.x, cur.y, canvas.width, canvas.height - cur.y);
-        //     Rect viewRect = contentRect;
-        //     viewRect.height = selPawnForGear.GetWeaponStatCache().StatCache.Count * 30f + 10f;
-        //     if (viewRect.height > contentRect.height)
-        //     {
-        //         viewRect.width -= 20f;
-        //     }
-        //
-        //     Widgets.BeginScrollView(contentRect, ref _scrollPosition, viewRect);
-        //     GUI.BeginGroup(viewRect);
-        //     cur = Vector2.zero;
-        //
-        //     // none label
-        //     if (!selPawnForGear.GetWeaponStatCache().StatCache.Any())
-        //     {
-        //         Rect noneLabel = new Rect(cur.x, cur.y, viewRect.width, 30f);
-        //         GUI.color = Color.grey;
-        //         Text.Anchor = TextAnchor.MiddleCenter;
-        //         Widgets.Label(noneLabel, "None".Translate());
-        //         Text.Anchor = TextAnchor.UpperLeft;
-        //         GUI.color = Color.white;
-        //         cur.y += 30f;
-        //     }
-        //     else
-        //     {
-        //         // legend kind of thingy.
-        //         Rect legendRect = new Rect(cur.x + (viewRect.width - 24) / 2, cur.y, (viewRect.width - 24) / 2, 20f);
-        //         Text.Font = GameFont.Tiny;
-        //         GUI.color = Color.grey;
-        //         Text.Anchor = TextAnchor.LowerLeft;
-        //         Widgets.Label(legendRect, "-2.5");
-        //         Text.Anchor = TextAnchor.LowerRight;
-        //         Widgets.Label(legendRect, "2.5");
-        //         Text.Anchor = TextAnchor.UpperLeft;
-        //         Text.Font = GameFont.Small;
-        //         GUI.color = Color.white;
-        //         cur.y += 15f;
-        //
-        //         // stat weight sliders
-        //         foreach (WeaponStatCache.StatPriority stat in selPawnForGear.GetWeaponStatCache().StatCache)
-        //         {
-        //             bool stop_UI;
-        //             WeaponStatCache.DrawWeaponStatRow(ref cur, viewRect.width, stat, selPawnForGear, out stop_UI);
-        //             if (stop_UI)
-        //             {
-        //                 // DrawWeaponStatRow can change the StatCache, invalidating the loop. So if it does that, stop looping - we'll redraw on the next tick.
-        //                 break;
-        //             }
-        //         }
-        //     }
-        //
-        //     GUI.EndGroup();
-        //     Widgets.EndScrollView();
-        //
-        //     GUI.EndGroup();
-        //
-        //
-        //     #region Weapon List 
-        //
-        //     // main canvas
-        //
-        //     Rect rect = new Rect(432, 20, 338, 530);
-        //
-        //     Text.Font = GameFont.Small;
-        //     //     Rect rect2 = rect.ContractedBy(10f);
-        //     Rect calcScore = new Rect(rect.x, rect.y, rect.width, rect.height);
-        //     GUI.BeginGroup(calcScore);
-        //     Text.Font = GameFont.Small;
-        //     GUI.color = Color.white;
-        //     Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
-        //     Rect viewRect1 = outRect;
-        //     viewRect1.height = scrollViewHeight;
-        //     if (viewRect1.height > outRect.height)
-        //     {
-        //         viewRect1.width -= 20f;
-        //     }
-        //     Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect1);
-        //     float num = 0f;
-        //
-        //     {
-        //         Widgets.ListSeparator(ref num, viewRect1.width, "Weapons".Translate());
-        //         if (selPawnForGear.equipment.Primary!=null)
-        //         {
-        //             DrawThingRowModded(ref num, viewRect1.width, selPawnForGear.equipment.Primary);
-        //
-        //         }
-        //         List<Thing> weaponList = selPawnForGear.Map.listerThings.ThingsInGroup(ThingRequestGroup.Weapon);
-        //
-        //         foreach (Thing current2 in  weaponList)
-        //         {
-        //             string bp = "";
-        //             string layer = "";
-        //
-        //             DrawThingRowModded(ref num, viewRect1.width, current2);
-        //         }
-        //     }
-        //
-        //
-        //     if (Event.current.type == EventType.Layout)
-        //     {
-        //         scrollViewHeight = num + 30f;
-        //     }
-        //     Widgets.EndScrollView();
-        //     GUI.EndGroup();
-        //     GUI.color = Color.white;
-        //     Text.Anchor = TextAnchor.UpperLeft;
-        //
-        //     #endregion
-        // }
-        //
 
         private static void DrawCheckBoxArea(string name, ref bool stat)
         {
             stat = GUILayout.Toggle(stat, name);
         }
-
-        /*
-        private Job WearApparel()
-        {
-                Outfit currentOutfit = selPawnForGear.outfits.CurrentOutfit;
-                List<Apparel> wornApparel = selPawnForGear.apparel.WornApparel;
-                for (int i = wornApparel.Count - 1; i >= 0; i--)
-                {
-                    if (!currentOutfit.filter.Allows(wornApparel[i]) &&
-                        selPawnForGear.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
-                    {
-                        return new Job(JobDefOf.RemoveApparel, wornApparel[i])
-                        {
-                            haulDroppedApparel = true
-                        };
-                    }
-                }
-                Thing thing = null;
-                float num = 0f;
-                List<Thing> list = Find.ListerThings.ThingsInGroup(ThingRequestGroup.Apparel);
-                if (list.Count == 0)
-                {
-                    return null;
-                }
-                foreach (Thing apparelthing in list)
-                {
-                    Apparel apparel = (Apparel) apparelthing;
-                    if (currentOutfit.filter.Allows(apparel))
-                    {
-                        if (Find.SlotGroupManager.SlotGroupAt(apparel.Position) != null)
-                        {
-                            if (!apparel.IsForbidden(selPawnForGear))
-                            {
-                                float num2 = WeaponStatsHelper.ApparelScoreGain(selPawnForGear, apparel);
-
-                                if (num2 >= 0.09f && num2 >= num)
-                                {
-                                    if (ApparelUtility.HasPartsToWear(selPawnForGear, apparel.def))
-                                    {
-                                        if (selPawnForGear.CanReserveAndReach(apparel, PathEndMode.OnCell,
-                                            selPawnForGear.NormalMaxDanger(), 1))
-                                        {
-                                            thing = apparel;
-                                            num = num2;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (thing == null)
-                {
-                    return null;
-                }
-                return new Job(JobDefOf.Wear, thing);
-            
-        }
-*/
-
 
         public override bool IsVisible
         {

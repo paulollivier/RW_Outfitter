@@ -43,7 +43,7 @@ namespace Outfitter
         public MainJob mainJob;
 
         public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
-        public List<Saveable_Pawn_StatDef> WeaponStats = new List<Saveable_Pawn_StatDef>();
+        public List<Saveable_Pawn_StatDef> ApparelStats = new List<Saveable_Pawn_StatDef>();
         public bool SetRealComfyTemperatures;
         public bool AutoEquipWeapon;
 
@@ -65,7 +65,8 @@ namespace Outfitter
             Scribe_Values.Look(ref RealComfyTemperatures, "RealComfyTemperatures");
             Scribe_Values.Look(ref Temperatureweight, "Temperatureweight");
             Scribe_Collections.Look(ref Stats, "Stats", LookMode.Deep);
-            Scribe_Collections.Look(ref WeaponStats, "WeaponStats", LookMode.Deep);
+            // to do: rename with next big version
+            Scribe_Collections.Look(ref ApparelStats, "WeaponStats", LookMode.Deep);
             Scribe_Values.Look(ref AddWorkStats, "AddWorkStats", true);
             Scribe_Values.Look(ref AddIndividualStats, "AddIndividualStats", true);
             Scribe_Values.Look(ref mainJob, "mainJob");

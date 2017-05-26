@@ -1,4 +1,4 @@
-﻿// Outfitter/WeaponStatsHelper.cs
+﻿// Outfitter/ApparelStatsHelper.cs
 // 
 // Copyright Karel Kroeze, 2016.
 // 
