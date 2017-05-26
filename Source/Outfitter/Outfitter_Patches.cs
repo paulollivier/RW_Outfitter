@@ -10,7 +10,7 @@ using Verse.Sound;
 
 namespace Outfitter
 {
-    class Patches
+    class Outfitter_Patches
     {
         [HarmonyPatch(typeof(InspectPaneUtility), "DoTabs")]
         static class DoTabs_Prefix
@@ -37,7 +37,6 @@ namespace Outfitter
                     float width = 0f;
                     bool flag = false;
 
-
                     foreach (InspectTabBase current in pane.CurTabs)
                     {
                         if (current.IsVisible)
@@ -45,7 +44,7 @@ namespace Outfitter
                             Rect rect = new Rect(num, y, TabWidth, TabHeight);
                             width = num;
                             Text.Font = GameFont.Small;
-                            if (Widgets.ButtonText(rect, current.labelKey.Translate(), true, false, true))
+                            if (Widgets.ButtonText(rect, current.labelKey.Translate()))
                             {
                                 InterfaceToggleTab(current, pane);
                             }
