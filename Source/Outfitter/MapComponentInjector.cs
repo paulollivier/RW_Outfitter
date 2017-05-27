@@ -2,7 +2,6 @@
 using System;
 using UnityEngine;
 using Verse;
-using Object = UnityEngine.Object;
 
 namespace Outfitter       // Replace with yours.
 {

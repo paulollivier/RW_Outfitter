@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Harmony;
 using RimWorld;
 using UnityEngine;
@@ -13,15 +11,16 @@ namespace Outfitter
     class Outfitter_Patches
     {
         [HarmonyPatch(typeof(InspectPaneUtility), "DoTabs")]
+        [StaticConstructorOnStartup]
         static class DoTabs_Prefix
         {
             private static readonly Texture2D InspectTabButtonFillTex = SolidColorMaterials.NewSolidColorTexture(new Color(0.07450981f, 0.08627451f, 0.105882354f, 1f));
 
-            public static float TabWidth = 72f;
+            private static float TabWidth = 72f;
 
-            public const float TabHeight = 30f;
+            private const float TabHeight = 30f;
 
-            public const float PaneWidth = 432f;
+            private const float PaneWidth = 432f;
 
             [HarmonyPrefix]
             private static bool DoTabs(IInspectPane pane)
@@ -30,7 +29,9 @@ namespace Outfitter
                 {
                     int count = pane.CurTabs.Count(x => x.IsVisible);
                     if (count > 6)
-                        TabWidth = PaneWidth / count;
+                        TabWidth = PaneWidth/count;
+                    else
+                        TabWidth = 72f;
 
                     float y = pane.PaneTopY - TabHeight;
                     float num = PaneWidth - TabWidth;
