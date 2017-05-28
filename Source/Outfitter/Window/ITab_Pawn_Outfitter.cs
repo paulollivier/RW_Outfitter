@@ -124,30 +124,30 @@ namespace Outfitter
             //     DrawCheckBoxArea("AutoEquipWeapon".Translate(), ref pawnSave.AutoEquipWeapon);
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
-    
+
             //update outfit
-            GUILayout.Space(5f);
-         // GUILayout.BeginVertical();
-         // GUILayout.BeginHorizontal();
-         //
-         // GUILayout.FlexibleSpace();
-         // if (GUILayout.Button("OutfitterUpdateOutfit".Translate()))
-         // {
-         //     var parms = new JobIssueParams();
-         //     selPawnForGear.mindState.nextApparelOptimizeTick = -5000;
-         //     new Outfitter_JobGiver_OptimizeApparel().TryIssueJobPackage(selPawnForGear, parms);
-         // }
-         //
-         //
-         // GUILayout.EndHorizontal();
-         // GUILayout.EndVertical();
+            //            GUILayout.Space(5f);
+            // GUILayout.BeginVertical();
+            // GUILayout.BeginHorizontal();
+            //
+            // GUILayout.FlexibleSpace();
+            // if (GUILayout.Button("OutfitterUpdateOutfit".Translate()))
+            // {
+            //     var parms = new JobIssueParams();
+            //     selPawnForGear.mindState.nextApparelOptimizeTick = -5000;
+            //     new Outfitter_JobGiver_OptimizeApparel().TryIssueJobPackage(selPawnForGear, parms);
+            // }
+            //
+            //
+            // GUILayout.EndHorizontal();
+            // GUILayout.EndVertical();
 
 
             GUILayout.EndArea();
 
 
             // main canvas
-            Rect canvas = new Rect(0f, 75f, 432, size.y - 75f).ContractedBy(20f);
+            Rect canvas = new Rect(0f, 65f, 432, size.y - 65f).ContractedBy(20f);
             GUI.BeginGroup(canvas);
             Vector2 cur = Vector2.zero;
 
