@@ -86,11 +86,7 @@ namespace Outfitter
                     }
                 }
 
-                if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.ToxicFallout))
-                {
-                    AddStatToDict(StatDefOf.ToxicSensitivity, -1.5f, ref dict);
-                    AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
-                }
+
 
                 // adjustments for traits
                 AdjustStatsForTraits(pawn, ref dict);
@@ -256,7 +252,11 @@ namespace Outfitter
                         }
                     }
                 }
-
+                if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.ToxicFallout))
+                {
+                    AddStatToDict(StatDefOf.ToxicSensitivity, -1.5f, ref dict);
+                    AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
+                }
                 #endregion
 
 

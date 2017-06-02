@@ -58,6 +58,7 @@ namespace Outfitter
 
         public void ExposeData()
         {
+            
             Scribe_References.Look(ref Pawn, "Pawn");
             Scribe_Values.Look(ref TargetTemperaturesOverride, "targetTemperaturesOverride");
             Scribe_Values.Look(ref TargetTemperatures, "TargetTemperatures");
