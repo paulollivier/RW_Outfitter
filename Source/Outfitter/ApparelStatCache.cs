@@ -34,7 +34,7 @@ namespace Outfitter
         {
             get
             {
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
+                SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this._pawn);
                 UpdateTemperatureIfNecessary(false, true);
                 return pawnSave.Temperatureweight;
             }
@@ -44,14 +44,14 @@ namespace Outfitter
         {
             get
             {
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
+                SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this._pawn);
 
                 UpdateTemperatureIfNecessary();
                 return pawnSave.TargetTemperatures;
             }
             set
             {
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
+                SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this._pawn);
                 pawnSave.TargetTemperatures = value;
                 pawnSave.TargetTemperaturesOverride = true;
             }
@@ -61,7 +61,7 @@ namespace Outfitter
         {
             get
             {
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
+                SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(_pawn);
 
                 // update auto stat priorities roughly between every vanilla gear check cycle
                 if (Find.TickManager.TicksGame - _lastStatUpdate > 1900 || pawnSave.forceStatUpdate)
@@ -69,20 +69,27 @@ namespace Outfitter
                     // list of auto stats
 
                     if (_cache.Count < 1 && pawnSave.Stats.Count > 0)
+                    {
                         foreach (Saveable_Pawn_StatDef vari in pawnSave.Stats)
                         {
                             _cache.Add(new StatPriority(vari.Stat, vari.Weight, vari.Assignment));
                         }
+                    }
                     pawnSave.Stats.Clear();
 
                     Dictionary<StatDef, float> updateAutoPriorities = _pawn.GetWeightedApparelStats();
                     Dictionary<StatDef, float> updateIndividualPriorities = _pawn.GetWeightedApparelIndividualStats();
+
+                    Dictionary<StatDef, float> updateArmorStats = _pawn.GetWeightedApparelArmorStats();
+
                     // clear auto priorities
                     _cache.RemoveAll(stat => stat.Assignment == StatAssignment.Automatic);
                     _cache.RemoveAll(stat => stat.Assignment == StatAssignment.Individual);
 
-                    // loop over each (new) stat
 
+
+
+                    // loop over each (new) stat
                     foreach (KeyValuePair<StatDef, float> pair in updateIndividualPriorities)
                     {
                         // find index of existing priority for this stat
@@ -118,36 +125,59 @@ namespace Outfitter
                         }
                     }
 
+                    if (pawnSave.armorOnly)
+                    {
+                        foreach (KeyValuePair<StatDef, float> pair in updateArmorStats)
+                        {
+                            // find index of existing priority for this stat
+                            int i = _cache.FindIndex(stat => stat.Stat == pair.Key);
+
+                            // if index -1 it doesnt exist yet, add it
+                            if (i < 0)
+                            {
+                                StatPriority armorStats = new StatPriority(pair.Key, pair.Value);
+                                _cache.Add(armorStats);
+                            }
+                            else
+                            {
+                                // it exists, make sure existing is (now) of type override.
+                                _cache[i].Weight = pair.Value;
+                            }
+                        }
+                    }
+
                     // update our time check.
                     _lastStatUpdate = Find.TickManager.TicksGame;
                     pawnSave.forceStatUpdate = false;
-                }
+                    pawnSave.armorOnly = false;
 
-
-                foreach (StatPriority statPriority in _cache)
-                {
-                    if (statPriority.Assignment != StatAssignment.Automatic && statPriority.Assignment != StatAssignment.Individual)
+                    foreach (StatPriority statPriority in _cache)
                     {
-                        if (statPriority.Assignment != StatAssignment.Override)
-                            statPriority.Assignment = StatAssignment.Manual;
+                        if (statPriority.Assignment != StatAssignment.Automatic
+                            && statPriority.Assignment != StatAssignment.Individual)
+                        {
+                            if (statPriority.Assignment != StatAssignment.Override)
+                                statPriority.Assignment = StatAssignment.Manual;
 
-                        bool exists = false;
-                        foreach (Saveable_Pawn_StatDef stat in pawnSave.Stats)
-                        {
-                            if (!stat.Stat.Equals(statPriority.Stat)) continue;
-                            stat.Weight = statPriority.Weight;
-                            stat.Assignment = statPriority.Assignment;
-                            exists = true;
-                        }
-                        if (!exists)
-                        {
-                            Saveable_Pawn_StatDef stats = new Saveable_Pawn_StatDef
+                            bool exists = false;
+                            foreach (Saveable_Pawn_StatDef stat in pawnSave.Stats)
                             {
-                                Stat = statPriority.Stat,
-                                Assignment = statPriority.Assignment,
-                                Weight = statPriority.Weight
-                            };
-                            pawnSave.Stats.Add(stats);
+                                if (!stat.Stat.Equals(statPriority.Stat)) continue;
+                                stat.Weight = statPriority.Weight;
+                                stat.Assignment = statPriority.Assignment;
+                                exists = true;
+                            }
+                            if (!exists)
+                            {
+                                Saveable_Pawn_StatDef stats =
+                                    new Saveable_Pawn_StatDef
+                                    {
+                                        Stat = statPriority.Stat,
+                                        Assignment = statPriority.Assignment,
+                                        Weight = statPriority.Weight
+                                    };
+                                pawnSave.Stats.Add(stats);
+                            }
                         }
                     }
                 }
@@ -184,7 +214,7 @@ namespace Outfitter
         }
 
         public ApparelStatCache(Pawn pawn)
-            : this(MapComponent_Outfitter.Get.GetCache(pawn))
+            : this(GameComponent_Outfitter.GetCache(pawn))
         {
         }
 
@@ -197,7 +227,7 @@ namespace Outfitter
             _lastWeightUpdate = -5000;
         }
 
-        public float ApparelScoreRaw(Apparel ap, Pawn pawn)
+        public float ApparelScoreRaw(Apparel ap, Pawn pawn, bool armorOnly = false)
         {
             // relevant apparel stats
             HashSet<StatDef> equippedOffsets = new HashSet<StatDef>();
@@ -208,7 +238,7 @@ namespace Outfitter
                     equippedOffsets.Add(equippedStatOffset.stat);
                 }
             }
-            
+
             HashSet<StatDef> statBases = new HashSet<StatDef>();
             if (ap.def.statBases != null)
             {
@@ -220,19 +250,24 @@ namespace Outfitter
 
             infusedOffsets = new HashSet<StatDef>();
             foreach (StatPriority statPriority in _pawn.GetApparelStatCache().StatCache)
+            {
                 FillInfusionHashset_PawnStatsHandlers(_pawn, ap, statPriority.Stat);
+            }
 
             // start score at 1
             float score = 1;
 
             // add values for each statdef modified by the apparel
+            var stats = pawn.GetApparelStatCache().StatCache;
 
-            foreach (StatPriority statPriority in pawn.GetApparelStatCache().StatCache)
+            foreach (StatPriority statPriority in stats)
             {
 
                 // statbases, e.g. armor
                 if (statPriority == null)
+                {
                     continue;
+                }
 
                 if (statBases.Contains(statPriority.Stat))
                 {
@@ -275,7 +310,7 @@ namespace Outfitter
 
             score += ap.GetSpecialApparelScoreOffset();
 
-            score += ApparelScoreRaw_Temperature(ap, pawn);
+            score += ApparelScoreRaw_Temperature(ap);
 
             score += 0.05f * ApparelScoreRaw_ProtectionBaseStat(ap);
 
@@ -357,15 +392,15 @@ namespace Outfitter
         }
 */
 
-        public float ApparelScoreRaw_Temperature(Apparel apparel, Pawn pawn)
+        public float ApparelScoreRaw_Temperature(Apparel apparel)
         {
             //float minComfyTemperature = pawnSave.RealComfyTemperatures.min;
             //float maxComfyTemperature = pawnSave.RealComfyTemperatures.max;
-            float minComfyTemperature = pawn.ComfortableTemperatureRange().min;
-            float maxComfyTemperature = pawn.ComfortableTemperatureRange().max;
+            float minComfyTemperature = _pawn.ComfortableTemperatureRange().min;
+            float maxComfyTemperature = _pawn.ComfortableTemperatureRange().max;
             // temperature
 
-            FloatRange targetTemperatures = pawn.GetApparelStatCache().TargetTemperatures;
+            FloatRange targetTemperatures = this.TargetTemperatures;
 
             // offsets on apparel
             float insulationCold = apparel.GetStatValue(StatDefOf.Insulation_Cold);
@@ -376,9 +411,9 @@ namespace Outfitter
             DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, StatDefOf.ComfyTemperatureMax, ref insulationHeat);
 
             // if this gear is currently worn, we need to make sure the contribution to the pawn's comfy temps is removed so the gear is properly scored
-            if (pawn.apparel.WornApparel.Contains(apparel))
+            if (_pawn.apparel.WornApparel.Contains(apparel))
             {
-                List<Apparel> wornApparel = pawn.apparel.WornApparel;
+                List<Apparel> wornApparel = _pawn.apparel.WornApparel;
 
                 // check if the candidate will replace existing gear
                 foreach (Apparel ap in wornApparel)
@@ -454,7 +489,7 @@ namespace Outfitter
 
         public void UpdateTemperatureIfNecessary(bool force = false, bool forceweight = false)
         {
-            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(_pawn);
+            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this._pawn);
             if (Find.TickManager.TicksGame - _lastTempUpdate > 1900 || force)
             {
                 // get desired temperatures
@@ -482,21 +517,21 @@ namespace Outfitter
                 pawnSave.RealComfyTemperatures.min = _pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin);
                 pawnSave.RealComfyTemperatures.max = _pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax);
 
-              //if (_pawn.story.traits.DegreeOfTrait(TraitDef.Named("TemperaturePreference")) != 0)
-              //{
-              //    //calculating trait offset because there's no way to get comfytemperaturemin without clothes
-              //    List<Trait> traitList = (
-              //        from trait in _pawn.story.traits.allTraits
-              //        where trait.CurrentData.statOffsets != null && trait.CurrentData.statOffsets.Any(se => se.stat == StatDefOf.ComfyTemperatureMin || se.stat == StatDefOf.ComfyTemperatureMax)
-              //        select trait
-              //        ).ToList();
-              //
-              //    foreach (Trait t in traitList)
-              //    {
-              //        pawnSave.RealComfyTemperatures.min += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMin).value;
-              //        pawnSave.RealComfyTemperatures.max += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMax).value;
-              //    }
-              //}
+                //if (_pawn.story.traits.DegreeOfTrait(TraitDef.Named("TemperaturePreference")) != 0)
+                //{
+                //    //calculating trait offset because there's no way to get comfytemperaturemin without clothes
+                //    List<Trait> traitList = (
+                //        from trait in _pawn.story.traits.allTraits
+                //        where trait.CurrentData.statOffsets != null && trait.CurrentData.statOffsets.Any(se => se.stat == StatDefOf.ComfyTemperatureMin || se.stat == StatDefOf.ComfyTemperatureMax)
+                //        select trait
+                //        ).ToList();
+                //
+                //    foreach (Trait t in traitList)
+                //    {
+                //        pawnSave.RealComfyTemperatures.min += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMin).value;
+                //        pawnSave.RealComfyTemperatures.max += t.CurrentData.statOffsets.First(se => se.stat == StatDefOf.ComfyTemperatureMax).value;
+                //    }
+                //}
                 pawnSave.SetRealComfyTemperatures = true;
             }
 
@@ -651,7 +686,7 @@ namespace Outfitter
             {
                 pawn.GetApparelStatCache()._cache.Remove(this);
 
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+                SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
                 pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
             }
 
@@ -671,7 +706,7 @@ namespace Outfitter
                     Weight = indiStats[Stat];
                     Assignment = StatAssignment.Individual;
                 }
-                SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(pawn);
+                SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
                 pawnSave.Stats.RemoveAll(i => i.Stat == Stat);
             }
         }

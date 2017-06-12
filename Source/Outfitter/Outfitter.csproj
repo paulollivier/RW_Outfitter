@@ -66,15 +66,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApparelStatCache.cs" />
+    <Compile Include="Building_BattleSpot.cs" />
+    <Compile Include="JobDriver_GotoDraftOf.cs" />
+    <Compile Include="GameComponent_Outfitter.cs" />
+    <Compile Include="JobGiver\Outfitter_JobGiver_GetArmor.cs" />
     <Compile Include="Outfitter_Patches.cs" />
     <Compile Include="Outfitter_ModBase.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
     <Compile Include="NoCCL\DetourAttribute.cs" />
     <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
-    <Compile Include="MapComponentInjector.cs" />
+    <None Include="MapComponentInjector.cs" />
     <Compile Include="NoCCL\Detours.cs" />
     <Compile Include="NoCCL\SpecialInjector.cs" />
     <Compile Include="OF_SpecialInjector.cs" />
+    <Compile Include="Window\Class1.cs" />
     <Compile Include="Window\Dialog_PawnApparelComparer.cs" />
     <None Include="Window\Dialog_ManageOutfitsOutfitter.cs" />
     <None Include="Helper\HelperThingFilterUI.cs" />
@@ -95,9 +100,15 @@
       <Link>About.xml</Link>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="..\..\Defs\JobDefs\Job.xml">
+      <Link>Defs\Job.xml</Link>
+    </Content>
     <Content Include="..\..\Defs\SpecialThingFilterDefs\SpecialThingFilters.xml">
       <Link>SpecialThingFilters.xml</Link>
       <SubType>Designer</SubType>
+    </Content>
+    <Content Include="..\..\Defs\ThingDefs_Buildings\Buildings_Misc.xml">
+      <Link>Defs\Buildings_Misc.xml</Link>
     </Content>
     <Content Include="..\..\Languages\English\Keyed\Outfitter_Keyed.xml">
       <Link>Languages\English\Outfitter_Keyed.xml</Link>

@@ -47,6 +47,8 @@ namespace Outfitter
         public bool SetRealComfyTemperatures;
         public bool AutoEquipWeapon;
 
+        public bool armorOnly = false;
+
         //  public SaveablePawn(Pawn pawn)
         //    {
         //        Pawn = pawn;
@@ -58,7 +60,7 @@ namespace Outfitter
 
         public void ExposeData()
         {
-            
+
             Scribe_References.Look(ref Pawn, "Pawn");
             Scribe_Values.Look(ref TargetTemperaturesOverride, "targetTemperaturesOverride");
             Scribe_Values.Look(ref TargetTemperatures, "TargetTemperatures");

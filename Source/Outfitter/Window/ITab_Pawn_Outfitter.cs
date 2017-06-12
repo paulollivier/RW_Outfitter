@@ -11,6 +11,8 @@ using Verse.Sound;
 
 namespace Outfitter
 {
+    using System.Collections;
+
     public class ITab_Pawn_Outfitter : ITab
     {
         private Vector2 _scrollPosition = Vector2.zero;
@@ -53,7 +55,7 @@ namespace Outfitter
         protected override void FillTab()
         {
 
-            SaveablePawn pawnSave = MapComponent_Outfitter.Get.GetCache(selPawnForGear);
+            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this.selPawnForGear);
 
             // Outfit + Status button
             Rect rectStatus = new Rect(10f, 15f, 380f, 30f);
@@ -126,21 +128,25 @@ namespace Outfitter
             GUILayout.EndVertical();
 
             //update outfit
-            //            GUILayout.Space(5f);
-            // GUILayout.BeginVertical();
-            // GUILayout.BeginHorizontal();
-            //
-            // GUILayout.FlexibleSpace();
-            // if (GUILayout.Button("OutfitterUpdateOutfit".Translate()))
+            GUILayout.Space(5f);
+            //      GUILayout.BeginVertical();
+            //      GUILayout.BeginHorizontal();
+
+            GUILayout.FlexibleSpace();
+            // if (GUILayout.Button("OutfitterGetArmor".Translate()))
             // {
-            //     var parms = new JobIssueParams();
-            //     selPawnForGear.mindState.nextApparelOptimizeTick = -5000;
-            //     new Outfitter_JobGiver_OptimizeApparel().TryIssueJobPackage(selPawnForGear, parms);
+            //
+            //     // if (!selPawnForGear.jobs.TryTakeOrderedJob(job))//This is used to force go job, it will work even when drafted
+            //     // {
+            //     //     this.selPawnForGear.jobs.jobQueue.EnqueueFirst(job);
+            //     //     this.selPawnForGear.jobs.StopAll();
+            //     // }
+            //
             // }
-            //
-            //
-            // GUILayout.EndHorizontal();
-            // GUILayout.EndVertical();
+
+
+            //     GUILayout.EndHorizontal();
+            //     GUILayout.EndVertical();
 
 
             GUILayout.EndArea();

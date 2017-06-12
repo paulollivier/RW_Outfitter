@@ -39,10 +39,12 @@ namespace Outfitter
         private ThingCategoryDef CreateCategory(string label, string type)
         {
             // create cat def
-            ThingCategoryDef cat = new ThingCategoryDef();
-            cat.parent = apparelRoot;
-            cat.label = label;
-            cat.defName = GetCatName(label, type);
+            ThingCategoryDef cat = new ThingCategoryDef
+            {
+                parent = apparelRoot,
+                label = label,
+                defName = GetCatName(label, type)
+            };
             DefDatabase<ThingCategoryDef>.Add(cat);
 
             // don't forget to call the PostLoad() function, or you'll get swarmed in red... (ugh)
@@ -59,10 +61,12 @@ namespace Outfitter
         private ThingCategoryDef CreateChildCategory(ThingCategoryDef thisRoot, string bodypart, string label, string type)
         {
             // create cat def
-            ThingCategoryDef cat = new ThingCategoryDef();
-            cat.parent = thisRoot;
-            cat.label = label;
-            cat.defName = GetChildCatName(bodypart, label, type);
+            ThingCategoryDef cat = new ThingCategoryDef
+            {
+                parent = thisRoot,
+                label = label,
+                defName = GetChildCatName(bodypart, label, type)
+            };
             DefDatabase<ThingCategoryDef>.Add(cat);
 
             // don't forget to call the PostLoad() function, or you'll get swarmed in red... (ugh)

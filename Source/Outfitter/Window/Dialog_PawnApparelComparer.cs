@@ -33,8 +33,7 @@ namespace Outfitter.Window
 
         public override void DoWindowContents(Rect windowRect)
         {
-            MapComponent_Outfitter mapComponent = MapComponent_Outfitter.Get;
-            ApparelStatCache apparelStatCache = new ApparelStatCache(mapComponent.GetCache(_pawn));
+            ApparelStatCache apparelStatCache = new ApparelStatCache(GameComponent_Outfitter.GetCache(_pawn));
             List<Apparel> allApparels = new List<Apparel>(this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
             foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
             {

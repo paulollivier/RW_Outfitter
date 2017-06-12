@@ -1,0 +1,51 @@
+﻿using System.Collections.Generic;
+using System.Linq;
+using Verse;
+
+namespace Outfitter
+{
+    using RimWorld;
+
+    public class GameComponent_Outfitter : GameComponent
+    {
+        public GameComponent_Outfitter()
+        {
+        }
+
+        public GameComponent_Outfitter(Game game)
+        {
+        }
+
+        public static List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
+
+        public static bool updated;
+
+        public static SaveablePawn GetCache(Pawn pawn)
+        {
+            foreach (SaveablePawn c in _pawnCache)
+                if (c.Pawn == pawn)
+                    return c;
+            SaveablePawn n = new SaveablePawn { Pawn = pawn };
+            _pawnCache.Add(n);
+            return n;
+
+            // if (!PawnApparelStatCaches.ContainsKey(pawn))
+            // {
+            //     PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
+            // }
+            // return PawnApparelStatCaches[pawn];
+        }
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+
+            Scribe_Collections.Look(ref _pawnCache, "Pawns", LookMode.Deep);
+
+            if (_pawnCache == null)
+                _pawnCache = new List<SaveablePawn>();
+
+        }
+
+    }
+}
