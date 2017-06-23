@@ -82,7 +82,9 @@ namespace Outfitter
                             locomotionUrgency = LocomotionUrgency.Sprint
                         };
                         pawn.jobs.jobQueue.EnqueueLast(jobby);
+
                     }
+                    this.DeSpawn();
                 };
             yield return draft;
         }

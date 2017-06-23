@@ -15,14 +15,19 @@ namespace Outfitter
 
     public class ITab_Pawn_Outfitter : ITab
     {
-        private Vector2 _scrollPosition = Vector2.zero;
         private Vector2 scrollPosition = Vector2.zero;
+        private Vector2 scrollPosition1 = Vector2.zero;
 
         private float scrollViewHeight;
+        private float scrollViewHeight1;
         private bool CanControl { get { return SelPawn.IsColonistPlayerControlled; } }
         private const float ThingIconSize = 30f;
         private static readonly Color ThingLabelColor = new Color(0.9f, 0.9f, 0.9f, 1f);
         private static readonly Color HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+        private const float Margin = 10f;
+
+        private const float ButtonHeight = 30f;
 
         private const float ThingRowHeight = 64f;
 
@@ -56,111 +61,87 @@ namespace Outfitter
         {
 
             SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this.selPawnForGear);
-
             // Outfit + Status button
-            Rect rectStatus = new Rect(10f, 15f, 380f, 30f);
-            GUILayout.BeginArea(rectStatus);
-            GUILayout.BeginVertical();
-            GUILayout.BeginHorizontal();
-            // select outfit
+            Rect rectStatus = new Rect(20f, 15f, 380f, ButtonHeight);
 
-            if (GUILayout.Button(selPawnForGear.outfits.CurrentOutfit.label))
+            Rect outfitRect = new Rect(rectStatus.x, rectStatus.y, 392f / 3 - Margin, ButtonHeight);
+
+            Rect outfitEditRect = new Rect(outfitRect.xMax + Margin, outfitRect.y, outfitRect.width, ButtonHeight);
+
+            Rect outfitJobRect = new Rect(outfitEditRect.xMax + Margin, outfitRect.y, outfitRect.width, ButtonHeight);
+
+            // select outfit
+            if (Widgets.ButtonText(outfitRect, selPawnForGear.outfits.CurrentOutfit.label))
             {
-                List<FloatMenuOption> list = new List<FloatMenuOption>();
+                List<FloatMenuOption> options = new List<FloatMenuOption>();
+                
                 foreach (Outfit current in Current.Game.outfitDatabase.AllOutfits)
                 {
                     Outfit localOut = current;
-                    list.Add(new FloatMenuOption(localOut.label, delegate
-                    {
-                        selPawnForGear.outfits.CurrentOutfit = localOut;
-                    }));
+                    options.Add(new FloatMenuOption(localOut.label, delegate
+                        {
+                            selPawnForGear.outfits.CurrentOutfit = localOut;
+                        }));
                 }
-                Find.WindowStack.Add(new FloatMenu(list));
+                FloatMenu window = new FloatMenu(options, "SelectOutfit".Translate());
+
+                Find.WindowStack.Add(window);
             }
 
-
-            //edit outfit
-            if (GUILayout.Button("OutfitterEditOutfit".Translate() + " " + selPawnForGear.outfits.CurrentOutfit.label + " ..."))
+            // edit outfit
+            if (Widgets.ButtonText(outfitEditRect, "OutfitterEditOutfit".Translate() + " " + selPawnForGear.outfits.CurrentOutfit.label + " ..."))
             {
                 Find.WindowStack.Add(new Dialog_ManageOutfits(selPawnForGear.outfits.CurrentOutfit));
             }
 
-
-            ////show outfit
-            if (GUILayout.Button(pawnSave.mainJob == SaveablePawn.MainJob.Anything ? "MainJob".Translate() : "PreferedGear".Translate() + " " + pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
+            // job outfit
+            if (Widgets.ButtonText(outfitJobRect, pawnSave.mainJob == SaveablePawn.MainJob.Anything ? "MainJob".Translate() : "PreferedGear".Translate() + " " + pawnSave.mainJob.ToString().Replace("00", " - ").Replace("_", " ")))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (SaveablePawn.MainJob mainJob in Enum.GetValues(typeof(SaveablePawn.MainJob)))
                 {
                     options.Add(new FloatMenuOption(mainJob.ToString().Replace("00", " - ").Replace("_", " "), delegate
-                    {
-                        pawnSave.mainJob = mainJob;
-                        pawnSave.forceStatUpdate = true;
-
-                        selPawnForGear.mindState.Notify_OutfitChanged();
-                        if ((selPawnForGear.jobs.curJob != null) && selPawnForGear.jobs.IsCurrentJobPlayerInterruptible())
                         {
-                            selPawnForGear.jobs.EndCurrentJob(JobCondition.InterruptForced);
-                        }
-                    }));
+                            pawnSave.mainJob = mainJob;
+                            pawnSave.forceStatUpdate = true;
+
+                            selPawnForGear.mindState.Notify_OutfitChanged();
+                            if ((selPawnForGear.jobs.curJob != null) && selPawnForGear.jobs.IsCurrentJobPlayerInterruptible())
+                            {
+                                selPawnForGear.jobs.EndCurrentJob(JobCondition.InterruptForced);
+                            }
+                        }));
                 }
                 FloatMenu window = new FloatMenu(options, "MainJob".Translate());
 
                 Find.WindowStack.Add(window);
             }
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
-
-            GUILayout.EndArea();
-
 
             // Status checkboxes
-
-            Rect rectCheckboxes = new Rect(10f, rectStatus.yMax, rectStatus.width, 60f);
-            GUILayout.BeginArea(rectCheckboxes);
-            GUILayout.BeginVertical();
-            GUILayout.BeginHorizontal();
-            DrawCheckBoxArea("AddWorkStats".Translate(), ref pawnSave.AddWorkStats);
-            DrawCheckBoxArea("AddIndividualStats".Translate(), ref pawnSave.AddIndividualStats);
-            // if (!peacefulPawn)
-            //     DrawCheckBoxArea("AutoEquipWeapon".Translate(), ref pawnSave.AutoEquipWeapon);
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
-
-            //update outfit
-            GUILayout.Space(5f);
-            //      GUILayout.BeginVertical();
-            //      GUILayout.BeginHorizontal();
-
-            GUILayout.FlexibleSpace();
-            // if (GUILayout.Button("OutfitterGetArmor".Translate()))
-            // {
-            //
-            //     // if (!selPawnForGear.jobs.TryTakeOrderedJob(job))//This is used to force go job, it will work even when drafted
-            //     // {
-            //     //     this.selPawnForGear.jobs.jobQueue.EnqueueFirst(job);
-            //     //     this.selPawnForGear.jobs.StopAll();
-            //     // }
-            //
-            // }
-
-
-            //     GUILayout.EndHorizontal();
-            //     GUILayout.EndVertical();
-
-
-            GUILayout.EndArea();
-
+            Rect rectCheckboxes = new Rect(rectStatus.x, rectStatus.yMax + Margin, rectStatus.width, 48f);
+            Rect check1 = new Rect(rectCheckboxes.x, rectCheckboxes.y, rectCheckboxes.width, 24f);
+            Rect check2 = new Rect(rectCheckboxes.x, check1.yMax, rectCheckboxes.width, 24f);
+            DrawCheckBoxArea(check1, "AddWorkStats".Translate(), ref pawnSave.AddWorkStats);
+            DrawCheckBoxArea(check2, "AddIndividualStats".Translate(), ref pawnSave.AddIndividualStats);
 
             // main canvas
-            Rect canvas = new Rect(0f, 65f, 432, size.y - 65f).ContractedBy(20f);
+            Rect canvas = new Rect(20f, rectCheckboxes.yMax, 392f, size.y - rectCheckboxes.yMax-20f);
             GUI.BeginGroup(canvas);
             Vector2 cur = Vector2.zero;
 
-            DrawApparelStats(pawnSave, cur, canvas);
+            DrawTemperatureStats(pawnSave, ref cur, canvas);
+            cur.y += Margin;
+            DrawApparelStats(cur, canvas);
+
+            GUI.EndGroup();
+
+            this.DrawApparelList();
+
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        private void DrawApparelStats(SaveablePawn pawnSave, Vector2 cur, Rect canvas)
+        private void DrawTemperatureStats(SaveablePawn pawnSave, ref Vector2 cur, Rect canvas)
         {
             // header
             Rect tempHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
@@ -175,14 +156,14 @@ namespace Outfitter
             GUI.color = Color.white;
 
             // some padding
-            cur.y += 10f;
+            cur.y += Margin;
             // temperature slider
             //    SaveablePawn pawnStatCache = MapComponent_Outfitter.Get.GetCache(SelPawn);
             ApparelStatCache pawnStatCache = selPawnForGear.GetApparelStatCache();
             FloatRange targetTemps = pawnStatCache.TargetTemperatures;
             FloatRange minMaxTemps = ApparelStatsHelper.MinMaxTemperatureRange;
             Rect sliderRect = new Rect(cur.x, cur.y, canvas.width - 20f, 40f);
-            Rect tempResetRect = new Rect(sliderRect.xMax + 4f, cur.y + 10f, 16f, 16f);
+            Rect tempResetRect = new Rect(sliderRect.xMax + 4f, cur.y + Margin, 16f, 16f);
             cur.y += 40f; // includes padding 
 
             // current temperature settings
@@ -191,7 +172,7 @@ namespace Outfitter
             GUI.color = Color.white;
 
             if (Math.Abs(targetTemps.min - pawnStatCache.TargetTemperatures.min) > 1e-4 ||
-                 Math.Abs(targetTemps.max - pawnStatCache.TargetTemperatures.max) > 1e-4)
+                Math.Abs(targetTemps.max - pawnStatCache.TargetTemperatures.max) > 1e-4)
             {
                 pawnStatCache.TargetTemperatures = targetTemps;
             }
@@ -209,7 +190,10 @@ namespace Outfitter
             }
             Text.Font = GameFont.Small;
             TryDrawComfyTemperatureRange(ref cur.y, canvas.width);
+        }
 
+        private void DrawApparelStats(Vector2 cur, Rect canvas)
+        {
 
             // header
             Rect statsHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
@@ -220,7 +204,7 @@ namespace Outfitter
             Text.Anchor = TextAnchor.UpperLeft;
 
             // add button
-            Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + 10f, 16f, 16f);
+            Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + Margin, 16f, 16f);
             if (Widgets.ButtonImage(addStatRect, OutfitterTextures.addButton))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
@@ -243,18 +227,18 @@ namespace Outfitter
             GUI.color = Color.white;
 
             // some padding
-            cur.y += 10f;
+            cur.y += Margin;
 
             // main content in scrolling view
             Rect contentRect = new Rect(cur.x, cur.y, canvas.width, canvas.height - cur.y);
             Rect viewRect = contentRect;
-            viewRect.height = selPawnForGear.GetApparelStatCache().StatCache.Count * 30f + 10f;
+            viewRect.height = this.scrollViewHeight;
             if (viewRect.height > contentRect.height)
             {
                 viewRect.width -= 20f;
             }
+            Widgets.BeginScrollView(contentRect, ref scrollPosition, viewRect);
 
-            Widgets.BeginScrollView(contentRect, ref _scrollPosition, viewRect);
             GUI.BeginGroup(viewRect);
             cur = Vector2.zero;
 
@@ -297,16 +281,25 @@ namespace Outfitter
                 }
             }
 
+            if (Event.current.type == EventType.Layout)
+            {
+                this.scrollViewHeight = cur.y + 10f;
+            }
+
+
             GUI.EndGroup();
             Widgets.EndScrollView();
 
-            GUI.EndGroup();
 
+        }
+
+        private void DrawApparelList()
+        {
             #region Apparel List 
 
             // main canvas
 
-            Rect rect = new Rect(432, 20, 338, 530);
+            Rect rect = new Rect(432, 20, 318, 530);
 
             Text.Font = GameFont.Small;
             //     Rect rect2 = rect.ContractedBy(10f);
@@ -316,18 +309,18 @@ namespace Outfitter
             GUI.color = Color.white;
             Rect outRect = new Rect(0f, 0f, calcScore.width, calcScore.height);
             Rect viewRect1 = outRect;
-            viewRect1.height = scrollViewHeight;
+            viewRect1.height = this.scrollViewHeight1;
             if (viewRect1.height > outRect.height)
             {
                 viewRect1.width -= 20f;
             }
-            Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect1);
+            Widgets.BeginScrollView(outRect, ref scrollPosition1, viewRect1);
             float num = 0f;
 
-            if (SelPawn.apparel != null)
+            if (this.SelPawn.apparel != null)
             {
                 Widgets.ListSeparator(ref num, viewRect1.width, "Apparel".Translate());
-                foreach (Apparel current2 in from ap in SelPawn.apparel.WornApparel
+                foreach (Apparel current2 in from ap in this.SelPawn.apparel.WornApparel
                                              orderby ap.def.apparel.bodyPartGroups[0].listOrder descending
                                              select ap)
                 {
@@ -342,26 +335,24 @@ namespace Outfitter
                         layer = apparelLayer.ToString();
                     }
                     Widgets.ListSeparator(ref num, viewRect1.width, bp + layer);
-                    DrawThingRowModded(ref num, viewRect1.width, current2);
+                    this.DrawThingRowModded(ref num, viewRect1.width, current2);
                 }
             }
 
-
             if (Event.current.type == EventType.Layout)
             {
-                scrollViewHeight = num + 30f;
+                this.scrollViewHeight1 = num + 30f;
             }
             Widgets.EndScrollView();
+
             GUI.EndGroup();
-            GUI.color = Color.white;
-            Text.Anchor = TextAnchor.UpperLeft;
 
             #endregion
         }
 
-        private static void DrawCheckBoxArea(string name, ref bool stat)
+        private static void DrawCheckBoxArea(Rect rect, string name, ref bool stat)
         {
-            stat = GUILayout.Toggle(stat, name);
+            Widgets.CheckboxLabeled(rect, name, ref stat);
         }
 
         public override bool IsVisible

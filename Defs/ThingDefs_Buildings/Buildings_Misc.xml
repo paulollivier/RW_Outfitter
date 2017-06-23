@@ -20,8 +20,8 @@
 
 	<ThingDef ParentName="BuildingBase">
 		<defName>OutfitterSpot</defName>
-		<label>outfitter battle spot</label>
-		<Description>Designates a spot where pawns can summoned in full battle gear. After activation, pawns will grab their best combat gear and move to the spot.</Description>
+		<label>outfitter battle beacon</label>
+		<Description>Designates a spot where pawns can summoned in full battle gear. After activation, pawns will grab their best combat gear and move to the spot. Despawns after usage</Description>
 		<thingClass>Outfitter.Building_BattleSpot</thingClass>
 		<graphicData>
 			<texPath>Things/Building/Misc/CaravanPackingSpot</texPath>

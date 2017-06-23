@@ -68,13 +68,16 @@ namespace Outfitter
                             {
                                 debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
                             }
-                            if (gain >= MinScoreGainToCare && gain >= num)
+                            if (gain >= MinScoreGainToCare)
                             {
-                                if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
+                                if (gain >= num)
                                 {
-                                    if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
+                                    if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
                                     {
-                                        apparelStats.Add(apparel, gain);
+                                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, Danger.Deadly, 1))
+                                        {
+                                            apparelStats.Add(apparel, gain);
+                                        }
                                     }
                                 }
                             }
@@ -116,7 +119,7 @@ namespace Outfitter
 
         private static void SetNextOptimizeTick(Pawn pawn)
         {
-            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame + 2* UnityEngine.Random.Range(ApparelOptimizeCheckIntervalMin, ApparelOptimizeCheckIntervalMax);
+            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame + 2 * UnityEngine.Random.Range(ApparelOptimizeCheckIntervalMin, ApparelOptimizeCheckIntervalMax);
         }
     }
 }
