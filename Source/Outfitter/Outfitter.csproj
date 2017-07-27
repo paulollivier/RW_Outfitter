@@ -47,7 +47,7 @@
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\..\..\..\..\..\workshop\content\294100\818773962\Assemblies\0Harmony.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
@@ -66,17 +66,16 @@
     <Compile Include="JobDriver_GotoDraftOf.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="JobGiver\Outfitter_JobGiver_GetArmor.cs" />
-    <Compile Include="Outfitter_Patches.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
+    <Compile Include="Outfitter_Patches.cs" />
     <Compile Include="Outfitter_ModBase.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
-    <Compile Include="NoCCL\DetourAttribute.cs" />
+    <None Include="NoCCL\DetourAttribute.cs" />
     <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
     <None Include="MapComponentInjector.cs" />
-    <Compile Include="NoCCL\Detours.cs" />
-    <Compile Include="NoCCL\SpecialInjector.cs" />
-    <Compile Include="OF_SpecialInjector.cs" />
+    <None Include="NoCCL\Detours.cs" />
+    <None Include="NoCCL\SpecialInjector.cs" />
+    <None Include="OF_SpecialInjector.cs" />
+    <Compile Include="StatAssignment.cs" />
     <Compile Include="Window\Class1.cs" />
     <Compile Include="Window\Dialog_PawnApparelComparer.cs" />
     <None Include="Window\Dialog_ManageOutfitsOutfitter.cs" />

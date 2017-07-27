@@ -74,7 +74,7 @@ namespace Outfitter
                                 {
                                     if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
                                     {
-                                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, Danger.Deadly, 1))
+                                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
                                         {
                                             apparelStats.Add(apparel, gain);
                                         }

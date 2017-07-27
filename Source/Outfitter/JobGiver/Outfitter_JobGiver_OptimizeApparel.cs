@@ -7,7 +7,10 @@ using Verse.AI;
 
 namespace Outfitter
 {
-    public class Outfitter_JobGiver_OptimizeApparel : ThinkNode_JobGiver
+    using Harmony;
+
+    [HarmonyPatch(typeof(JobGiver_OptimizeApparel), "TryGiveJob")]
+    public static class Outfitter_JobGiver_OptimizeApparel
     {
         private const float MinScoreGainToCare = 0.09f;
         private const int ApparelOptimizeCheckIntervalMin = 6000;
@@ -15,24 +18,25 @@ namespace Outfitter
         private const int ApparelOptimizeCheckIntervalMax = 9000;
         private static StringBuilder debugSb;
 
-        [Detour(typeof(JobGiver_OptimizeApparel), bindingFlags = (BindingFlags.Instance | BindingFlags.NonPublic))]
-        protected override Job TryGiveJob(Pawn pawn)
+        [HarmonyPrefix]
+        public static bool TryGiveJob(ref Job __result, Pawn pawn)
         {
+            __result = null;
             if (pawn.outfits == null)
             {
                 Log.ErrorOnce(pawn + " tried to run JobGiver_OptimizeApparel without an OutfitTracker", 5643897);
-                return null;
+                return false;
             }
             if (pawn.Faction != Faction.OfPlayer)
             {
                 Log.ErrorOnce("Non-colonist " + pawn + " tried to optimize apparel.", 764323);
-                return null;
+                return false;
             }
             if (!DebugViewSettings.debugApparelOptimize)
             {
                 if (Find.TickManager.TicksGame < pawn.mindState.nextApparelOptimizeTick)
                 {
-                    return null;
+                    return false;
                 }
             }
             else
@@ -52,21 +56,23 @@ namespace Outfitter
             {
                 if (!currentOutfit.filter.Allows(wornApparel[i]) && pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
                 {
-                    return new Job(JobDefOf.RemoveApparel, wornApparel[i])
+                    __result = new Job(JobDefOf.RemoveApparel, wornApparel[i])
                     {
                         haulDroppedApparel = true
                     };
+                    return false;
                 }
             }
             Thing thing = null;
             float num = 0f;
             List<Thing> list = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
-           
+
             if (list.Count == 0)
             {
                 SetNextOptimizeTick(pawn);
-                return null;
+                return false;
             }
+
             for (int j = 0; j < list.Count; j++)
             {
                 Apparel apparel = (Apparel)list[j];
@@ -105,13 +111,14 @@ namespace Outfitter
 
             if (thing == null)
             {
-                this.SetNextOptimizeTick(pawn);
-                return null;
+                SetNextOptimizeTick(pawn);
+                return false;
             }
-            return new Job(JobDefOf.Wear, thing);
+            __result = new Job(JobDefOf.Wear, thing);
+            return false;
         }
 
-        private void SetNextOptimizeTick(Pawn pawn)
+        private static void SetNextOptimizeTick(Pawn pawn)
         {
             pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame + UnityEngine.Random.Range(ApparelOptimizeCheckIntervalMin, ApparelOptimizeCheckIntervalMax);
         }

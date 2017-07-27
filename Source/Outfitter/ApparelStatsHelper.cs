@@ -730,6 +730,13 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, 1f);
                     yield break;
 
+                // Else
+                case "FinishingOff":
+                    yield break;
+
+                case "Feeding":
+                    yield break;
+
                 default:
                     if (!IgnoredWorktypeDefs.Contains(worktype.defName))
                     {

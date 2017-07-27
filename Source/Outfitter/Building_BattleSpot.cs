@@ -15,6 +15,8 @@ namespace Outfitter
     [StaticConstructorOnStartup]
     public class Building_BattleSpot : Building
     {
+        private int ticksToDespawn;
+
         public override IEnumerable<Gizmo> GetGizmos()
         {
             foreach (Gizmo c in base.GetGizmos())
@@ -87,6 +89,31 @@ namespace Outfitter
                     this.DeSpawn();
                 };
             yield return draft;
+        }
+
+        public override void SpawnSetup(Map map, bool respawningAfterLoad)
+        {
+            base.SpawnSetup(map, respawningAfterLoad);
+
+            this.ticksToDespawn = 3000;
+        }
+
+        public override void Tick()
+        {
+            base.Tick();
+
+            this.ticksToDespawn--;
+
+            if (this.ticksToDespawn == 0)
+            {
+                this.Destroy(DestroyMode.Deconstruct);
+            }
+        }
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_Values.Look(ref this.ticksToDespawn, "ticksToDespawn");
         }
     }
 }

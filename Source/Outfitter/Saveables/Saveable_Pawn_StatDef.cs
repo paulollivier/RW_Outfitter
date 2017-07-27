@@ -5,30 +5,48 @@ namespace Outfitter
 {
     public class Saveable_Pawn_StatDef : IExposable
     {
-        public StatDef Stat;
-        public StatAssignment Assignment;
-        public float Weight;
-  /*      
-        public Saveable_Pawn_StatDef(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
+        private StatDef stat;
+        private StatAssignment assignment;
+        private float weight;
+
+        public StatDef Stat
         {
-            Stat = stat;
-            Weight = priority;
-            Assignment = assignment;
+            get => this.stat;
+            set => this.stat = value;
         }
 
-        public Saveable_Pawn_StatDef(KeyValuePair<StatDef, float> statDefWeightPair, StatAssignment assignment = StatAssignment.Automatic)
+        public StatAssignment Assignment
         {
-            Stat = statDefWeightPair.Key;
-            Weight = statDefWeightPair.Value;
-            Assignment = assignment;
+            get => this.assignment;
+            set => this.assignment = value;
         }
+
+        public float Weight
+        {
+            get => this.weight;
+            set => this.weight = value;
+        }
+
+        /*      
+public Saveable_Pawn_StatDef(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
+{
+Stat = stat;
+Weight = priority;
+Assignment = assignment;
+}
+
+public Saveable_Pawn_StatDef(KeyValuePair<StatDef, float> statDefWeightPair, StatAssignment assignment = StatAssignment.Automatic)
+{
+Stat = statDefWeightPair.Key;
+Weight = statDefWeightPair.Value;
+Assignment = assignment;
+}
 */
-
         public void ExposeData()
         {
-            Scribe_Defs.Look(ref Stat, "Stat");
-            Scribe_Values.Look(ref Assignment, "Assignment");
-            Scribe_Values.Look(ref Weight, "Weight");
+            Scribe_Defs.Look(ref this.stat, "Stat");
+            Scribe_Values.Look(ref this.assignment, "Assignment");
+            Scribe_Values.Look(ref this.weight, "Weight");
         }
     }
 }
