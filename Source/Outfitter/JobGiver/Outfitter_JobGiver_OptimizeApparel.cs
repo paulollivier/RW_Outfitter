@@ -7,9 +7,7 @@ using Verse.AI;
 
 namespace Outfitter
 {
-    using Harmony;
 
-    [HarmonyPatch(typeof(JobGiver_OptimizeApparel), "TryGiveJob")]
     public static class Outfitter_JobGiver_OptimizeApparel
     {
         private const float MinScoreGainToCare = 0.09f;
@@ -18,8 +16,7 @@ namespace Outfitter
         private const int ApparelOptimizeCheckIntervalMax = 9000;
         private static StringBuilder debugSb;
 
-        [HarmonyPrefix]
-        public static bool TryGiveJob(ref Job __result, Pawn pawn)
+        public static bool TryGiveJob_Prefix(ref Job __result, Pawn pawn)
         {
             __result = null;
             if (pawn.outfits == null)

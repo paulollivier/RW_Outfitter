@@ -67,7 +67,7 @@
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="JobGiver\Outfitter_JobGiver_GetArmor.cs" />
     <Compile Include="Outfitter_Patches.cs" />
-    <Compile Include="Outfitter_ModBase.cs" />
+    <Compile Include="HarmonyPatches.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
     <None Include="NoCCL\DetourAttribute.cs" />
     <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />

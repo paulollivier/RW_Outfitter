@@ -614,14 +614,17 @@ namespace Outfitter
             }
 
             // Punish bad apparel
-            temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 10f : 1f;
-            temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 10f : 1f;
+            temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 2f : 1f;
+            temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 2f : 1f;
 
-            return (temperatureScoreOffset.min + temperatureScoreOffset.max) / 10;
+            return (temperatureScoreOffset.min + temperatureScoreOffset.max) /10;
         }
         public bool CalculateApparelScoreGain(Apparel apparel, out float gain)
         {
-            if (this._calculatedApparelItems == null) this.DIALOG_InitializeCalculatedApparelScoresFromWornApparel();
+            if (this._calculatedApparelItems == null)
+            {
+                this.DIALOG_InitializeCalculatedApparelScoresFromWornApparel();
+            }
 
             return this.CalculateApparelScoreGain(apparel, this.ApparelScoreRaw(apparel, this._pawn), out gain);
         }

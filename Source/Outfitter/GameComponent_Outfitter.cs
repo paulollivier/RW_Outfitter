@@ -40,8 +40,12 @@ namespace Outfitter
         public static SaveablePawn GetCache(Pawn pawn)
         {
             foreach (SaveablePawn c in _pawnCache)
+            {
                 if (c.Pawn == pawn)
+                {
                     return c;
+                }
+            }
             SaveablePawn n = new SaveablePawn { Pawn = pawn };
             _pawnCache.Add(n);
             return n;
