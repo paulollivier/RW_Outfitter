@@ -7,9 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RimWorld;
-using Verse;
+
 using static Outfitter.SaveablePawn.MainJob;
+
+using RimWorld;
+
+using Verse;
 
 namespace Outfitter
 {
@@ -23,16 +26,25 @@ namespace Outfitter
 
         // New curve
         public static readonly SimpleCurve HitPointsPercentScoreFactorCurve = new SimpleCurve
-        {
-            new CurvePoint( 0.0f, 0.05f ),
-            new CurvePoint( 0.4f, 0.3f ),
-            new CurvePoint( 0.6f, 0.75f ),
-            new CurvePoint( 1f, 1f )
-        //  new CurvePoint( 0.0f, 0.0f ),
-        //  new CurvePoint( 0.25f, 0.15f ),
-        //  new CurvePoint( 0.5f, 0.7f ),
-        //  new CurvePoint( 1f, 1f )
-        };
+                                                                                  {
+                                                                                      new CurvePoint(
+                                                                                          0.0f,
+                                                                                          0.05f),
+                                                                                      new CurvePoint(
+                                                                                          0.4f,
+                                                                                          0.3f),
+                                                                                      new CurvePoint(
+                                                                                          0.6f,
+                                                                                          0.75f),
+                                                                                      new CurvePoint(
+                                                                                          1f,
+                                                                                          1f)
+
+                                                                                      // new CurvePoint( 0.0f, 0.0f ),
+                                                                                      // new CurvePoint( 0.25f, 0.15f ),
+                                                                                      // new CurvePoint( 0.5f, 0.7f ),
+                                                                                      // new CurvePoint( 1f, 1f )
+                                                                                  };
 
         public static ApparelStatCache GetApparelStatCache(this Pawn pawn)
         {
@@ -40,6 +52,7 @@ namespace Outfitter
             {
                 PawnApparelStatCaches.Add(pawn, new ApparelStatCache(pawn));
             }
+
             return PawnApparelStatCaches[pawn];
         }
 
@@ -48,8 +61,8 @@ namespace Outfitter
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
             SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
 
-            //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
-            //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
+            // dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
+            // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
 
             // Adds manual prioritiy adjustments 
             if (pawnSave.AddWorkStats)
@@ -194,6 +207,7 @@ namespace Outfitter
             {
                 return null;
             }
+
             return (Building)list[0];
         }
 
@@ -203,12 +217,11 @@ namespace Outfitter
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
             SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
 
-            //       dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
-            //       dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
-
+            // dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
+            // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
             if (pawnSave.AddIndividualStats)
             {
-                #region MapConditions
+                
 
                 bool activeDrone = false;
 
@@ -218,11 +231,13 @@ namespace Outfitter
                 {
                     activeDrone = true;
                 }
+
                 GameCondition_PsychicEmanation activeCondition = pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>();
                 if (activeCondition != null && activeCondition.gender == pawn.gender && activeCondition.def.droneLevel > psychicDroneLevel)
                 {
                     activeDrone = true;
                 }
+
                 if (activeDrone)
                 {
                     switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
@@ -232,16 +247,19 @@ namespace Outfitter
                                 AddStatToDict(StatDefOf.PsychicSensitivity, -0.25f, ref dict);
                                 break;
                             }
+
                         case 0:
                             {
                                 AddStatToDict(StatDefOf.PsychicSensitivity, -0.5f, ref dict);
                                 break;
                             }
+
                         case 1:
                             {
                                 AddStatToDict(StatDefOf.PsychicSensitivity, -0.75f, ref dict);
                                 break;
                             }
+
                         case 2:
                             {
                                 AddStatToDict(StatDefOf.PsychicSensitivity, -1f, ref dict);
@@ -261,16 +279,19 @@ namespace Outfitter
                                     AddStatToDict(StatDefOf.PsychicSensitivity, 1f, ref dict);
                                     break;
                                 }
+
                             case 0:
                                 {
                                     AddStatToDict(StatDefOf.PsychicSensitivity, 0.75f, ref dict);
                                     break;
                                 }
+
                             case 1:
                                 {
                                     AddStatToDict(StatDefOf.PsychicSensitivity, 0.5f, ref dict);
                                     break;
                                 }
+
                             case 2:
                                 {
                                     AddStatToDict(StatDefOf.PsychicSensitivity, 0.25f, ref dict);
@@ -279,12 +300,13 @@ namespace Outfitter
                         }
                     }
                 }
+
                 if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.ToxicFallout))
                 {
                     AddStatToDict(StatDefOf.ToxicSensitivity, -1.5f, ref dict);
                     AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
                 }
-                #endregion
+                
 
 
                 switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Nerves))
@@ -327,19 +349,18 @@ namespace Outfitter
         public static float ApparelScoreGain(Pawn pawn, Apparel ap, bool armorOnly = false)
         {
             // only allow shields to be considered if a primary weapon is equipped and is melee
-            if (ap.def == ThingDefOf.Apparel_ShieldBelt &&
-                 pawn.equipment.Primary != null &&
-                 !pawn.equipment.Primary.def.Verbs[0].MeleeRange)
+            if (ap.def == ThingDefOf.Apparel_ShieldBelt && pawn.equipment.Primary != null
+                && !pawn.equipment.Primary.def.Verbs[0].MeleeRange)
             {
                 return -1000f;
             }
-
 
             ApparelStatCache conf = new ApparelStatCache(pawn);
 
             // get the score of the considered apparel
             float candidateScore = conf.ApparelScoreRaw(ap, pawn);
-            //    float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
+
+            // float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
 
             // get the current list of worn apparel
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
@@ -362,14 +383,11 @@ namespace Outfitter
                 }
             }
 
-
             // increase score if this piece can be worn without replacing existing gear.
             if (!willReplace)
             {
                 candidateScore *= ScoreFactorIfNotReplacing;
             }
-
-
 
             return candidateScore;
         }
@@ -403,6 +421,7 @@ namespace Outfitter
                     ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref _allApparelStats);
 
                 }
+
                 return _allApparelStats;
             }
         }
@@ -466,6 +485,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, 1.5f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, 1f);
@@ -485,6 +505,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 1.5f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.RecruitPrisonerChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 0.5f);
                     yield break;
@@ -508,6 +529,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 0.6f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 0.25f);
@@ -528,20 +550,31 @@ namespace Outfitter
                     if (pawnSave.mainJob == Cook)
                     {
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CookSpeed"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BrewingSpeed"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"), 3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("BrewingSpeed"),
+                            3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"),
+                            3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"),
+                            3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.FoodPoisonChance, -1.5f);
                         yield break;
                     }
-                    //    yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.05f);
-                    //     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
+
+                    // yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.05f);
+                    // yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CookSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BrewingSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(
+                        DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"),
+                        1f);
+                    yield return new KeyValuePair<StatDef, float>(
+                        DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"),
+                        1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.FoodPoisonChance, -0.5f);
@@ -563,6 +596,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.5f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 0.4f);
@@ -588,6 +622,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructionSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructSuccessChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, 1f);
@@ -612,6 +647,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.1f);
@@ -628,6 +664,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningYield, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.25f);
@@ -647,6 +684,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmithingSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield break;
@@ -658,6 +696,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TailoringSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield break;
@@ -669,6 +708,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SculptingSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield break;
@@ -683,6 +723,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"), 1.5f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("StonecuttingSpeed"), 1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmeltingSpeed"), 1f);
@@ -697,6 +738,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.75f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.25f);
                     yield break;
@@ -713,6 +755,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ResearchSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield break;
@@ -731,6 +774,9 @@ namespace Outfitter
                     yield break;
 
                 // Else
+                case "HaulingUrgent":
+                    yield break;
+
                 case "FinishingOff":
                     yield break;
 
@@ -743,6 +789,7 @@ namespace Outfitter
                         Log.Warning("WorkTypeDef " + worktype.defName + " not handled.");
                         IgnoredWorktypeDefs.Add(worktype.defName);
                     }
+
                     yield break;
             }
         }

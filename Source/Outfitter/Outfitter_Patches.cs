@@ -45,20 +45,24 @@ namespace Outfitter
                         {
                             InterfaceToggleTab(current, pane);
                         }
+
                         bool flag2 = current.GetType() == pane.OpenTabType;
                         if (!flag2 && !current.TutorHighlightTagClosed.NullOrEmpty())
                         {
                             UIHighlighter.HighlightOpportunity(rect, current.TutorHighlightTagClosed);
                         }
+
                         if (flag2)
                         {
                             current.DoTabGUI();
                             pane.RecentHeight = 700f;
                             flag = true;
                         }
+
                         num -= TabWidth;
                     }
                 }
+
                 if (flag)
                 {
                     GUI.DrawTexture(new Rect(0f, y, width, TabHeight), InspectTabButtonFillTex);
@@ -68,6 +72,7 @@ namespace Outfitter
             {
                 Log.ErrorOnce(ex.ToString(), 742783);
             }
+
             return false;
         }
 
@@ -77,6 +82,7 @@ namespace Outfitter
             {
                 return;
             }
+
             ToggleTab(tab, pane);
         }
 

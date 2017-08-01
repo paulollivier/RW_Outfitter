@@ -36,6 +36,7 @@ namespace Outfitter
             {
                 text = labelKey.Translate(text);
             }
+
             Text.Font = GameFont.Tiny;
             Rect labelRect = new Rect(canvas.x, canvas.y, canvas.width, 19f);
             Text.Anchor = TextAnchor.UpperCenter;
@@ -83,9 +84,11 @@ namespace Outfitter
                         float distToMax = Mathf.Abs(x - (maxHandleRect.x - 16f));
                         draggingHandle = distToMin >= distToMax ? Handle.Max : Handle.Min;
                     }
+
                     dragging = true;
                     Event.current.Use();
                 }
+
                 if (dragging || (draggingHandle != Handle.None && Event.current.type == EventType.MouseDrag))
                 {
                     // NOTE: this deviates from vanilla, vanilla seemed to assume that max == span?
@@ -107,9 +110,11 @@ namespace Outfitter
                             range.min = range.max;
                         }
                     }
+
                     Event.current.Use();
                 }
             }
+
             if (draggingHandle != Handle.None && Event.current.type == EventType.MouseUp)
             {
                 draggingId = 0;

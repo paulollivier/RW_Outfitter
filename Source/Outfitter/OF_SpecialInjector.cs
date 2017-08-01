@@ -1,12 +1,16 @@
-﻿using System;
+﻿// Toggle in Hospitality Properties
+#if NoCCL
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using RimWorld;
-using Verse;
-// Toggle in Hospitality Properties
-#if NoCCL
+
 using Outfitter.NoCCL;
+
+using RimWorld;
+
+using Verse;
+
 #else
 using CommunityCoreLibrary;
 #endif
@@ -26,12 +30,14 @@ namespace Outfitter
             }
         }
 
-        private static readonly BindingFlags[] bindingFlagCombos = {
-            BindingFlags.Instance | BindingFlags.Public, BindingFlags.Static | BindingFlags.Public,
-            BindingFlags.Instance | BindingFlags.NonPublic, BindingFlags.Static | BindingFlags.NonPublic,
-        };
+        private static readonly BindingFlags[] bindingFlagCombos =
+            {
+                BindingFlags.Instance | BindingFlags.Public, BindingFlags.Static | BindingFlags.Public,
+                BindingFlags.Instance | BindingFlags.NonPublic, BindingFlags.Static | BindingFlags.NonPublic,
+            };
 
         #region ApparelSense
+
         // our root thingCategory def
         private ThingCategoryDef apparelRoot = ThingCategoryDefOf.Apparel;
 
@@ -39,12 +45,8 @@ namespace Outfitter
         private ThingCategoryDef CreateCategory(string label, string type)
         {
             // create cat def
-            ThingCategoryDef cat = new ThingCategoryDef
-            {
-                parent = apparelRoot,
-                label = label,
-                defName = GetCatName(label, type)
-            };
+            ThingCategoryDef cat =
+                new ThingCategoryDef { parent = apparelRoot, label = label, defName = GetCatName(label, type) };
             DefDatabase<ThingCategoryDef>.Add(cat);
 
             // don't forget to call the PostLoad() function, or you'll get swarmed in red... (ugh)
@@ -58,15 +60,20 @@ namespace Outfitter
         }
 
         // create a category def and plop it into the defDB
-        private ThingCategoryDef CreateChildCategory(ThingCategoryDef thisRoot, string bodypart, string label, string type)
+        private ThingCategoryDef CreateChildCategory(
+            ThingCategoryDef thisRoot,
+            string bodypart,
+            string label,
+            string type)
         {
             // create cat def
-            ThingCategoryDef cat = new ThingCategoryDef
-            {
-                parent = thisRoot,
-                label = label,
-                defName = GetChildCatName(bodypart, label, type)
-            };
+            ThingCategoryDef cat =
+                new ThingCategoryDef
+                    {
+                        parent = thisRoot,
+                        label = label,
+                        defName = GetChildCatName(bodypart, label, type)
+                    };
             DefDatabase<ThingCategoryDef>.Add(cat);
 
             // don't forget to call the PostLoad() function, or you'll get swarmed in red... (ugh)
@@ -84,11 +91,13 @@ namespace Outfitter
         {
             return "ThingCategoryDef_Apparel_" + type + "_" + label;
         }
+
         // create a unique category name
         public string GetChildCatName(string cat, string label, string type)
         {
-            return "ThingCategoryDef_Apparel_" + cat +"_" + type + "_" + label;
+            return "ThingCategoryDef_Apparel_" + cat + "_" + type + "_" + label;
         }
+
         // exact copy of Verse.ThingCategoryNodeDatabase.SetNestLevelRecursive (Tynan, pls).
         private static void SetNestLevelRecursive(TreeNode_ThingCategory node, int nestDepth)
         {
@@ -98,13 +107,11 @@ namespace Outfitter
                 SetNestLevelRecursive(current.treeNode, nestDepth + 1);
             }
         }
-        #endregion
 
+        #endregion
 
         public override bool Inject()
         {
-
-            #region Automatic hookup
             // Loop through all detour attributes and try to hook them up
             foreach (Type targetType in Assembly.GetTypes())
             {
@@ -112,21 +119,29 @@ namespace Outfitter
                 {
                     foreach (MethodInfo targetMethod in targetType.GetMethods(bindingFlags))
                     {
-                        foreach (DetourAttribute detour in targetMethod.GetCustomAttributes(typeof(DetourAttribute), true))
+                        foreach (DetourAttribute detour in targetMethod.GetCustomAttributes(
+                            typeof(DetourAttribute),
+                            true))
                         {
-                            BindingFlags flags = detour.bindingFlags != default(BindingFlags) ? detour.bindingFlags : bindingFlags;
+                            BindingFlags flags = detour.bindingFlags != default(BindingFlags)
+                                                     ? detour.bindingFlags
+                                                     : bindingFlags;
                             MethodInfo sourceMethod = detour.source.GetMethod(targetMethod.Name, flags);
                             if (sourceMethod == null)
                             {
-                                Log.Error(string.Format("Outfitter :: Detours :: Can't find source method '{0} with bindingflags {1}", targetMethod.Name, flags));
+                                Log.Error(
+                                    string.Format(
+                                        "Outfitter :: Detours :: Can't find source method '{0} with bindingflags {1}",
+                                        targetMethod.Name,
+                                        flags));
                                 return false;
                             }
+
                             if (!Detours.TryDetourFromTo(sourceMethod, targetMethod)) return false;
                         }
                     }
                 }
             }
-            #endregion
 
             /*
             MethodInfo coreMethod = typeof(JobGiver_OptimizeApparel).GetMethod("TryGiveJob", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -137,20 +152,18 @@ namespace Outfitter
             */
 
             // inject ITab into all humanlikes
-
-
-
-
             if (useApparelSense)
             {
                 // get a list of all apparel in the game
-                List<ThingDef> allApparel = DefDatabase<ThingDef>.AllDefsListForReading.Where(t => t.IsApparel).ToList();
+                List<ThingDef> allApparel = DefDatabase<ThingDef>.AllDefsListForReading.Where(t => t.IsApparel)
+                    .ToList();
 
                 // detach all existing categories under apparel
                 foreach (ThingCategoryDef cat in apparelRoot.childCategories)
                 {
                     cat.parent = null;
                 }
+
                 apparelRoot.childCategories = new List<ThingCategoryDef>();
 
                 // loop over all apparel, adding categories where appropriate.
@@ -175,7 +188,8 @@ namespace Outfitter
                     foreach (BodyPartGroupDef bodyPart in apparel.bodyPartGroups)
                     {
                         // get or create category
-                        ThingCategoryDef cat = DefDatabase<ThingCategoryDef>.GetNamedSilentFail(GetCatName(bodyPart.label, "BP"));
+                        ThingCategoryDef cat =
+                            DefDatabase<ThingCategoryDef>.GetNamedSilentFail(GetCatName(bodyPart.label, "BP"));
                         if (cat == null)
                         {
                             cat = CreateCategory(bodyPart.label, "BP");
@@ -184,36 +198,36 @@ namespace Outfitter
                         foreach (ApparelLayer layer in apparel.layers)
                         {
                             // get or create category
-                            ThingCategoryDef childCat = DefDatabase<ThingCategoryDef>.GetNamedSilentFail(GetChildCatName(bodyPart.label, layer.ToString(), "CC"));
+                            ThingCategoryDef childCat =
+                                DefDatabase<ThingCategoryDef>.GetNamedSilentFail(
+                                    GetChildCatName(bodyPart.label, layer.ToString(), "CC"));
                             if (childCat == null)
                             {
                                 childCat = CreateChildCategory(cat, bodyPart.label, layer.ToString(), "CC");
                             }
+
                             // add category to thing, and thing to category. (Tynan, pls.)
                             thing.thingCategories.Add(childCat);
                             childCat.childThingDefs.Add(thing);
                         }
-
-
                     }
 
                     // categories based on tag (too messy)
 
-
                     //// categories based on tag (too messy)
-                    //foreach ( string tag in apparel.tags )
-                    //{
-                    //    // get or create category
-                    //    ThingCategoryDef cat = DefDatabase<ThingCategoryDef>.GetNamedSilentFail( GetCatName( tag, "BP" ) );
-                    //    if( cat == null )
-                    //    {
-                    //        cat = CreateCategory( tag, "BP" );
-                    //    }
+                    // foreach ( string tag in apparel.tags )
+                    // {
+                    // // get or create category
+                    // ThingCategoryDef cat = DefDatabase<ThingCategoryDef>.GetNamedSilentFail( GetCatName( tag, "BP" ) );
+                    // if( cat == null )
+                    // {
+                    // cat = CreateCategory( tag, "BP" );
+                    // }
 
-                    //    // add category to thing, and thing to category. (Tynan, pls.)
-                    //    thing.thingCategories.Add( cat );
-                    //    cat.childThingDefs.Add( thing );
-                    //}
+                    // // add category to thing, and thing to category. (Tynan, pls.)
+                    // thing.thingCategories.Add( cat );
+                    // cat.childThingDefs.Add( thing );
+                    // }
                 }
 
                 // set nest levels on new categories
@@ -222,7 +236,5 @@ namespace Outfitter
 
             return true;
         }
-
-
     }
 }

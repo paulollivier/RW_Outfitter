@@ -31,7 +31,7 @@ namespace Outfitter
             draft.icon = TexCommand.Draft;
             draft.activateSound = SoundDefOf.DraftOn;
 
-            //     pris.isActive = (() => this.<> f__this.ForPrisoners);
+            // pris.isActive = (() => this.<> f__this.ForPrisoners);
             draft.action = delegate
                 {
                     foreach (Pawn pawn in Find.VisibleMap.mapPawns.FreeColonistsSpawned)
@@ -71,8 +71,12 @@ namespace Outfitter
                                 if (!pawn.CanReserveAndReach(apparelList[i], PathEndMode.ClosestTouch, Danger.Deadly))
                                     continue;
                                 pawn.Reserve(apparelList[i]);
-                                Job job = new Job(JobDefOf.Wear, apparelList[i]);
-                                job.locomotionUrgency = LocomotionUrgency.Sprint;
+                                Job job =
+                                    new Job(JobDefOf.Wear, apparelList[i])
+                                        {
+                                            locomotionUrgency = LocomotionUrgency
+                                                .Sprint
+                                        };
                                 pawn.jobs.jobQueue.EnqueueLast(job);
 
                             }
@@ -86,6 +90,7 @@ namespace Outfitter
                         pawn.jobs.jobQueue.EnqueueLast(jobby);
 
                     }
+
                     this.DeSpawn();
                 };
             yield return draft;

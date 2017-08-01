@@ -30,11 +30,13 @@ namespace Outfitter.Helper
             {
                 filter.SetDisallowAll();
             }
+
             Rect rect3 = new Rect(rect2.xMax + 1f, rect2.y, num / 2f, 24f);
             if (Widgets.ButtonText(rect3, "AllowAll".Translate(), true, false, true))
             {
                 filter.SetAllowAll(parentFilter);
             }
+
             Text.Font = GameFont.Small;
             rect.yMin = rect2.yMax;
             Rect viewRect = new Rect(0f, 0f, rect.width - 16f, HelperThingFilterUI.viewHeight);
@@ -52,9 +54,10 @@ namespace Outfitter.Helper
                 {
                     parentFilter.RecalculateDisplayRootCategory();
                 }
+
                 node = parentFilter.DisplayRootCategory;
             }
-            #region StorageSearch
+            
             if (filterText != null && filterText.Length > 2)
             {
                 TreeNode_ThingCategory rootNode = new TreeNode_ThingCategory(new ThingCategoryDef());
@@ -68,7 +71,7 @@ namespace Outfitter.Helper
 
                 node = rootNode;
             }
-            #endregion
+            
 
             listing_TreeThingFilter.DoCategoryChildren(node, 0, openMask, true);
             listing_TreeThingFilter.End();
@@ -76,6 +79,7 @@ namespace Outfitter.Helper
             {
                 HelperThingFilterUI.viewHeight = num3 + listing_TreeThingFilter.CurHeight + 90f;
             }
+
             Widgets.EndScrollView();
         }
 
@@ -85,6 +89,7 @@ namespace Outfitter.Helper
             {
                 return;
             }
+
             Rect rect = new Rect(20f, y, width - 20f, 26f);
             FloatRange allowedHitPointsPercents = filter.AllowedHitPointsPercents;
             Widgets.FloatRange(rect, 1, ref allowedHitPointsPercents, 0f, 1f, "HitPoints", ToStringStyle.PercentZero);
@@ -100,6 +105,7 @@ namespace Outfitter.Helper
             {
                 return;
             }
+
             Rect rect = new Rect(20f, y, width - 20f, 26f);
             QualityRange allowedQualityLevels = filter.AllowedQualityLevels;
             Widgets.QualityRange(rect, 2, ref allowedQualityLevels);

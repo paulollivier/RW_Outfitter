@@ -24,11 +24,13 @@ namespace Outfitter
                 Log.ErrorOnce(pawn + " tried to run JobGiver_OptimizeApparel without an OutfitTracker", 5643897);
                 return false;
             }
+
             if (pawn.Faction != Faction.OfPlayer)
             {
                 Log.ErrorOnce("Non-colonist " + pawn + " tried to optimize apparel.", 764323);
                 return false;
             }
+
             if (!DebugViewSettings.debugApparelOptimize)
             {
                 if (Find.TickManager.TicksGame < pawn.mindState.nextApparelOptimizeTick)
@@ -47,6 +49,7 @@ namespace Outfitter
             pawn.Position
                 }));
             }
+
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
             for (int i = wornApparel.Count - 1; i >= 0; i--)
@@ -60,6 +63,7 @@ namespace Outfitter
                     return false;
                 }
             }
+
             Thing thing = null;
             float num = 0f;
             List<Thing> list = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
@@ -84,6 +88,7 @@ namespace Outfitter
                             {
                                 debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
                             }
+
                             if (gain >= MinScoreGainToCare && gain >= num)
                             {
                                 if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
@@ -99,6 +104,7 @@ namespace Outfitter
                     }
                 }
             }
+
             if (DebugViewSettings.debugApparelOptimize)
             {
                 debugSb.AppendLine("BEST: " + thing);
@@ -111,6 +117,7 @@ namespace Outfitter
                 SetNextOptimizeTick(pawn);
                 return false;
             }
+
             __result = new Job(JobDefOf.Wear, thing);
             return false;
         }

@@ -13,15 +13,13 @@ namespace Outfitter
 
         public SaveablePawn GetCache(Pawn pawn)
         {
-            foreach (SaveablePawn c in _pawnCacheMap)
-                if (c.Pawn == pawn)
-                    return c;
+            foreach (SaveablePawn c in this._pawnCacheMap) if (c.Pawn == pawn) return c;
 
             return null;
 
             // if (!PawnApparelStatCaches.ContainsKey(pawn))
             // {
-            //     PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
+            // PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
             // }
             // return PawnApparelStatCaches[pawn];
         }
@@ -33,17 +31,18 @@ namespace Outfitter
             Scribe_Values.Look(ref this.updated, "updated");
             Scribe_Collections.Look(ref this._pawnCacheMap, "Pawns", LookMode.Deep);
 
-            if (!updated)
+            if (!this.updated)
             {
-                foreach (SaveablePawn c in _pawnCacheMap)
+                foreach (SaveablePawn c in this._pawnCacheMap)
                 {
-                    if (GameComponent_Outfitter._pawnCache.Contains(c))
-                        continue;
+                    if (GameComponent_Outfitter._pawnCache.Contains(c)) continue;
                     GameComponent_Outfitter._pawnCache.Add(c);
                 }
-                updated = true;
+
+                this.updated = true;
             }
-            //     this._pawnCacheMap = null;
+
+            // this._pawnCacheMap = null;
         }
 
         public MapComponent_Outfitter(Map map)

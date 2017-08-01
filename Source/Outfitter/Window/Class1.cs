@@ -20,12 +20,14 @@ namespace Outfitter
                 flag = true;
                 GUI.color = GenUI.MouseoverColor;
             }
+
             Texture2D badTex = this.icon;
             if (badTex == null)
             {
                 badTex = BaseContent.BadTex;
             }
-            GUI.DrawTexture(rect, Command.BGTex);
+
+            GUI.DrawTexture(rect, BGTex);
             MouseoverSounds.DoRegion(rect, SoundDefOf.MouseoverCommand);
             GUI.color = this.IconDrawColor;
             Widgets.DrawTextureFitted(new Rect(rect), badTex, this.iconDrawScale * 0.85f, this.iconProportions, this.iconTexCoords);
@@ -43,10 +45,12 @@ namespace Outfitter
                     Event.current.Use();
                 }
             }
+
             if (Widgets.ButtonInvisible(rect, false))
             {
                 flag2 = true;
             }
+
             string labelCap = this.LabelCap;
             if (!labelCap.NullOrEmpty())
             {
@@ -59,6 +63,7 @@ namespace Outfitter
                 Text.Anchor = TextAnchor.UpperLeft;
                 GUI.color = Color.white;
             }
+
             GUI.color = Color.white;
             if (this.DoTooltip)
             {
@@ -66,7 +71,7 @@ namespace Outfitter
                 if (this.disabled && !this.disabledReason.NullOrEmpty())
                 {
                     string text = tip.text;
-                    tip.text = string.Concat(new string[]
+                    tip.text = string.Concat(new[]
                                                  {
                                                      text,
                                                      "\n\n",
@@ -75,12 +80,15 @@ namespace Outfitter
                                                      this.disabledReason
                                                  });
                 }
+
                 TooltipHandler.TipRegion(rect, tip);
             }
+
             if (!this.HighlightTag.NullOrEmpty() && (Find.WindowStack.FloatMenu == null || !Find.WindowStack.FloatMenu.windowRect.Overlaps(rect)))
             {
                 UIHighlighter.HighlightOpportunity(rect, this.HighlightTag);
             }
+
             if (flag2)
             {
                 if (this.disabled)
@@ -89,12 +97,15 @@ namespace Outfitter
                     {
                         Messages.Message(this.disabledReason, MessageSound.RejectInput);
                     }
+
                     return new GizmoResult(GizmoState.Mouseover, null);
                 }
+
                 if (!TutorSystem.AllowAction(this.TutorTagSelect))
                 {
                     return new GizmoResult(GizmoState.Mouseover, null);
                 }
+
                 GizmoResult result = new GizmoResult(GizmoState.Interacted, Event.current);
                 TutorSystem.Notify_Event(this.TutorTagSelect);
                 return result;
@@ -105,6 +116,7 @@ namespace Outfitter
                 {
                     return new GizmoResult(GizmoState.Mouseover, null);
                 }
+
                 return new GizmoResult(GizmoState.Clear, null);
             }
         }

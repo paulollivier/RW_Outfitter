@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using RimWorld;
-#if NoCCL
-using Outfitter.NoCCL;
+﻿#if NoCCL
 #else
 using CommunityCoreLibrary;
 #endif
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Outfitter.NoCCL;
+
+using RimWorld;
+
 using Verse;
 
 namespace Outfitter
@@ -24,6 +27,7 @@ namespace Outfitter
                     def.inspectorTabs = new List<Type>();
                     def.inspectorTabsResolved = new List<ITab>();
                 }
+
                 if (def.inspectorTabs.Contains(typeof(ITab_Pawn_Outfitter)))
                 {
                     return false;

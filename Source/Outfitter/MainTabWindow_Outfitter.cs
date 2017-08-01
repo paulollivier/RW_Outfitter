@@ -16,24 +16,23 @@ namespace Outfitter
             List<BodyPartGroupDef> groups = BodyDefOf.Human.AllParts.SelectMany( part => part.groups ).Distinct().ToList();
 
             // log it, because we can!
-            Log.Message( String.Join( "\n", groups.Select( group => group.LabelCap ).ToArray() ) );
+            Log.Message( string.Join( "\n", groups.Select( group => group.LabelCap ).ToArray() ) );
 
-        //  foreach ( Pawn pawn in Find.ListerPawns.FreeColonistsSpawned )
-        //  {
-        //      Log.Message( pawn.NameStringShort + " stat priorities:\n" +
-        //                   String.Join( "\n",
-        //                                pawn.StatCache()
-        //                                    .Select( stat => stat.Key.LabelCap + ": " + stat.Value )
-        //                                    .ToArray() ) );
-        //
-        //      Log.Message( String.Join( "\n",
-        //                                Find.ListerThings.ThingsInGroup( ThingRequestGroup.Apparel )
-        //                                    .Select(
-        //                                        app =>
-        //                                            app.LabelCap + ": " +
-        //                                            ApparelStatsHelper.ApparelScoreRaw( app as Apparel, pawn ) )
-        //                                    .ToArray() ) );
-        //  }
+        // foreach ( Pawn pawn in Find.ListerPawns.FreeColonistsSpawned )
+        // {
+        // Log.Message( pawn.NameStringShort + " stat priorities:\n" +
+        // String.Join( "\n",
+        // pawn.StatCache()
+        // .Select( stat => stat.Key.LabelCap + ": " + stat.Value )
+        // .ToArray() ) );
+        // Log.Message( String.Join( "\n",
+        // Find.ListerThings.ThingsInGroup( ThingRequestGroup.Apparel )
+        // .Select(
+        // app =>
+        // app.LabelCap + ": " +
+        // ApparelStatsHelper.ApparelScoreRaw( app as Apparel, pawn ) )
+        // .ToArray() ) );
+        // }
         }
     }
 }

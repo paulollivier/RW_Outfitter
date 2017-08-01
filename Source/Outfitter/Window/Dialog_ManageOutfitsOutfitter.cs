@@ -12,8 +12,11 @@ namespace Outfitter.Window
     public class Dialog_ManageOutfitsOutfitter : Verse.Window
     {
         private const float TopAreaHeight = 40f;
+
         private const float TopButtonHeight = 35f;
+
         private const float TopButtonWidth = 150f;
+
         private static StatDef[] _allDefs;
 
         private static ThingFilter _apparelGlobalFilter;
@@ -21,6 +24,7 @@ namespace Outfitter.Window
         private static readonly Regex ValidNameRegex = new Regex("^[a-zA-Z0-9 '\\-]*$");
 
         private Vector2 _scrollPosition;
+
         private Outfit _selOutfitInt;
 
         public Dialog_ManageOutfitsOutfitter(Outfit selectedOutfit)
@@ -36,12 +40,17 @@ namespace Outfitter.Window
                 _apparelGlobalFilter = new ThingFilter();
                 _apparelGlobalFilter.SetAllow(ThingCategoryDefOf.Apparel, true);
             }
+
             SelectedOutfit = selectedOutfit;
         }
 
         private Outfit SelectedOutfit
         {
-            get { return _selOutfitInt; }
+            get
+            {
+                return _selOutfitInt;
+            }
+
             set
             {
                 CheckSelectedOutfitHasName();
@@ -51,7 +60,10 @@ namespace Outfitter.Window
 
         public override Vector2 InitialSize
         {
-            get { return new Vector2(700f, 700f); }
+            get
+            {
+                return new Vector2(700f, 700f);
+            }
         }
 
         private void CheckSelectedOutfitHasName()
@@ -61,11 +73,13 @@ namespace Outfitter.Window
                 SelectedOutfit.label = "Unnamed";
             }
         }
-        //StorageSearch
-        private string searchText = "";
+
+        // StorageSearch
+        private string searchText = string.Empty;
+
         private bool isFocused;
 
-        [Detour(typeof(Dialog_ManageOutfits), bindingFlags = (BindingFlags.Instance | BindingFlags.Public))]
+        [Detour(typeof(Dialog_ManageOutfits), bindingFlags = BindingFlags.Instance | BindingFlags.Public)]
         public override void DoWindowContents(Rect inRect)
         {
             float num = 0f;
@@ -77,11 +91,18 @@ namespace Outfitter.Window
                 foreach (Outfit current in Current.Game.outfitDatabase.AllOutfits)
                 {
                     Outfit localOut = current;
-                    list.Add(new FloatMenuOption(localOut.label, delegate { SelectedOutfit = localOut; },
-                        MenuOptionPriority.Medium, null, null));
+                    list.Add(
+                        new FloatMenuOption(
+                            localOut.label,
+                            delegate { SelectedOutfit = localOut; },
+                            MenuOptionPriority.Medium,
+                            null,
+                            null));
                 }
+
                 Find.WindowStack.Add(new FloatMenu(list));
             }
+
             num += 10f;
             Rect rect2 = new Rect(num, 0f, 150f, 35f);
             num += 150f;
@@ -89,6 +110,7 @@ namespace Outfitter.Window
             {
                 SelectedOutfit = Current.Game.outfitDatabase.MakeNewOutfit();
             }
+
             num += 10f;
             Rect rect3 = new Rect(num, 0f, 150f, 35f);
             num += 150f;
@@ -98,21 +120,31 @@ namespace Outfitter.Window
                 foreach (Outfit current2 in Current.Game.outfitDatabase.AllOutfits)
                 {
                     Outfit localOut = current2;
-                    list2.Add(new FloatMenuOption(localOut.label, delegate
-                    {
-                        AcceptanceReport acceptanceReport = Current.Game.outfitDatabase.TryDelete(localOut);
-                        if (!acceptanceReport.Accepted)
-                        {
-                            Messages.Message(acceptanceReport.Reason, MessageSound.RejectInput);
-                        }
-                        else if (localOut == SelectedOutfit)
-                        {
-                            SelectedOutfit = null;
-                        }
-                    }, MenuOptionPriority.Medium, null, null, 0f, null));
+                    list2.Add(
+                        new FloatMenuOption(
+                            localOut.label,
+                            delegate
+                                {
+                                    AcceptanceReport acceptanceReport = Current.Game.outfitDatabase.TryDelete(localOut);
+                                    if (!acceptanceReport.Accepted)
+                                    {
+                                        Messages.Message(acceptanceReport.Reason, MessageSound.RejectInput);
+                                    }
+                                    else if (localOut == SelectedOutfit)
+                                    {
+                                        SelectedOutfit = null;
+                                    }
+                                },
+                            MenuOptionPriority.Medium,
+                            null,
+                            null,
+                            0f,
+                            null));
                 }
+
                 Find.WindowStack.Add(new FloatMenu(list2));
             }
+
             Rect rect4 = new Rect(0f, 40f, 300f, inRect.height - 40f - CloseButSize.y).ContractedBy(10f);
             if (SelectedOutfit == null)
             {
@@ -123,21 +155,19 @@ namespace Outfitter.Window
                 GUI.color = Color.white;
                 return;
             }
+
             GUI.BeginGroup(rect4);
             Rect rect5 = new Rect(0f, 0f, 180f, 30f);
             DoNameInputRect(rect5, ref SelectedOutfit.label, 30);
 
-            #region Storage Search
-
             Rect clearSearchRect = new Rect(rect4.width - 20f, (29f - 14f) / 2f, 14f, 14f);
-            bool shouldClearSearch = (Widgets.ButtonImage(clearSearchRect, Widgets.CheckboxOffTex));
+            bool shouldClearSearch = Widgets.ButtonImage(clearSearchRect, Widgets.CheckboxOffTex);
 
             Rect searchRect = new Rect(rect5.width + 10f, 0f, rect4.width - rect5.width - 10f, 29f);
             var watermark = (searchText != string.Empty || isFocused) ? searchText : "Search";
 
-
-            bool escPressed = (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape);
-            bool clickedOutside = (!Mouse.IsOver(searchRect) && Event.current.type == EventType.MouseDown);
+            bool escPressed = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape;
+            bool clickedOutside = !Mouse.IsOver(searchRect) && Event.current.type == EventType.MouseDown;
 
             if (!isFocused)
             {
@@ -167,42 +197,43 @@ namespace Outfitter.Window
             {
                 searchText = string.Empty;
             }
+
             UIHighlighter.HighlightOpportunity(rect, "StoragePriority");
 
-
-            //        if (_apparelGlobalFilter != null)
-            //        {
-            //            parentFilter = _apparelGlobalFilter;
-            //        }
-            //         Rect rect5a = new Rect(0f, 35f, rect4.width, rect4.height - 35f);
-            //         HelperThingFilterUI.DoThingFilterConfigWindow(rect5a, ref this._scrollPosition, SelectedOutfit.filter, parentFilter, 8, searchText);
-
-            #endregion
-
-
+            // if (_apparelGlobalFilter != null)
+            // {
+            // parentFilter = _apparelGlobalFilter;
+            // }
+            // Rect rect5a = new Rect(0f, 35f, rect4.width, rect4.height - 35f);
+            // HelperThingFilterUI.DoThingFilterConfigWindow(rect5a, ref this._scrollPosition, SelectedOutfit.filter, parentFilter, 8, searchText);
             Rect rect6 = new Rect(0f, 40f, rect4.width, rect4.height - 45f - 10f);
 
             // fix for the filter
-
             if (_apparelGlobalFilter == null)
             {
                 _apparelGlobalFilter = new ThingFilter();
                 _apparelGlobalFilter.SetAllow(ThingCategoryDefOf.Apparel, true);
             }
+
             var parentFilter = _apparelGlobalFilter;
 
-            //
+            HelperThingFilterUI.DoThingFilterConfigWindow(
+                rect6,
+                ref _scrollPosition,
+                SelectedOutfit.filter,
+                parentFilter,
+                8,
+                searchText);
 
-            HelperThingFilterUI.DoThingFilterConfigWindow(rect6, ref _scrollPosition, SelectedOutfit.filter, parentFilter, 8, searchText);
-
-            //ThingFilterUI.DoThingFilterConfigWindow(rect6, ref _scrollPosition, SelectedOutfit.filter, _apparelGlobalFilter, 16);
+            // ThingFilterUI.DoThingFilterConfigWindow(rect6, ref _scrollPosition, SelectedOutfit.filter, _apparelGlobalFilter, 16);
             GUI.EndGroup();
 
             rect4 = new Rect(300f, 40f, inRect.width - 300f, inRect.height - 40f - CloseButSize.y).ContractedBy(10f);
             GUI.BeginGroup(rect4);
 
             rect6 = new Rect(0f, 40f, rect4.width, rect4.height - 45f - 10f);
-       //     DoStatsInput(rect6, ref _scrollPositionStats, saveout.Stats);
+
+            // DoStatsInput(rect6, ref _scrollPositionStats, saveout.Stats);
             GUI.EndGroup();
         }
 
@@ -227,8 +258,7 @@ namespace Outfitter.Window
             Text.Font = GameFont.Tiny;
             float num = rect.width - 2f;
             Rect rect2 = new Rect(rect.x + 1f, rect.y + 1f, num / 2f, 24f);
-            if (Widgets.ButtonText(rect2, "ClearAll".Translate(), true, false))
-                stats.Clear();
+            if (Widgets.ButtonText(rect2, "ClearAll".Translate(), true, false)) stats.Clear();
 
             rect.yMin = rect2.yMax;
             rect2 = new Rect(rect.x + 5f, rect.y + 1f, rect.width - 2f - 16f - 8f, 20f);
@@ -255,32 +285,28 @@ namespace Outfitter.Window
 
             List<StatDef> sortedDefs = new List<StatDef>();
 
-            _allDefs = DefDatabase<StatDef>.AllDefs.OrderBy(i => i.label.ToString()).ThenBy(i => i.category.defName).ToArray();
-            //            _allDefs = DefDatabase<StatDef>.AllDefs.OrderBy(i => i.category.defName).ThenBy(i => i.defName).ToArray();
+            _allDefs = DefDatabase<StatDef>.AllDefs.OrderBy(i => i.label.ToString()).ThenBy(i => i.category.defName)
+                .ToArray();
 
+            // _allDefs = DefDatabase<StatDef>.AllDefs.OrderBy(i => i.category.defName).ThenBy(i => i.defName).ToArray();
             foreach (StatDef statDef in _allDefs)
             {
-                if (!statDef.defName.Equals("LeatherAmount")
-                    && !statDef.defName.Equals("MeatAmount")
-                    && !statDef.defName.Equals("EatingSpeed")
-                    && !statDef.defName.Equals("MinimumHandlingSkill")
-                    )
+                if (!statDef.defName.Equals("LeatherAmount") && !statDef.defName.Equals("MeatAmount")
+                    && !statDef.defName.Equals("EatingSpeed") && !statDef.defName.Equals("MinimumHandlingSkill"))
                 {
-                    if (statDef.category.defName.Equals("Basics")
-                        || statDef.category.defName.Equals("BasicsPawn")
-                        || statDef.category.defName.Equals("Apparel")
-                        || statDef.category.defName.Equals("Weapon")
+                    if (statDef.category.defName.Equals("Basics") || statDef.category.defName.Equals("BasicsPawn")
+                        || statDef.category.defName.Equals("Apparel") || statDef.category.defName.Equals("Weapon")
                         || statDef.category.defName.Equals("PawnCombat")
-                        || statDef.category.defName.Equals("PawnSocial")
-                        || statDef.category.defName.Equals("PawnMisc")
+                        || statDef.category.defName.Equals("PawnSocial") || statDef.category.defName.Equals("PawnMisc")
                         || statDef.category.defName.Equals("PawnWork") // check
-                        )
-                        sortedDefs.Add(statDef);
+                    ) sortedDefs.Add(statDef);
                 }
-
             }
 
-            Rect viewRect = new Rect(rect.xMin, rect.yMin, rect.width - 16f,
+            Rect viewRect = new Rect(
+                rect.xMin,
+                rect.yMin,
+                rect.width - 16f,
                 sortedDefs.Count * Text.LineHeight * 1.2f + stats.Count * 60);
 
             Widgets.BeginScrollView(rect, ref scrollPosition, viewRect);
@@ -292,13 +318,9 @@ namespace Outfitter.Window
             Listing_Standard listingStandard = new Listing_Standard(rect6);
             listingStandard.ColumnWidth = rect6.width;
 
-
-
-            foreach (StatDef stat in sortedDefs)
-                DrawStat(stats, listingStandard, stat);
+            foreach (StatDef stat in sortedDefs) DrawStat(stats, listingStandard, stat);
 
             listingStandard.End();
-
 
             Widgets.EndScrollView();
         }
@@ -317,16 +339,14 @@ namespace Outfitter.Window
                     outfitStat.Stat = stat;
                     outfitStat.Weight = 0;
                 }
-                if (!stats.Contains(outfitStat))
-                    stats.Add(outfitStat);
+
+                if (!stats.Contains(outfitStat)) stats.Add(outfitStat);
 
                 outfitStat.Weight = listingStandard.Slider(outfitStat.Weight, -1f, 1f);
-
             }
             else
             {
-                if (stats.Contains(outfitStat))
-                    stats.Remove(outfitStat);
+                if (stats.Contains(outfitStat)) stats.Remove(outfitStat);
                 outfitStat = null;
             }
         }

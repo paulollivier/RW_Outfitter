@@ -13,12 +13,12 @@ namespace Outfitter.Window
 
         public Dialog_PawnApparelComparer(Pawn pawn, Apparel apparel)
         {
-            doCloseX = true;
-            closeOnEscapeKey = true;
-            doCloseButton = true;
+            this.doCloseX = true;
+            this.closeOnEscapeKey = true;
+            this.doCloseButton = true;
 
-            _pawn = pawn;
-            _apparel = apparel;
+            this._pawn = pawn;
+            this._apparel = apparel;
         }
 
         public override Vector2 InitialSize
@@ -33,7 +33,7 @@ namespace Outfitter.Window
 
         public override void DoWindowContents(Rect windowRect)
         {
-            ApparelStatCache apparelStatCache = new ApparelStatCache(GameComponent_Outfitter.GetCache(_pawn));
+            ApparelStatCache apparelStatCache = new ApparelStatCache(GameComponent_Outfitter.GetCache(this._pawn));
             List<Apparel> allApparels = new List<Apparel>(this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
             foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
             {
@@ -43,7 +43,7 @@ namespace Outfitter.Window
                         allApparels.Add(pawnApparel);}
             }
 
-            allApparels = allApparels.Where(i => !ApparelUtility.CanWearTogether(_apparel.def, i.def)).ToList();
+            allApparels = allApparels.Where(i => !ApparelUtility.CanWearTogether(this._apparel.def, i.def)).ToList();
 
             Rect groupRect = windowRect.ContractedBy(10f);
             groupRect.height -= 100;
@@ -57,7 +57,7 @@ namespace Outfitter.Window
 
             Rect itemRect = new Rect(groupRect.xMin + 4f, groupRect.yMin, groupRect.width - 8f, 28f);
 
-            DrawLine(ref itemRect,
+            this.DrawLine(ref itemRect,
                 null, "Apparel", apparelLabelWidth,
                 null, "Equiped", apparelEquipedWidth,
                 null, "Target", apparelOwnerWidth,
@@ -76,9 +76,18 @@ namespace Outfitter.Window
 
             Rect listRect = viewRect.ContractedBy(4f);
 
-            Widgets.BeginScrollView(groupRect, ref scrollPosition, viewRect);
+            Widgets.BeginScrollView(groupRect, ref this.scrollPosition, viewRect);
 
-            allApparels = allApparels.OrderByDescending(i => { float g; if (apparelStatCache.CalculateApparelScoreGain(i, out g)) return g; return -1000f; }).ToList();
+            allApparels = allApparels.OrderByDescending(
+                i =>
+                    {
+                        float g;
+                        if (apparelStatCache.CalculateApparelScoreGain(i, out g))
+                        {
+                            return g;
+                        }
+                        return -1000f;
+                    }).ToList();
 
             foreach (Apparel currentAppel in allApparels)
             {
@@ -101,13 +110,12 @@ namespace Outfitter.Window
                             break;
                         }
 
-                  //foreach (Apparel a in mapComponent.GetCache(pawn).targetApparel)
-                  //    if (a == currentAppel)
-                  //    {
-                  //        target = pawn;
-                  //        break;
-                  //    }
-
+                  // foreach (Apparel a in mapComponent.GetCache(pawn).targetApparel)
+                  // if (a == currentAppel)
+                  // {
+                  // target = pawn;
+                  // break;
+                  // }
                     if ((equiped != null) &&
                         (target != null))
                         break;
@@ -115,18 +123,18 @@ namespace Outfitter.Window
 
                 float gain;
                 if (apparelStatCache.CalculateApparelScoreGain(currentAppel, out gain))
-                    DrawLine(ref itemRect,
+                    this.DrawLine(ref itemRect,
                         currentAppel, currentAppel.LabelCap, apparelLabelWidth,
                         equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
                         target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, _pawn).ToString("N5"), apparelScoreWidth,
+                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"), apparelScoreWidth,
                         gain.ToString("N5"), apparelGainWidth);
                 else
-                    DrawLine(ref itemRect,
+                    this.DrawLine(ref itemRect,
                         currentAppel, currentAppel.LabelCap, apparelLabelWidth,
                         equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
                         target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, _pawn).ToString("N5"), apparelScoreWidth,
+                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"), apparelScoreWidth,
                         "No Allow", apparelGainWidth);
 
                 listRect.yMin = itemRect.yMax;
@@ -159,7 +167,7 @@ namespace Outfitter.Window
                     Widgets.ThingIcon(fieldRect, apparelThing);
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close();
+                    this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
                     if (apparelEquipedThing != null)
                     {
@@ -175,6 +183,7 @@ namespace Outfitter.Window
                         if (apparelThing.Spawned)
                             Find.Selector.Select(apparelThing);
                     }
+
                     return;
                 }
             }
@@ -187,6 +196,7 @@ namespace Outfitter.Window
                     Widgets.Label(fieldRect, apparelText);
                 }
             }
+
             itemRect.xMin += textureWidth;
 
             if (apparelEquipedThing != null)
@@ -199,7 +209,7 @@ namespace Outfitter.Window
                     Widgets.ThingIcon(fieldRect, apparelEquipedThing);
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close();
+                    this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
                     Find.CameraDriver.JumpToVisibleMapLoc(apparelEquipedThing.PositionHeld);
                     Find.Selector.ClearSelection();
@@ -217,6 +227,7 @@ namespace Outfitter.Window
                     Widgets.Label(fieldRect, apparelText);
                 }
             }
+
             itemRect.xMin += apparelEquipedWidth;
 
             if (apparelOwnerThing != null)
@@ -229,7 +240,7 @@ namespace Outfitter.Window
                     Widgets.ThingIcon(fieldRect, apparelOwnerThing);
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close();
+                    this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
                     Find.CameraDriver.JumpToVisibleMapLoc(apparelOwnerThing.PositionHeld);
                     Find.Selector.ClearSelection();
@@ -247,6 +258,7 @@ namespace Outfitter.Window
                     Widgets.Label(fieldRect, apparelOwnerText);
                 }
             }
+
             itemRect.xMin += apparelOwnerWidth;
 
             fieldRect = new Rect(itemRect.xMin, itemRect.yMin, apparelScoreWidth, itemRect.height);
@@ -257,9 +269,9 @@ namespace Outfitter.Window
                 Text.Anchor = TextAnchor.UpperLeft;
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Close();
+                    this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
-                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(_pawn, apparelThing));
+                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(this._pawn, apparelThing));
                     return;
                 }
             }

@@ -23,6 +23,7 @@ namespace Outfitter
                     def.inspectorTabs = new List<Type>();
                     def.inspectorTabsResolved = new List<InspectTabBase>();
                 }
+
                 if (def.inspectorTabs.Contains(typeof(ITab_Pawn_Outfitter)))
                 {
                     return;
@@ -37,7 +38,7 @@ namespace Outfitter
 
         public static bool updated;
 
-        public static SaveablePawn GetCache(Pawn pawn)
+        public static SaveablePawn GetCache( Pawn pawn)
         {
             foreach (SaveablePawn c in _pawnCache)
             {
@@ -46,13 +47,14 @@ namespace Outfitter
                     return c;
                 }
             }
+
             SaveablePawn n = new SaveablePawn { Pawn = pawn };
             _pawnCache.Add(n);
             return n;
 
             // if (!PawnApparelStatCaches.ContainsKey(pawn))
             // {
-            //     PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
+            // PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
             // }
             // return PawnApparelStatCaches[pawn];
         }
