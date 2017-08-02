@@ -114,7 +114,7 @@ namespace Outfitter
             fontStyle = FontStyle.Bold,
             fontSize = 16,
             normal = {
-                        textColor = Color.white 
+                        textColor = Color.white
                      },
             padding = new RectOffset(0, 0, 12, 6)
         };
@@ -123,7 +123,7 @@ namespace Outfitter
         {
             fontStyle = FontStyle.Bold,
             normal = {
-                        textColor = Color.white 
+                        textColor = Color.white
                      },
             padding = new RectOffset(0, 0, 12, 6)
         };
@@ -132,14 +132,14 @@ namespace Outfitter
         readonly GUIStyle hoverBox = new GUIStyle
         {
             hover = {
-                       background = OutfitterTextures.BGColor 
+                       background = OutfitterTextures.BGColor
                     }
         };
 
         readonly GUIStyle whiteLine = new GUIStyle
         {
             normal = {
-                        background = OutfitterTextures.White 
+                        background = OutfitterTextures.White
                      }
         };
 
@@ -317,19 +317,25 @@ namespace Outfitter
                 score.ToString("N2"),
                 finalValue);
 
-            score += conf.ApparelScoreRaw_Temperature(this._apparel);
 
-            this.DrawLine(
-                "OutfitterTemperature".Translate(),
-                labelWidth,
-                conf.ApparelScoreRaw_Temperature(this._apparel).ToString("N2"),
-                baseValue,
-                "+",
-                multiplierWidth,
-                score.ToString("N2"),
-                finalValue);
+            float special = this._apparel.GetSpecialApparelScoreOffset();
+            if (special != 0f)
+            {
 
-            float armor = ApparelStatCache.ApparelScoreRaw_ProtectionBaseStat(this._apparel) * 0.3f;
+                score += special;
+
+                this.DrawLine(
+                    "OutfitterSpeacialScore".Translate(),
+                    labelWidth,
+                    special.ToString("N2"),
+                    baseValue,
+                    "+",
+                    multiplierWidth,
+                    score.ToString("N2"),
+                    finalValue);
+            }
+
+            float armor = ApparelStatCache.ApparelScoreRaw_ProtectionBaseStat(this._apparel) * 0.1f;
 
             score += armor;
 
@@ -361,6 +367,23 @@ namespace Outfitter
 
                 GUI.color = Color.white;
             }
+
+            var temperature = conf.ApparelScoreRaw_Temperature(this._apparel);
+            if (temperature != 1.0f)
+            {
+                score *= temperature;
+
+                this.DrawLine(
+                    "OutfitterTemperature".Translate(),
+                    labelWidth,
+                    conf.ApparelScoreRaw_Temperature(this._apparel).ToString("N2"),
+                    baseValue,
+                    "*",
+                    multiplierWidth,
+                    score.ToString("N2"),
+                    finalValue);
+            }
+
 
             this.DrawLine(
                 "OutfitterTotal".Translate(),

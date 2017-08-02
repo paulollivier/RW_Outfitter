@@ -68,6 +68,8 @@ namespace Outfitter
 
         public bool armorOnly = false;
 
+        public FloatRange Temperatureweight;
+
         // public SaveablePawn(Pawn pawn)
         // {
         // Pawn = pawn;

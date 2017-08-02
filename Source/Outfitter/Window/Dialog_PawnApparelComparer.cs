@@ -82,7 +82,7 @@ namespace Outfitter.Window
                 i =>
                     {
                         float g;
-                        if (apparelStatCache.CalculateApparelScoreGain(i, out g))
+                        if (apparelStatCache.DIALOG_CalculateApparelScoreGain(i, out g))
                         {
                             return g;
                         }
@@ -122,7 +122,7 @@ namespace Outfitter.Window
                 }
 
                 float gain;
-                if (apparelStatCache.CalculateApparelScoreGain(currentAppel, out gain))
+                if (apparelStatCache.DIALOG_CalculateApparelScoreGain(currentAppel, out gain))
                     this.DrawLine(ref itemRect,
                         currentAppel, currentAppel.LabelCap, apparelLabelWidth,
                         equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,

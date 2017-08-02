@@ -124,12 +124,26 @@ namespace Outfitter
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
 
             // add weights for all worktypes, multiplied by job priority
-            foreach (KeyValuePair<StatDef, float> stat in GetStatsOfArmor())
+            if (pawn.equipment.Primary != null && pawn.equipment.Primary.def.IsRangedWeapon)
             {
-                float weight = stat.Value;
+                foreach (KeyValuePair<StatDef, float> stat in GetStatsOfArmorRanged())
+                {
+                    float weight = stat.Value;
 
-                AddStatToDict(stat.Key, weight, ref dict);
+                    AddStatToDict(stat.Key, weight, ref dict);
+                }
             }
+            else
+            {
+                foreach (KeyValuePair<StatDef, float> stat in GetStatsOfArmorMelee())
+                {
+                    float weight = stat.Value;
+
+                    AddStatToDict(stat.Key, weight, ref dict);
+                }
+
+            }
+
 
 
             if (dict.Count > 0)
@@ -138,8 +152,8 @@ namespace Outfitter
                 float max = dict.Values.Select(Math.Abs).Max();
                 foreach (StatDef key in new List<StatDef>(dict.Keys))
                 {
-                    // normalize max of absolute weigths to be 1.5
-                    dict[key] /= max / 1.5f;
+                    // normalize max of absolute weigths to be 2.5
+                    dict[key] /= max / 2.5f;
                 }
             }
 
@@ -221,7 +235,7 @@ namespace Outfitter
             // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
             if (pawnSave.AddIndividualStats)
             {
-                
+
 
                 bool activeDrone = false;
 
@@ -306,8 +320,6 @@ namespace Outfitter
                     AddStatToDict(StatDefOf.ToxicSensitivity, -1.5f, ref dict);
                     AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
                 }
-                
-
 
                 switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Nerves))
                 {
@@ -315,45 +327,39 @@ namespace Outfitter
                         AddStatToDict(StatDefOf.MentalBreakThreshold, -0.5f, ref dict);
                         break;
                     case -2:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.1f, ref dict);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.25f, ref dict);
                         break;
                 }
 
                 switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Neurotic")))
                 {
                     case 1:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.5f, ref dict);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.25f, ref dict);
                         break;
                     case 2:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -1f, ref dict);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.5f, ref dict);
 
                         break;
                 }
             }
-
-            if (dict.Count > 0)
-            {
-                // normalize weights
-                float max = dict.Values.Select(Math.Abs).Max();
-                foreach (StatDef key in new List<StatDef>(dict.Keys))
-                {
-                    // normalize max of absolute weigths to be 1.5
-                    dict[key] /= max / 1.5f;
-                }
-            }
+            // No normalizing for indiidual stats
+            // if (dict.Count > 0)
+            // {
+            //     // normalize weights
+            //     float max = dict.Values.Select(Math.Abs).Max();
+            //     foreach (StatDef key in new List<StatDef>(dict.Keys))
+            //     {
+            //         // normalize max of absolute weigths to be 1.5
+            //         dict[key] /= max / 1.5f;
+            //     }
+            // }
 
             return dict;
         }
 
         // ReSharper disable once UnusedMember.Global
-        public static float ApparelScoreGain(Pawn pawn, Apparel ap, bool armorOnly = false)
+        public static float ApparelScoreGain(this Pawn pawn, Apparel ap)
         {
-            // only allow shields to be considered if a primary weapon is equipped and is melee
-            if (ap.def == ThingDefOf.Apparel_ShieldBelt && pawn.equipment.Primary != null
-                && !pawn.equipment.Primary.def.Verbs[0].MeleeRange)
-            {
-                return -1000f;
-            }
 
             ApparelStatCache conf = new ApparelStatCache(pawn);
 
@@ -794,22 +800,47 @@ namespace Outfitter
             }
         }
 
-        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmor()
+        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorRanged()
         {
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 3f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 0.5f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, 3f);
-            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 2.4f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 3f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -2.4f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1.2f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 0f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 1.8f);
+            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Electric, 1.5f);
+            yield break;
+        }
+
+        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorMelee()
+        {
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 1.8f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 3f);
+            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 2.4f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -2.4f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1.2f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Electric, 1.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 0f);
             yield break;
         }
     }

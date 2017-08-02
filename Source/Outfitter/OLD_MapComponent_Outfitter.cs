@@ -4,7 +4,7 @@ using Verse;
 
 namespace Outfitter
 {
-    // to do: remove mapcomponent in next major version
+    // TODO: remove mapcomponent in next alpha
     class MapComponent_Outfitter : MapComponent
     {
         public List<SaveablePawn> _pawnCacheMap = new List<SaveablePawn>();

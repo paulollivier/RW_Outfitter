@@ -66,7 +66,7 @@
     <Compile Include="Building_BattleSpot.cs" />
     <Compile Include="JobDriver_GotoDraftOf.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
-    <Compile Include="JobGiver\Outfitter_JobGiver_GetArmor.cs" />
+    <None Include="JobGiver\Outfitter_JobGiver_GetArmor.cs" />
     <Compile Include="Outfitter_Patches.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
@@ -83,7 +83,7 @@
     <None Include="Initializer\Bootstrap.cs" />
     <Compile Include="Window\ITab_Pawn_Outfitter.cs" />
     <None Include="MainTabWindow_Outfitter.cs" />
-    <Compile Include="MapComponent_Outfitter.cs" />
+    <Compile Include="OLD_MapComponent_Outfitter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ApparelStatsHelper.cs" />
     <Compile Include="Saveables\Saveable_Pawn.cs" />

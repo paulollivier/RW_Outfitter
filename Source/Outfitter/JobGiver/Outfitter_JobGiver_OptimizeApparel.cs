@@ -16,6 +16,8 @@ namespace Outfitter
         private const int ApparelOptimizeCheckIntervalMax = 9000;
         private static StringBuilder debugSb;
 
+      //  private static NeededWarmth neededWarmth;
+
         public static bool TryGiveJob_Prefix(ref Job __result, Pawn pawn)
         {
             __result = null;
@@ -73,7 +75,8 @@ namespace Outfitter
                 SetNextOptimizeTick(pawn);
                 return false;
             }
-
+         //   var temperature = GenTemperature.GetTemperatureAtTile(pawn.Map.Tile);
+         //   neededWarmth = PawnApparelGenerator.CalculateNeededWarmth(pawn, pawn.Map.Tile, GenLocalDate.Twelfth(pawn));
             for (int j = 0; j < list.Count; j++)
             {
                 Apparel apparel = (Apparel)list[j];
@@ -83,7 +86,7 @@ namespace Outfitter
                     {
                         if (!apparel.IsForbidden(pawn))
                         {
-                            float gain = ApparelStatsHelper.ApparelScoreGain(pawn, apparel);
+                            float gain = pawn.ApparelScoreGain(apparel);
                             if (DebugViewSettings.debugApparelOptimize)
                             {
                                 debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
