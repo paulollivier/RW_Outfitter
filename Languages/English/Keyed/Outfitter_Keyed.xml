@@ -32,4 +32,7 @@
   <PreferedGear>Prefered Gear:</PreferedGear>
   <OutfitterComparer>Compare Apparel Score</OutfitterComparer>
   <OutfitterSpecialScore>Special Score</OutfitterSpecialScore>
+  <OutfitterWornByCorpse>Worn by corpse</OutfitterWornByCorpse>
+  <OutfitterQuality>Quality modifier</OutfitterQuality>
+  <OutfitterHumanLeather>Human leather</OutfitterHumanLeather>
 </LanguageData>

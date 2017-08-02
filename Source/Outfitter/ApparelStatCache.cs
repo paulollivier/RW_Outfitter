@@ -390,13 +390,13 @@ namespace Outfitter
         }
 
 
-        public float ApparelScoreRaw(Apparel ap, Pawn pawn, bool armorOnly = false)
+        public float ApparelScoreRaw(Apparel ap, Pawn pawn)
         {
             // only allow shields to be considered if a primary weapon is equipped and is melee
-            if (ap.GetStatValue(StatDefOf.EnergyShieldEnergyMax) > 0 && pawn.equipment.Primary != null
-                && !pawn.equipment.Primary.def.Verbs[0].MeleeRange)
+            if (ap.def.thingClass == typeof(ShieldBelt) && pawn.equipment.Primary != null
+                && pawn.equipment.Primary.def.IsRangedWeapon)
             {
-                return -1000f;
+                return -1f;
             }
 
             // relevant apparel stats
@@ -511,19 +511,19 @@ namespace Outfitter
                         score *= 1.0f;
                         break;
                     case QualityCategory.Good:
-                        score *= 1.1f;
+                        score *= 1.05f;
                         break;
                     case QualityCategory.Superior:
-                        score *= 1.2f;
+                        score *= 1.1f;
                         break;
                     case QualityCategory.Excellent:
-                        score *= 1.3f;
+                        score *= 1.15f;
                         break;
                     case QualityCategory.Masterwork:
-                        score *= 1.4f;
+                        score *= 1.2f;
                         break;
                     case QualityCategory.Legendary:
-                        score *= 1.5f;
+                        score *= 1.25f;
                         break;
                     default: throw new ArgumentOutOfRangeException();
                 }
@@ -666,9 +666,9 @@ namespace Outfitter
             //        / 100;
             //  Log.Message(log);
 
-            // // Punish bad apparel
-            // temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 2f : 1f;
-            // temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 2f : 1f;
+             // Punish bad apparel
+             temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 5f : 1f;
+             temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 5f : 1f;
             return 1 + (temperatureScoreOffset.min + temperatureScoreOffset.max) / 100;
         }
 
@@ -716,26 +716,26 @@ namespace Outfitter
                 }
             }
 
-            // if (!pawnSave.SetRealComfyTemperatures)
-            // {
-            // pawnSave.RealComfyTemperatures.min = this._pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin);
-            // pawnSave.RealComfyTemperatures.max = this._pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax);
-            // pawnSave.SetRealComfyTemperatures = true;
-            // }
+            if (!pawnSave.SetRealComfyTemperatures)
+            {
+                pawnSave.RealComfyTemperatures.min = this._pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMin);
+                pawnSave.RealComfyTemperatures.max = this._pawn.def.GetStatValueAbstract(StatDefOf.ComfyTemperatureMax);
+                pawnSave.SetRealComfyTemperatures = true;
+            }
             if (Find.TickManager.TicksGame - this._lastWeightUpdate > 1900 || forceweight)
             {
                 FloatRange weight = new FloatRange(1f, 1f);
 
-                if (this.pawnSave.TargetTemperatures.min < this._pawn.ComfortableTemperatureRange().min)
+                if (this.pawnSave.TargetTemperatures.min < pawnSave.RealComfyTemperatures.min)
                 {
                     weight.min += Math.Abs(
-                        (this.pawnSave.TargetTemperatures.min - this._pawn.ComfortableTemperatureRange().min) / 100);
+                        (this.pawnSave.TargetTemperatures.min - pawnSave.RealComfyTemperatures.min) / 100);
                 }
 
-                if (this.pawnSave.TargetTemperatures.max > this._pawn.ComfortableTemperatureRange().max)
+                if (this.pawnSave.TargetTemperatures.max > pawnSave.RealComfyTemperatures.max)
                 {
                     weight.max += Math.Abs(
-                        (this.pawnSave.TargetTemperatures.max - this._pawn.ComfortableTemperatureRange().max) / 100);
+                        (this.pawnSave.TargetTemperatures.max - pawnSave.RealComfyTemperatures.max) / 100);
                 }
                 this.pawnSave.Temperatureweight = weight;
                 this._lastWeightUpdate = Find.TickManager.TicksGame;

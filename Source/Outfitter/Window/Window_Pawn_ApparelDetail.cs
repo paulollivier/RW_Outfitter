@@ -12,6 +12,8 @@ using Verse;
 
 namespace Outfitter
 {
+    using System;
+
     public class Window_Pawn_ApparelDetail : Verse.Window
     {
         private readonly Pawn _pawn;
@@ -325,7 +327,7 @@ namespace Outfitter
                 score += special;
 
                 this.DrawLine(
-                    "OutfitterSpeacialScore".Translate(),
+                    "OutfitterSpecialScore".Translate(),
                     labelWidth,
                     special.ToString("N2"),
                     baseValue,
@@ -367,6 +369,98 @@ namespace Outfitter
 
                 GUI.color = Color.white;
             }
+
+            if (this._apparel.WornByCorpse && (this._pawn == null || ThoughtUtility.CanGetThought(this._pawn, ThoughtDefOf.DeadMansApparel)))
+            {
+                score -= 0.5f;
+                if (score > 0f)
+                {
+                    score *= 0.1f;
+                }
+                this.DrawLine(
+                    "OutfitterWornByCorpse".Translate(),
+                    labelWidth,
+                    "modified",
+                    baseValue,
+                    "weighted",
+                    multiplierWidth,
+                    score.ToString("N2"),
+                    finalValue);
+            }
+
+            var mod = 1f;
+            if (this._apparel.TryGetQuality(out QualityCategory cat))
+            {
+                switch (cat)
+                {
+                    case QualityCategory.Awful:
+                        mod = 0.7f;
+                        break;
+                    case QualityCategory.Shoddy:
+                        mod = 0.8f;
+                        break;
+                    case QualityCategory.Poor:
+                        mod = 0.9f;
+                        break;
+                    case QualityCategory.Normal:
+                        mod = 1.0f;
+                        break;
+                    case QualityCategory.Good:
+                        mod = 1.1f;
+                        break;
+                    case QualityCategory.Superior:
+                        mod = 1.2f;
+                        break;
+                    case QualityCategory.Excellent:
+                        mod = 1.3f;
+                        break;
+                    case QualityCategory.Masterwork:
+                        mod = 1.4f;
+                        break;
+                    case QualityCategory.Legendary:
+                        mod = 1.5f;
+                        break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+                score *= mod;
+
+                this.DrawLine(
+                "OutfitterQuality".Translate(),
+                    labelWidth,
+                    mod.ToString("N2"),
+                    baseValue,
+                    "*",
+                    multiplierWidth,
+                    score.ToString("N2"),
+                    finalValue);
+            }
+
+            if (this._apparel.Stuff == ThingDefOf.Human.race.leatherDef)
+            {
+                if (this._pawn == null || ThoughtUtility.CanGetThought(_pawn, ThoughtDefOf.HumanLeatherApparelSad))
+                {
+                    score -= 0.5f;
+                    if (score > 0f)
+                    {
+                        score *= 0.1f;
+                    }
+                }
+
+                if (_pawn != null && ThoughtUtility.CanGetThought(_pawn, ThoughtDefOf.HumanLeatherApparelHappy))
+                {
+                    score *= 2f;
+                }
+                this.DrawLine(
+                    "OutfitterHumanLeather".Translate(),
+                    labelWidth,
+                    "modified",
+                    baseValue,
+                    "weighted",
+                    multiplierWidth,
+                    score.ToString("N2"),
+                    finalValue);
+            }
+
 
             var temperature = conf.ApparelScoreRaw_Temperature(this._apparel);
             if (temperature != 1.0f)
