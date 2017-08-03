@@ -6,11 +6,11 @@ namespace Outfitter.Textures
     [StaticConstructorOnStartup]
     internal class OutfitterTextures
     {
-        public static readonly Texture2D resetButton = ContentFinder<Texture2D>.Get("reset");
+        public static readonly Texture2D ResetButton = ContentFinder<Texture2D>.Get("reset");
 
-        public static readonly Texture2D deleteButton = ContentFinder<Texture2D>.Get("delete");
+        public static readonly Texture2D DeleteButton = ContentFinder<Texture2D>.Get("delete");
 
-        public static readonly Texture2D addButton = ContentFinder<Texture2D>.Get("add");
+        public static readonly Texture2D AddButton = ContentFinder<Texture2D>.Get("add");
 
         public static readonly Texture2D BGColor = SolidColorMaterials.NewSolidColorTexture(new Color(0.2f, 0.2f, 0.2f, 1));
 

@@ -27,6 +27,14 @@ namespace Outfitter
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
+            // Set playerController to drafted
+            Toil draft = new Toil
+                             {
+                                 initAction = () => { this.pawn.drafter.Drafted = true; },
+                                 defaultCompleteMode = ToilCompleteMode.Instant
+                             };
+            yield return draft;
+
             yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
 
             Toil arrive = new Toil
@@ -77,13 +85,7 @@ namespace Outfitter
                                };
             yield return scatter;
 
-            // Set playerController to drafted
-            Toil arrivalDraft = new Toil
-                                    {
-                                        initAction = () => { this.pawn.drafter.Drafted = true; },
-                                        defaultCompleteMode = ToilCompleteMode.Instant
-                                    };
-            yield return arrivalDraft;
+
 
         }
 

@@ -295,7 +295,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Manual)
             {
                 buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.deleteButton))
+                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.DeleteButton))
                 {
                     stat.Delete(pawn);
                     stop_ui = true;
@@ -306,7 +306,7 @@ namespace Outfitter
             if (stat.Assignment == StatAssignment.Override)
             {
                 buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.resetButton))
+                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.ResetButton))
                 {
                     stat.Reset(pawn);
                     stop_ui = true;
@@ -482,7 +482,7 @@ namespace Outfitter
             if (ap.def.useHitPoints)
             {
                 float x = ap.HitPoints / (float)ap.MaxHitPoints;
-                score = score * 0.25f + score * 0.75f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
+                score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
             }
 
             if (ap.WornByCorpse && (pawn == null || ThoughtUtility.CanGetThought(pawn, ThoughtDefOf.DeadMansApparel)))
@@ -494,40 +494,41 @@ namespace Outfitter
                 }
             }
 
-            if (ap.TryGetQuality(out QualityCategory cat))
-            {
-                switch (cat)
+            if (false)
+                if (ap.TryGetQuality(out QualityCategory cat))
                 {
-                    case QualityCategory.Awful:
-                        score *= 0.7f;
-                        break;
-                    case QualityCategory.Shoddy:
-                        score *= 0.8f;
-                        break;
-                    case QualityCategory.Poor:
-                        score *= 0.9f;
-                        break;
-                    case QualityCategory.Normal:
-                        score *= 1.0f;
-                        break;
-                    case QualityCategory.Good:
-                        score *= 1.05f;
-                        break;
-                    case QualityCategory.Superior:
-                        score *= 1.1f;
-                        break;
-                    case QualityCategory.Excellent:
-                        score *= 1.15f;
-                        break;
-                    case QualityCategory.Masterwork:
-                        score *= 1.2f;
-                        break;
-                    case QualityCategory.Legendary:
-                        score *= 1.25f;
-                        break;
-                    default: throw new ArgumentOutOfRangeException();
+                    switch (cat)
+                    {
+                        case QualityCategory.Awful:
+                            score *= 0.7f;
+                            break;
+                        case QualityCategory.Shoddy:
+                            score *= 0.8f;
+                            break;
+                        case QualityCategory.Poor:
+                            score *= 0.9f;
+                            break;
+                        case QualityCategory.Normal:
+                            score *= 1.0f;
+                            break;
+                        case QualityCategory.Good:
+                            score *= 1.05f;
+                            break;
+                        case QualityCategory.Superior:
+                            score *= 1.1f;
+                            break;
+                        case QualityCategory.Excellent:
+                            score *= 1.15f;
+                            break;
+                        case QualityCategory.Masterwork:
+                            score *= 1.2f;
+                            break;
+                        case QualityCategory.Legendary:
+                            score *= 1.25f;
+                            break;
+                        default: throw new ArgumentOutOfRangeException();
+                    }
                 }
-            }
 
             if (ap.Stuff == ThingDefOf.Human.race.leatherDef)
             {
@@ -666,9 +667,9 @@ namespace Outfitter
             //        / 100;
             //  Log.Message(log);
 
-             // Punish bad apparel
-             temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 5f : 1f;
-             temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 5f : 1f;
+            // Punish bad apparel
+            temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 10f : 1f;
+            temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 10f : 1f;
             return 1 + (temperatureScoreOffset.min + temperatureScoreOffset.max) / 100;
         }
 

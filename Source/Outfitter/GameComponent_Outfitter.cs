@@ -38,7 +38,7 @@ namespace Outfitter
 
         public static bool updated;
 
-        public static SaveablePawn GetCache( Pawn pawn)
+        public static SaveablePawn GetCache(Pawn pawn)
         {
             foreach (SaveablePawn c in _pawnCache)
             {

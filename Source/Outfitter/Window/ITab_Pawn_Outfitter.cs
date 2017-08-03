@@ -200,7 +200,7 @@ namespace Outfitter
 
             if (pawnSave.TargetTemperaturesOverride)
             {
-                if (Widgets.ButtonImage(tempResetRect, OutfitterTextures.resetButton))
+                if (Widgets.ButtonImage(tempResetRect, OutfitterTextures.ResetButton))
                 {
                     pawnSave.TargetTemperaturesOverride = false;
 
@@ -229,7 +229,7 @@ namespace Outfitter
 
             // add button
             Rect addStatRect = new Rect(statsHeaderRect.xMax - 16f, statsHeaderRect.yMin + Margin, 16f, 16f);
-            if (Widgets.ButtonImage(addStatRect, OutfitterTextures.addButton))
+            if (Widgets.ButtonImage(addStatRect, OutfitterTextures.AddButton))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
                 foreach (StatDef def in this.selPawnForGear.NotYetAssignedStatDefs().OrderBy(i => i.label.ToString()))

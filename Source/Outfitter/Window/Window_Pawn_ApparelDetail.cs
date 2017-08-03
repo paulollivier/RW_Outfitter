@@ -389,6 +389,7 @@ namespace Outfitter
             }
 
             var mod = 1f;
+            if (false)
             if (this._apparel.TryGetQuality(out QualityCategory cat))
             {
                 switch (cat)
@@ -406,19 +407,19 @@ namespace Outfitter
                         mod = 1.0f;
                         break;
                     case QualityCategory.Good:
-                        mod = 1.1f;
+                        mod = 1.05f;
                         break;
                     case QualityCategory.Superior:
-                        mod = 1.2f;
+                        mod = 1.1f;
                         break;
                     case QualityCategory.Excellent:
-                        mod = 1.3f;
+                        mod = 1.15f;
                         break;
                     case QualityCategory.Masterwork:
-                        mod = 1.4f;
+                        mod = 1.2f;
                         break;
                     case QualityCategory.Legendary:
-                        mod = 1.5f;
+                        mod = 1.25f;
                         break;
                     default: throw new ArgumentOutOfRangeException();
                 }

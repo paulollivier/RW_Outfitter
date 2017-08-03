@@ -27,19 +27,12 @@ namespace Outfitter
         // New curve
         public static readonly SimpleCurve HitPointsPercentScoreFactorCurve = new SimpleCurve
                                                                                   {
-                                                                                      new CurvePoint(
-                                                                                          0.0f,
-                                                                                          0.05f),
-                                                                                      new CurvePoint(
-                                                                                          0.4f,
-                                                                                          0.3f),
-                                                                                      new CurvePoint(
-                                                                                          0.6f,
-                                                                                          0.75f),
-                                                                                      new CurvePoint(
-                                                                                          1f,
-                                                                                          1f)
-
+                                                                                      new CurvePoint(0f, 0f),
+                                                                                      new CurvePoint(0.2f, 0.15f),
+                                                                                      new CurvePoint(0.25f, 0.3f),
+                                                                                      new CurvePoint(0.5f, 0.4f),
+                                                                                      new CurvePoint(0.6f, 0.85f),
+                                                                                      new CurvePoint(1f, 1f)
                                                                                       // new CurvePoint( 0.0f, 0.0f ),
                                                                                       // new CurvePoint( 0.25f, 0.15f ),
                                                                                       // new CurvePoint( 0.5f, 0.7f ),
