@@ -366,18 +366,18 @@ namespace Outfitter
 
             // check if the candidate will replace existing gear
             bool willReplace = false;
-            for (int i = 0; i < wornApparel.Count; i++)
+            foreach (Apparel apparel in wornApparel)
             {
-                if (!ApparelUtility.CanWearTogether(wornApparel[i].def, ap.def))
+                if (!ApparelUtility.CanWearTogether(apparel.def, ap.def))
                 {
                     // can't drop forced gear
-                    if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
+                    if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(apparel))
                     {
                         return -1000f;
                     }
 
-                    // if replaces, score is difference of the two pieces of gear
-                    candidateScore -= conf.ApparelScoreRaw(wornApparel[i], pawn);
+                    // if replaces, score is difference of the two pieces of gear + penalty x2
+                    candidateScore -= 2 * conf.ApparelScoreRaw(apparel, pawn);
                     willReplace = true;
                 }
             }

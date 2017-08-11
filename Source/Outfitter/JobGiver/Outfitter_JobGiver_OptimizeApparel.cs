@@ -16,8 +16,7 @@ namespace Outfitter
         private const int ApparelOptimizeCheckIntervalMax = 9000;
         private static StringBuilder debugSb;
 
-      //  private static NeededWarmth neededWarmth;
-
+      // private static NeededWarmth neededWarmth;
         public static bool TryGiveJob_Prefix(ref Job __result, Pawn pawn)
         {
             __result = null;
@@ -43,25 +42,17 @@ namespace Outfitter
             else
             {
                 debugSb = new StringBuilder();
-                debugSb.AppendLine(string.Concat(new object[]
-                {
-            "Scanning for ",
-            pawn,
-            " at ",
-            pawn.Position
-                }));
+                debugSb.AppendLine(string.Concat("Scanning for ", pawn, " at ", pawn.Position));
             }
 
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
             for (int i = wornApparel.Count - 1; i >= 0; i--)
             {
-                if (!currentOutfit.filter.Allows(wornApparel[i]) && pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
+                if (!currentOutfit.filter.Allows(wornApparel[i])
+                    && pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
                 {
-                    __result = new Job(JobDefOf.RemoveApparel, wornApparel[i])
-                    {
-                        haulDroppedApparel = true
-                    };
+                    __result = new Job(JobDefOf.RemoveApparel, wornApparel[i]) { haulDroppedApparel = true };
                     return false;
                 }
             }
@@ -75,8 +66,7 @@ namespace Outfitter
                 SetNextOptimizeTick(pawn);
                 return false;
             }
-         //   var temperature = GenTemperature.GetTemperatureAtTile(pawn.Map.Tile);
-         //   neededWarmth = PawnApparelGenerator.CalculateNeededWarmth(pawn, pawn.Map.Tile, GenLocalDate.Twelfth(pawn));
+
             for (int j = 0; j < list.Count; j++)
             {
                 Apparel apparel = (Apparel)list[j];
