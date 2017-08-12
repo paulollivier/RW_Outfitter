@@ -47,7 +47,7 @@ namespace Outfitter
                         SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
                         pawnSave.armorOnly = true;
                         pawnSave.forceStatUpdate = true;
-                    //    GetApparelList(pawn, out List<Thing> apparelList, out List<Thing> toDrop);
+                        //    GetApparelList(pawn, out List<Thing> apparelList, out List<Thing> toDrop);
                         GetApparelList(pawn, out List<Thing> apparelList);
 
                         pawn.jobs.StopAll();
@@ -61,14 +61,36 @@ namespace Outfitter
                                 pawn.Reserve(apparelList[i]);
                                 Job job =
                                     new Job(JobDefOf.Wear, apparelList[i])
-                                        {
-                                            locomotionUrgency = LocomotionUrgency
+                                    {
+                                        locomotionUrgency = LocomotionUrgency
                                                 .Sprint
-                                        };
+                                    };
                                 pawn.jobs.jobQueue.EnqueueLast(job);
 
                             }
                         }
+
+                        if (!AlreadySatisfiedWithCurrentWeapon(pawn) && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
+                            && pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                        {
+                            Thing thing = GenClosest.ClosestThingReachable(
+                                apparelList.NullOrEmpty() ? pawn.Position : apparelList.Last().Position,
+                                pawn.Map,
+                                ThingRequest.ForGroup(ThingRequestGroup.Weapon),
+                                PathEndMode.OnCell,
+                                TraverseParms.For(pawn),
+                                20f,
+                                x => pawn.CanReserve(x) && this.ShouldEquip(x, pawn),
+                                null,
+                                0,
+                                15);
+                            if (thing != null)
+                            {
+                                pawn.Reserve(thing);
+                                pawn.jobs.jobQueue.EnqueueLast(new Job(JobDefOf.Equip, thing));
+                            }
+                        }
+
 
                         Job jobby = new Job(DefDatabase<JobDef>.GetNamed("GoToDraftOf"))
                         {
@@ -77,13 +99,91 @@ namespace Outfitter
                         };
                         pawn.jobs.jobQueue.EnqueueLast(jobby);
 
+
                     }
 
                     this.DeSpawn();
                 };
             yield return draft;
         }
+
+        // RimWorld.JobGiver_PickUpOpportunisticWeapon
+        private bool ShouldEquip(Thing newWep, Pawn pawn)
+        {
+            return this.GetWeaponScore(pawn,newWep) > this.GetWeaponScore(pawn, pawn.equipment.Primary);
+        }
+
+        // RimWorld.JobGiver_PickUpOpportunisticWeapon
+        private float GetWeaponScore(Pawn pawn, Thing wep)
+        {
+            if (wep == null)
+            {
+                return 0;
+            }
+            if (wep.def.IsMeleeWeapon && wep.GetStatValue(StatDefOf.MeleeWeapon_DamageAmount) < this.MinMeleeWeaponDamageThreshold)
+            {
+                return 0;
+            }
+            //if (this.preferBuildingDestroyers && wep.TryGetComp<CompEquippable>().PrimaryVerb.verbProps.ai_IsBuildingDestroyer)
+            //{
+            //    return 3;
+            //}
+            if (wep.def.IsRangedWeapon)
+            {
+                if (pawn.story.traits.HasTrait(TraitDefOf.Brawler))
+                {
+                    return 0;
+                }
+                return 2 * pawn.skills.GetSkill(SkillDefOf.Shooting).Level;
+            }
+            return 1 * pawn.skills.GetSkill(SkillDefOf.Melee).Level;
+        }
+
+        // RimWorld.JobGiver_PickUpOpportunisticWeapon
+        private float MinMeleeWeaponDamageThreshold
+        {
+            get
+            {
+                List<VerbProperties> verbs = ThingDefOf.Human.Verbs;
+                float num = 0f;
+                for (int i = 0; i < verbs.Count; i++)
+                {
+                    if (verbs[i].linkedBodyPartsGroup == BodyPartGroupDefOf.LeftHand || verbs[i].linkedBodyPartsGroup == BodyPartGroupDefOf.RightHand)
+                    {
+                        num = (float)verbs[i].meleeDamageBaseAmount;
+                        break;
+                    }
+                }
+                return num + 3f;
+            }
+        }
+
+
         private const float MinScoreGainToCare = 0.09f;
+
+        // RimWorld.JobGiver_PickUpOpportunisticWeapon
+        private bool AlreadySatisfiedWithCurrentWeapon(Pawn pawn)
+        {
+            ThingWithComps primary = pawn.equipment.Primary;
+            if (primary == null)
+            {
+                return false;
+            }
+            //if (this.preferBuildingDestroyers)
+            //{
+            //    if (!pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.ai_IsBuildingDestroyer)
+            //    {
+            //        return false;
+            //    }
+            //}
+            // else 
+            if (!primary.def.IsRangedWeapon || !primary.def.IsMeleeWeapon)
+            {
+                return false;
+            }
+            return true;
+        }
+
 
         public static void GetApparelList(Pawn pawn, out List<Thing> apparelList)
         {
@@ -132,7 +232,7 @@ namespace Outfitter
                                 {
                                     if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
                                     {
-                                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
+                                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger()))
                                         {
                                             apparelStats.Add(apparel, gain);
                                         }

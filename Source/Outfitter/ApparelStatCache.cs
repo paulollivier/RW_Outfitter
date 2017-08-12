@@ -401,28 +401,10 @@ namespace Outfitter
 
             // relevant apparel stats
             HashSet<StatDef> equippedOffsets = new HashSet<StatDef>();
-            if (ap.def.equippedStatOffsets != null)
-            {
-                foreach (StatModifier equippedStatOffset in ap.def.equippedStatOffsets)
-                {
-                    equippedOffsets.Add(equippedStatOffset.stat);
-                }
-            }
-
             HashSet<StatDef> statBases = new HashSet<StatDef>();
-            if (ap.def.statBases != null)
-            {
-                foreach (StatModifier statBase in ap.def.statBases)
-                {
-                    statBases.Add(statBase.stat);
-                }
-            }
-
             infusedOffsets = new HashSet<StatDef>();
-            foreach (StatPriority statPriority in this._pawn.GetApparelStatCache().StatCache)
-            {
-                FillInfusionHashset_PawnStatsHandlers(ap, statPriority.Stat);
-            }
+
+            this.GetStatsOfApparel(ap, ref equippedOffsets, ref statBases);
 
             // start score at 1
             float score = 1;
@@ -552,6 +534,29 @@ namespace Outfitter
             return score;
         }
 
+        private void GetStatsOfApparel(Apparel ap, ref HashSet<StatDef> equippedOffsets, ref HashSet<StatDef> statBases)
+        {
+            if (ap.def.equippedStatOffsets != null)
+            {
+                foreach (StatModifier equippedStatOffset in ap.def.equippedStatOffsets)
+                {
+                    equippedOffsets.Add(equippedStatOffset.stat);
+                }
+            }
+
+            if (ap.def.statBases != null)
+            {
+                foreach (StatModifier statBase in ap.def.statBases)
+                {
+                    statBases.Add(statBase.stat);
+                }
+            }
+
+            foreach (StatPriority statPriority in this._pawn.GetApparelStatCache().StatCache)
+            {
+                FillInfusionHashset_PawnStatsHandlers(ap, statPriority.Stat);
+            }
+        }
 
         public float ApparelScoreRaw_Temperature(Apparel apparel)
         {
