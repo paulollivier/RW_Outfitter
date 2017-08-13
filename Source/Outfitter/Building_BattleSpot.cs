@@ -70,7 +70,7 @@ namespace Outfitter
                             }
                         }
 
-                        if (!AlreadySatisfiedWithCurrentWeapon(pawn) && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
+                        if (!this.AlreadySatisfiedWithCurrentWeapon(pawn) && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
                             && pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                         {
                             Thing thing = GenClosest.ClosestThingReachable(
@@ -128,11 +128,17 @@ namespace Outfitter
             //{
             //    return 3;
             //}
+
+            if (wep.TryGetComp<CompExplosive>() != null)
+            {
+                return -1;
+            }
+
             if (wep.def.IsRangedWeapon)
             {
                 if (pawn.story.traits.HasTrait(TraitDefOf.Brawler))
                 {
-                    return 0;
+                    return -1;
                 }
                 return 2 * pawn.skills.GetSkill(SkillDefOf.Shooting).Level;
             }
