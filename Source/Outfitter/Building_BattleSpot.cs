@@ -97,6 +97,7 @@ namespace Outfitter
                             targetA = this.Position.RandomAdjacentCell8Way(),
                             locomotionUrgency = LocomotionUrgency.Sprint
                         };
+                        jobby.playerForced = true;
                         pawn.jobs.jobQueue.EnqueueLast(jobby);
 
 
@@ -110,7 +111,7 @@ namespace Outfitter
         // RimWorld.JobGiver_PickUpOpportunisticWeapon
         private bool ShouldEquip(Thing newWep, Pawn pawn)
         {
-            return this.GetWeaponScore(pawn,newWep) > this.GetWeaponScore(pawn, pawn.equipment.Primary);
+            return this.GetWeaponScore(pawn, newWep) > this.GetWeaponScore(pawn, pawn.equipment.Primary);
         }
 
         // RimWorld.JobGiver_PickUpOpportunisticWeapon
@@ -183,10 +184,8 @@ namespace Outfitter
             //    }
             //}
             // else 
-            if (!primary.def.IsRangedWeapon || !primary.def.IsMeleeWeapon)
-            {
-                return false;
-            }
+
+
             return true;
         }
 
