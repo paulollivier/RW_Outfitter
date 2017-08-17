@@ -17,7 +17,6 @@ using CommunityCoreLibrary;
 
 namespace Outfitter
 {
-
     public class OF_SpecialInjector : SpecialInjector
     {
         bool useApparelSense = false;
@@ -69,11 +68,11 @@ namespace Outfitter
             // create cat def
             ThingCategoryDef cat =
                 new ThingCategoryDef
-                    {
-                        parent = thisRoot,
-                        label = label,
-                        defName = GetChildCatName(bodypart, label, type)
-                    };
+                {
+                    parent = thisRoot,
+                    label = label,
+                    defName = GetChildCatName(bodypart, label, type)
+                };
             DefDatabase<ThingCategoryDef>.Add(cat);
 
             // don't forget to call the PostLoad() function, or you'll get swarmed in red... (ugh)
@@ -108,7 +107,7 @@ namespace Outfitter
             }
         }
 
-        #endregion
+        #endregion ApparelSense
 
         public override bool Inject()
         {

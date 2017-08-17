@@ -1,22 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Verse;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
-    using RimWorld;
+    using Verse;
 
     public class GameComponent_Outfitter : GameComponent
     {
+        #region Public Fields
+
+        public static List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
+
+        public static bool updated;
+
+        #endregion Public Fields
+
+        #region Public Constructors
+
         public GameComponent_Outfitter()
         {
         }
 
         public GameComponent_Outfitter(Game game)
         {
-            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.category == ThingCategory.Pawn && td.race.Humanlike))
+            foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(
+                td => td.category == ThingCategory.Pawn && td.race.Humanlike))
             {
                 if (def.inspectorTabs == null || def.inspectorTabs.Count == 0)
                 {
@@ -34,9 +43,9 @@ namespace Outfitter
             }
         }
 
-        public static List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
+        #endregion Public Constructors
 
-        public static bool updated;
+        #region Public Methods
 
         public static SaveablePawn GetCache(Pawn pawn)
         {
@@ -66,9 +75,11 @@ namespace Outfitter
             Scribe_Collections.Look(ref _pawnCache, "Pawns", LookMode.Deep);
 
             if (_pawnCache == null)
+            {
                 _pawnCache = new List<SaveablePawn>();
-
+            }
         }
 
+        #endregion Public Methods
     }
 }

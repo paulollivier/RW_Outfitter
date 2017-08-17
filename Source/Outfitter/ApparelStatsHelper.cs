@@ -1,43 +1,147 @@
 ﻿// Outfitter/ApparelStatsHelper.cs
-// 
+//
 // Copyright Karel Kroeze, 2016.
-// 
+//
 // Created 2015-12-31 14:34
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 using static Outfitter.SaveablePawn.MainJob;
 
-using RimWorld;
-
-using Verse;
-
 namespace Outfitter
 {
+    using RimWorld;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Verse;
+
     public static class ApparelStatsHelper
     {
-        private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches = new Dictionary<Pawn, ApparelStatCache>();
-        private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
-        private const float ScoreFactorIfNotReplacing = 10f;
-
-        public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
+        #region Public Fields
 
         // New curve
         public static readonly SimpleCurve HitPointsPercentScoreFactorCurve = new SimpleCurve
                                                                                   {
-                                                                                      new CurvePoint(0f, 0f),
-                                                                                      new CurvePoint(0.2f, 0.15f),
-                                                                                      new CurvePoint(0.25f, 0.3f),
-                                                                                      new CurvePoint(0.5f, 0.4f),
-                                                                                      new CurvePoint(0.6f, 0.85f),
-                                                                                      new CurvePoint(1f, 1f)
+                                                                                      new CurvePoint(
+                                                                                          0f,
+                                                                                          0f),
+                                                                                      new CurvePoint(
+                                                                                          0.2f,
+                                                                                          0.15f),
+                                                                                      new CurvePoint(
+                                                                                          0.25f,
+                                                                                          0.3f),
+                                                                                      new CurvePoint(
+                                                                                          0.5f,
+                                                                                          0.4f),
+                                                                                      new CurvePoint(
+                                                                                          0.6f,
+                                                                                          0.85f),
+                                                                                      new CurvePoint(
+                                                                                          1f,
+                                                                                          1f)
+
                                                                                       // new CurvePoint( 0.0f, 0.0f ),
                                                                                       // new CurvePoint( 0.25f, 0.15f ),
                                                                                       // new CurvePoint( 0.5f, 0.7f ),
                                                                                       // new CurvePoint( 1f, 1f )
                                                                                   };
+
+        #endregion Public Fields
+
+        #region Public Properties
+
+        public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
+
+        #endregion Public Properties
+
+        #region Private Properties
+
+        private static List<StatDef> AllStatDefsModifiedByAnyApparel
+        {
+            get
+            {
+                if (allApparelStats == null)
+                {
+                    allApparelStats = new List<StatDef>();
+
+                    // add all stat modifiers from all apparels
+                    foreach (ThingDef apparel in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.IsApparel))
+                    {
+                        if (apparel.equippedStatOffsets != null && apparel.equippedStatOffsets.Count > 0)
+                        {
+                            foreach (StatModifier modifier in apparel.equippedStatOffsets)
+                            {
+                                if (!allApparelStats.Contains(modifier.stat))
+                                {
+                                    allApparelStats.Add(modifier.stat);
+                                }
+                            }
+                        }
+                    }
+
+                    ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
+                }
+
+                return allApparelStats;
+            }
+        }
+
+        #endregion Private Properties
+
+        #region Private Fields
+
+        private const float ScoreFactorIfNotReplacing = 10f;
+
+        private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
+
+        private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches =
+            new Dictionary<Pawn, ApparelStatCache>();
+
+        private static List<StatDef> allApparelStats;
+
+        #endregion Private Fields
+
+        #region Public Methods
+
+        // ReSharper disable once UnusedMember.Global
+        public static float ApparelScoreGain(this Pawn pawn, Apparel ap)
+        {
+            ApparelStatCache conf = new ApparelStatCache(pawn);
+
+            // get the score of the considered apparel
+            float candidateScore = conf.ApparelScoreRaw(ap, pawn);
+
+            // float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
+
+            // get the current list of worn apparel
+            List<Apparel> wornApparel = pawn.apparel.WornApparel;
+
+            // check if the candidate will replace existing gear
+            bool willReplace = false;
+            foreach (Apparel apparel in wornApparel)
+            {
+                if (!ApparelUtility.CanWearTogether(apparel.def, ap.def))
+                {
+                    // can't drop forced gear
+                    if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(apparel))
+                    {
+                        return -1000f;
+                    }
+
+                    // if replaces, score is difference of the two pieces of gear + penalty x2
+                    candidateScore -= 2 * conf.ApparelScoreRaw(apparel, pawn);
+                    willReplace = true;
+                }
+            }
+
+            // increase score if this piece can be worn without replacing existing gear.
+            if (!willReplace)
+            {
+                candidateScore *= ScoreFactorIfNotReplacing;
+            }
+
+            return candidateScore;
+        }
 
         public static ApparelStatCache GetApparelStatCache(this Pawn pawn)
         {
@@ -47,69 +151,6 @@ namespace Outfitter
             }
 
             return PawnApparelStatCaches[pawn];
-        }
-
-        public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
-        {
-            Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
-            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
-
-            // dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
-            // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
-
-            // Adds manual prioritiy adjustments 
-            if (pawnSave.AddWorkStats)
-            {
-                // add weights for all worktypes, multiplied by job priority
-                List<WorkTypeDef> allDefsListForReading = DefDatabase<WorkTypeDef>.AllDefsListForReading;
-
-                foreach (WorkTypeDef workType in allDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)))
-                {
-                    foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(pawn, workType))
-                    {
-                        int priority = pawn.workSettings.GetPriority(workType);
-
-                        float priorityAdjust;
-                        switch (priority)
-                        {
-                            case 1:
-                                priorityAdjust = 1f;
-                                break;
-                            case 2:
-                                priorityAdjust = 0.5f;
-                                break;
-                            case 3:
-                                priorityAdjust = 0.25f;
-                                break;
-                            default:
-                                priorityAdjust = 0.125f;
-                                break;
-                        }
-
-                        float weight = stat.Value * priorityAdjust;
-
-                        AddStatToDict(stat.Key, weight, ref dict);
-                    }
-                }
-
-
-
-                // adjustments for traits
-                AdjustStatsForTraits(pawn, ref dict);
-            }
-
-            if (dict.Count > 0)
-            {
-                // normalize weights
-                float max = dict.Values.Select(Math.Abs).Max();
-                foreach (StatDef key in new List<StatDef>(dict.Keys))
-                {
-                    // normalize max of absolute weigths to be 1.5
-                    dict[key] /= max / 1.5f;
-                }
-            }
-
-            return dict;
         }
 
         public static Dictionary<StatDef, float> GetWeightedApparelArmorStats(this Pawn pawn)
@@ -134,10 +175,7 @@ namespace Outfitter
 
                     AddStatToDict(stat.Key, weight, ref dict);
                 }
-
             }
-
-
 
             if (dict.Count > 0)
             {
@@ -153,72 +191,6 @@ namespace Outfitter
             return dict;
         }
 
-        private static void AdjustStatsForTraits(Pawn pawn, ref Dictionary<StatDef, float> dict)
-        {
-            foreach (StatDef key in new List<StatDef>(dict.Keys))
-            {
-                if (key == StatDefOf.MoveSpeed)
-                {
-                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("SpeedOffset")))
-                    {
-                        case -1:
-                            dict[key] *= 1.5f;
-                            break;
-                        case 1:
-                            dict[key] *= 0.5f;
-                            break;
-                        case 2:
-                            dict[key] *= 0.25f;
-                            break;
-                    }
-                }
-
-                if (key == StatDefOf.WorkSpeedGlobal)
-                {
-                    switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Industriousness))
-                    {
-                        case -2:
-                            dict[key] *= 2f;
-                            break;
-                        case -1:
-                            dict[key] *= 1.5f;
-                            break;
-                        case 1:
-                            dict[key] *= 0.5f;
-                            break;
-                        case 2:
-                            dict[key] *= 0.25f;
-                            break;
-                    }
-                }
-            }
-        }
-
-        private static void AddStatToDict(StatDef stat, float weight, ref Dictionary<StatDef, float> dict)
-        {
-            if (dict.ContainsKey(stat))
-            {
-                dict[stat] += weight;
-            }
-            else
-            {
-                dict.Add(stat, weight);
-            }
-        }
-
-        // RimWorld.ThoughtWorker_PsychicDrone
-        private static Building ExtantShipPart(Map map)
-        {
-            List<Thing> list = map.listerThings.ThingsOfDef(ThingDefOf.CrashedPsychicEmanatorShipPart);
-            if (list.Count == 0)
-            {
-                return null;
-            }
-
-            return (Building)list[0];
-        }
-
-
         public static Dictionary<StatDef, float> GetWeightedApparelIndividualStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
@@ -228,8 +200,6 @@ namespace Outfitter
             // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
             if (pawnSave.AddIndividualStats)
             {
-
-
                 bool activeDrone = false;
 
                 PsychicDroneLevel psychicDroneLevel = PsychicDroneLevel.None;
@@ -239,8 +209,10 @@ namespace Outfitter
                     activeDrone = true;
                 }
 
-                GameCondition_PsychicEmanation activeCondition = pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>();
-                if (activeCondition != null && activeCondition.gender == pawn.gender && activeCondition.def.droneLevel > psychicDroneLevel)
+                GameCondition_PsychicEmanation activeCondition =
+                    pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>();
+                if (activeCondition != null && activeCondition.gender == pawn.gender
+                    && activeCondition.def.droneLevel > psychicDroneLevel)
                 {
                     activeDrone = true;
                 }
@@ -277,7 +249,8 @@ namespace Outfitter
 
                 if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicSoothe))
                 {
-                    if (pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>().gender == pawn.gender)
+                    if (pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>().gender
+                        == pawn.gender)
                     {
                         switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("PsychicSensitivity")))
                         {
@@ -319,6 +292,7 @@ namespace Outfitter
                     case -1:
                         AddStatToDict(StatDefOf.MentalBreakThreshold, -0.5f, ref dict);
                         break;
+
                     case -2:
                         AddStatToDict(StatDefOf.MentalBreakThreshold, -0.25f, ref dict);
                         break;
@@ -329,108 +303,213 @@ namespace Outfitter
                     case 1:
                         AddStatToDict(StatDefOf.MentalBreakThreshold, -0.25f, ref dict);
                         break;
+
                     case 2:
                         AddStatToDict(StatDefOf.MentalBreakThreshold, -0.5f, ref dict);
 
                         break;
                 }
             }
+
             // No normalizing for indiidual stats
             // if (dict.Count > 0)
             // {
-            //     // normalize weights
-            //     float max = dict.Values.Select(Math.Abs).Max();
-            //     foreach (StatDef key in new List<StatDef>(dict.Keys))
-            //     {
-            //         // normalize max of absolute weigths to be 1.5
-            //         dict[key] /= max / 1.5f;
-            //     }
+            // // normalize weights
+            // float max = dict.Values.Select(Math.Abs).Max();
+            // foreach (StatDef key in new List<StatDef>(dict.Keys))
+            // {
+            // // normalize max of absolute weigths to be 1.5
+            // dict[key] /= max / 1.5f;
             // }
+            // }
+            return dict;
+        }
+
+        public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
+        {
+            Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
+            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
+
+            // dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
+            // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
+
+            // Adds manual prioritiy adjustments
+            if (pawnSave.AddWorkStats)
+            {
+                // add weights for all worktypes, multiplied by job priority
+                List<WorkTypeDef> allDefsListForReading = DefDatabase<WorkTypeDef>.AllDefsListForReading;
+
+                foreach (WorkTypeDef workType in allDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def))
+                )
+                {
+                    foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(pawn, workType))
+                    {
+                        int priority = pawn.workSettings.GetPriority(workType);
+
+                        float priorityAdjust;
+                        switch (priority)
+                        {
+                            case 1:
+                                priorityAdjust = 1f;
+                                break;
+
+                            case 2:
+                                priorityAdjust = 0.5f;
+                                break;
+
+                            case 3:
+                                priorityAdjust = 0.25f;
+                                break;
+
+                            default:
+                                priorityAdjust = 0.125f;
+                                break;
+                        }
+
+                        float weight = stat.Value * priorityAdjust;
+
+                        AddStatToDict(stat.Key, weight, ref dict);
+                    }
+                }
+
+                // adjustments for traits
+                AdjustStatsForTraits(pawn, ref dict);
+            }
+
+            if (dict.Count > 0)
+            {
+                // normalize weights
+                float max = dict.Values.Select(Math.Abs).Max();
+                foreach (StatDef key in new List<StatDef>(dict.Keys))
+                {
+                    // normalize max of absolute weigths to be 1.5
+                    dict[key] /= max / 1.5f;
+                }
+            }
 
             return dict;
         }
 
-        // ReSharper disable once UnusedMember.Global
-        public static float ApparelScoreGain(this Pawn pawn, Apparel ap)
-        {
-
-            ApparelStatCache conf = new ApparelStatCache(pawn);
-
-            // get the score of the considered apparel
-            float candidateScore = conf.ApparelScoreRaw(ap, pawn);
-
-            // float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
-
-            // get the current list of worn apparel
-            List<Apparel> wornApparel = pawn.apparel.WornApparel;
-
-            // check if the candidate will replace existing gear
-            bool willReplace = false;
-            foreach (Apparel apparel in wornApparel)
-            {
-                if (!ApparelUtility.CanWearTogether(apparel.def, ap.def))
-                {
-                    // can't drop forced gear
-                    if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(apparel))
-                    {
-                        return -1000f;
-                    }
-
-                    // if replaces, score is difference of the two pieces of gear + penalty x2
-                    candidateScore -= 2 * conf.ApparelScoreRaw(apparel, pawn);
-                    willReplace = true;
-                }
-            }
-
-            // increase score if this piece can be worn without replacing existing gear.
-            if (!willReplace)
-            {
-                candidateScore *= ScoreFactorIfNotReplacing;
-            }
-
-            return candidateScore;
-        }
-
-        private static List<StatDef> _allApparelStats;
-
-        private static List<StatDef> AllStatDefsModifiedByAnyApparel
-        {
-            get
-            {
-                if (_allApparelStats == null)
-                {
-                    _allApparelStats = new List<StatDef>();
-
-                    // add all stat modifiers from all apparels
-                    foreach (ThingDef apparel in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.IsApparel))
-                    {
-                        if (apparel.equippedStatOffsets != null &&
-                             apparel.equippedStatOffsets.Count > 0)
-                        {
-                            foreach (StatModifier modifier in apparel.equippedStatOffsets)
-                            {
-                                if (!_allApparelStats.Contains(modifier.stat))
-                                {
-                                    _allApparelStats.Add(modifier.stat);
-                                }
-                            }
-                        }
-                    }
-
-                    ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref _allApparelStats);
-
-                }
-
-                return _allApparelStats;
-            }
-        }
-
         public static List<StatDef> NotYetAssignedStatDefs(this Pawn pawn)
         {
-            return
-                AllStatDefsModifiedByAnyApparel
-                    .Except(pawn.GetApparelStatCache().StatCache.Select(prio => prio.Stat))
-                    .ToList();
+            return AllStatDefsModifiedByAnyApparel
+                .Except(pawn.GetApparelStatCache().StatCache.Select(prio => prio.Stat)).ToList();
+        }
+
+        #endregion Public Methods
+
+        #region Private Methods
+
+        private static void AddStatToDict(StatDef stat, float weight, ref Dictionary<StatDef, float> dict)
+        {
+            if (dict.ContainsKey(stat))
+            {
+                dict[stat] += weight;
+            }
+            else
+            {
+                dict.Add(stat, weight);
+            }
+        }
+
+        private static void AdjustStatsForTraits(Pawn pawn, ref Dictionary<StatDef, float> dict)
+        {
+            foreach (StatDef key in new List<StatDef>(dict.Keys))
+            {
+                if (key == StatDefOf.MoveSpeed)
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("SpeedOffset")))
+                    {
+                        case -1:
+                            dict[key] *= 1.5f;
+                            break;
+
+                        case 1:
+                            dict[key] *= 0.5f;
+                            break;
+
+                        case 2:
+                            dict[key] *= 0.25f;
+                            break;
+                    }
+                }
+
+                if (key == StatDefOf.WorkSpeedGlobal)
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Industriousness))
+                    {
+                        case -2:
+                            dict[key] *= 2f;
+                            break;
+
+                        case -1:
+                            dict[key] *= 1.5f;
+                            break;
+
+                        case 1:
+                            dict[key] *= 0.5f;
+                            break;
+
+                        case 2:
+                            dict[key] *= 0.25f;
+                            break;
+                    }
+                }
+            }
+        }
+
+        // RimWorld.ThoughtWorker_PsychicDrone
+        private static Building ExtantShipPart(Map map)
+        {
+            List<Thing> list = map.listerThings.ThingsOfDef(ThingDefOf.CrashedPsychicEmanatorShipPart);
+            if (list.Count == 0)
+            {
+                return null;
+            }
+
+            return (Building)list[0];
+        }
+
+        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorMelee()
+        {
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 1.8f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 3f);
+            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 2.4f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -2.4f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1.2f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Electric, 1.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 0f);
+        }
+
+        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorRanged()
+        {
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 0.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, 3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -3f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 1.8f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 1.8f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 1.8f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 1.8f);
+            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Electric, 1.5f);
         }
 
         private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType(Pawn pawn, WorkTypeDef worktype)
@@ -469,33 +548,33 @@ namespace Outfitter
 
             switch (worktype.defName)
             {
-                case "Firefighter":
-                    yield break;
+                case "Firefighter": yield break;
 
-                case "PatientEmergency":
-                    yield break;
+                case "PatientEmergency": yield break;
 
                 case "Doctor":
                     if (pawnSave.mainJob == Doctor)
                     {
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"),
+                            3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, 1.5f);
                         yield break;
                     }
 
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(
+                        DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"),
+                        1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, 0.5f);
                     yield break;
 
-                case "PatientBedRest":
-                    yield break;
+                case "PatientBedRest": yield break;
 
-                case "Flicker":
-                    yield break;
+                case "Flicker": yield break;
 
                 case "Warden":
                     if (pawnSave.mainJob == Warden)
@@ -679,7 +758,9 @@ namespace Outfitter
                 case "Smithing":
                     if (pawnSave.mainJob == Smith)
                     {
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmithingSpeed"), 3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("SmithingSpeed"),
+                            3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
@@ -691,7 +772,9 @@ namespace Outfitter
                 case "Tailoring":
                     if (pawnSave.mainJob == Tailor)
                     {
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TailoringSpeed"), 3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("TailoringSpeed"),
+                            3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
@@ -703,7 +786,9 @@ namespace Outfitter
                 case "Art":
                     if (pawnSave.mainJob == Artist)
                     {
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SculptingSpeed"), 3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("SculptingSpeed"),
+                            3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
@@ -716,18 +801,32 @@ namespace Outfitter
                     if (pawnSave.mainJob == Crafter)
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("StonecuttingSpeed"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmeltingSpeed"), 3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryMechanoidSpeed"), 1.5f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"), 1.5f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("StonecuttingSpeed"),
+                            3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("SmeltingSpeed"),
+                            3f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("ButcheryMechanoidSpeed"),
+                            1.5f);
+                        yield return new KeyValuePair<StatDef, float>(
+                            DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"),
+                            1.5f);
                         yield break;
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("StonecuttingSpeed"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(
+                        DefDatabase<StatDef>.GetNamed("StonecuttingSpeed"),
+                        1f);
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmeltingSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryMechanoidSpeed"), 0.5f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"), 0.5f);
+                    yield return new KeyValuePair<StatDef, float>(
+                        DefDatabase<StatDef>.GetNamed("ButcheryMechanoidSpeed"),
+                        0.5f);
+                    yield return new KeyValuePair<StatDef, float>(
+                        DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"),
+                        0.5f);
                     yield break;
 
                 case "Hauling":
@@ -773,14 +872,11 @@ namespace Outfitter
                     yield break;
 
                 // Else
-                case "HaulingUrgent":
-                    yield break;
+                case "HaulingUrgent": yield break;
 
-                case "FinishingOff":
-                    yield break;
+                case "FinishingOff": yield break;
 
-                case "Feeding":
-                    yield break;
+                case "Feeding": yield break;
 
                 default:
                     if (!IgnoredWorktypeDefs.Contains(worktype.defName))
@@ -793,48 +889,6 @@ namespace Outfitter
             }
         }
 
-        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorRanged()
-        {
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 0.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, 3f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -3f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 0f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 1f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -1f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Electric, 1.5f);
-            yield break;
-        }
-
-        private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorMelee()
-        {
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 1f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 3f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 3f);
-            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 2.4f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -2.4f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1.2f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Electric, 1.5f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, 0f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, 0f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, 0f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 0f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 0f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 0f);
-            yield break;
-        }
+        #endregion Private Methods
     }
 }

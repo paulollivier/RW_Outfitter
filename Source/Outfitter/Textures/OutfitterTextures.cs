@@ -1,8 +1,9 @@
-﻿using UnityEngine;
-using Verse;
-
-namespace Outfitter.Textures
+﻿namespace Outfitter.Textures
 {
+    using UnityEngine;
+
+    using Verse;
+
     [StaticConstructorOnStartup]
     internal class OutfitterTextures
     {
@@ -12,7 +13,8 @@ namespace Outfitter.Textures
 
         public static readonly Texture2D AddButton = ContentFinder<Texture2D>.Get("add");
 
-        public static readonly Texture2D BGColor = SolidColorMaterials.NewSolidColorTexture(new Color(0.2f, 0.2f, 0.2f, 1));
+        public static readonly Texture2D BGColor =
+            SolidColorMaterials.NewSolidColorTexture(new Color(0.2f, 0.2f, 0.2f, 1));
 
         public static readonly Texture2D White = SolidColorMaterials.NewSolidColorTexture(Color.white);
 

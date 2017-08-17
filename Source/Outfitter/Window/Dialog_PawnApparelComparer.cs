@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using RimWorld;
-using UnityEngine;
-using Verse;
-
-namespace Outfitter.Window
+﻿namespace Outfitter.Window
 {
-    public class Dialog_PawnApparelComparer : Verse.Window
+    using RimWorld;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
+    using Verse;
+
+    public class Dialog_PawnApparelComparer : Window
     {
-        private readonly Pawn _pawn;
         private readonly Apparel _apparel;
+
+        private readonly Pawn _pawn;
+
+        private Vector2 scrollPosition;
 
         public Dialog_PawnApparelComparer(Pawn pawn, Apparel apparel)
         {
@@ -21,26 +24,22 @@ namespace Outfitter.Window
             this._apparel = apparel;
         }
 
-        public override Vector2 InitialSize
-        {
-            get
-            {
-                return new Vector2(500f, 700f);
-            }
-        }
-
-        private Vector2 scrollPosition;
+        public override Vector2 InitialSize => new Vector2(500f, 700f);
 
         public override void DoWindowContents(Rect windowRect)
         {
             ApparelStatCache apparelStatCache = new ApparelStatCache(GameComponent_Outfitter.GetCache(this._pawn));
-            List<Apparel> allApparels = new List<Apparel>(this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
+            List<Apparel> allApparels = new List<Apparel>(
+                this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
             foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
             {
                 foreach (Apparel pawnApparel in pawn.apparel.WornApparel)
                 {
                     if (pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(pawnApparel))
-                        allApparels.Add(pawnApparel);}
+                    {
+                        allApparels.Add(pawnApparel);
+                    }
+                }
             }
 
             allApparels = allApparels.Where(i => !ApparelUtility.CanWearTogether(this._apparel.def, i.def)).ToList();
@@ -57,12 +56,21 @@ namespace Outfitter.Window
 
             Rect itemRect = new Rect(groupRect.xMin + 4f, groupRect.yMin, groupRect.width - 8f, 28f);
 
-            this.DrawLine(ref itemRect,
-                null, "Apparel", apparelLabelWidth,
-                null, "Equiped", apparelEquipedWidth,
-                null, "Target", apparelOwnerWidth,
-                "Score", apparelScoreWidth,
-                "Gain", apparelGainWidth);
+            this.DrawLine(
+                ref itemRect,
+                null,
+                "Apparel",
+                apparelLabelWidth,
+                null,
+                "Equiped",
+                apparelEquipedWidth,
+                null,
+                "Target",
+                apparelOwnerWidth,
+                "Score",
+                apparelScoreWidth,
+                "Gain",
+                apparelGainWidth);
 
             groupRect.yMin += itemRect.height;
             Widgets.DrawLineHorizontal(groupRect.xMin, groupRect.yMin, groupRect.width);
@@ -70,9 +78,15 @@ namespace Outfitter.Window
             groupRect.height -= 4f;
             groupRect.height -= Text.LineHeight * 1.2f * 3f;
 
-            Rect viewRect = new Rect(groupRect.xMin, groupRect.yMin, groupRect.width - 16f, allApparels.Count * 28f + 16f);
+            Rect viewRect = new Rect(
+                groupRect.xMin,
+                groupRect.yMin,
+                groupRect.width - 16f,
+                allApparels.Count * 28f + 16f);
             if (viewRect.height < groupRect.height)
+            {
                 groupRect.height = viewRect.height;
+            }
 
             Rect listRect = viewRect.ContractedBy(4f);
 
@@ -86,6 +100,7 @@ namespace Outfitter.Window
                         {
                             return g;
                         }
+
                         return -1000f;
                     }).ToList();
 
@@ -104,38 +119,63 @@ namespace Outfitter.Window
                 foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
                 {
                     foreach (Apparel a in pawn.apparel.WornApparel)
+                    {
                         if (a == currentAppel)
                         {
                             equiped = pawn;
                             break;
                         }
+                    }
 
-                  // foreach (Apparel a in mapComponent.GetCache(pawn).targetApparel)
-                  // if (a == currentAppel)
-                  // {
-                  // target = pawn;
-                  // break;
-                  // }
-                    if ((equiped != null) &&
-                        (target != null))
+                    // foreach (Apparel a in mapComponent.GetCache(pawn).targetApparel)
+                    // if (a == currentAppel)
+                    // {
+                    // target = pawn;
+                    // break;
+                    // }
+                    if (equiped != null && target != null)
+                    {
                         break;
+                    }
                 }
 
                 float gain;
                 if (apparelStatCache.DIALOG_CalculateApparelScoreGain(currentAppel, out gain))
-                    this.DrawLine(ref itemRect,
-                        currentAppel, currentAppel.LabelCap, apparelLabelWidth,
-                        equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
-                        target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"), apparelScoreWidth,
-                        gain.ToString("N5"), apparelGainWidth);
+                {
+                    this.DrawLine(
+                        ref itemRect,
+                        currentAppel,
+                        currentAppel.LabelCap,
+                        apparelLabelWidth,
+                        equiped,
+                        equiped == null ? null : equiped.LabelCap,
+                        apparelEquipedWidth,
+                        target,
+                        target == null ? null : target.LabelCap,
+                        apparelOwnerWidth,
+                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"),
+                        apparelScoreWidth,
+                        gain.ToString("N5"),
+                        apparelGainWidth);
+                }
                 else
-                    this.DrawLine(ref itemRect,
-                        currentAppel, currentAppel.LabelCap, apparelLabelWidth,
-                        equiped, equiped == null ? null : equiped.LabelCap, apparelEquipedWidth,
-                        target, target == null ? null : target.LabelCap, apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"), apparelScoreWidth,
-                        "No Allow", apparelGainWidth);
+                {
+                    this.DrawLine(
+                        ref itemRect,
+                        currentAppel,
+                        currentAppel.LabelCap,
+                        apparelLabelWidth,
+                        equiped,
+                        equiped == null ? null : equiped.LabelCap,
+                        apparelEquipedWidth,
+                        target,
+                        target == null ? null : target.LabelCap,
+                        apparelOwnerWidth,
+                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"),
+                        apparelScoreWidth,
+                        "No Allow",
+                        apparelGainWidth);
+                }
 
                 listRect.yMin = itemRect.yMax;
             }
@@ -149,22 +189,36 @@ namespace Outfitter.Window
             GUI.EndGroup();
         }
 
-        private void DrawLine(ref Rect itemRect,
-            Apparel apparelThing, string apparelText, float textureWidth,
-            Pawn apparelEquipedThing, string apparelEquipedText, float apparelEquipedWidth,
-            Pawn apparelOwnerThing, string apparelOwnerText, float apparelOwnerWidth,
-            string apparelScoreText, float apparelScoreWidth,
-            string apparelGainText, float apparelGainWidth)
+        private void DrawLine(
+            ref Rect itemRect,
+            Apparel apparelThing,
+            string apparelText,
+            float textureWidth,
+            Pawn apparelEquipedThing,
+            string apparelEquipedText,
+            float apparelEquipedWidth,
+            Pawn apparelOwnerThing,
+            string apparelOwnerText,
+            float apparelOwnerWidth,
+            string apparelScoreText,
+            float apparelScoreWidth,
+            string apparelGainText,
+            float apparelGainWidth)
         {
             Rect fieldRect;
             if (apparelThing != null)
             {
                 fieldRect = new Rect(itemRect.xMin, itemRect.yMin, itemRect.height, itemRect.height);
                 if (!string.IsNullOrEmpty(apparelText))
+                {
                     TooltipHandler.TipRegion(fieldRect, apparelText);
-                if ((apparelThing.def.DrawMatSingle != null) &&
-                    (apparelThing.def.DrawMatSingle.mainTexture != null))
+                }
+
+                if (apparelThing.def.DrawMatSingle != null && apparelThing.def.DrawMatSingle.mainTexture != null)
+                {
                     Widgets.ThingIcon(fieldRect, apparelThing);
+                }
+
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
                     this.Close();
@@ -174,14 +228,18 @@ namespace Outfitter.Window
                         Find.CameraDriver.JumpToVisibleMapLoc(apparelEquipedThing.PositionHeld);
                         Find.Selector.ClearSelection();
                         if (apparelEquipedThing.Spawned)
+                        {
                             Find.Selector.Select(apparelEquipedThing);
+                        }
                     }
                     else
                     {
                         Find.CameraDriver.JumpToVisibleMapLoc(apparelThing.PositionHeld);
                         Find.Selector.ClearSelection();
                         if (apparelThing.Spawned)
+                        {
                             Find.Selector.Select(apparelThing);
+                        }
                     }
 
                     return;
@@ -203,10 +261,16 @@ namespace Outfitter.Window
             {
                 fieldRect = new Rect(itemRect.xMin, itemRect.yMin, itemRect.height, itemRect.height);
                 if (!string.IsNullOrEmpty(apparelEquipedText))
+                {
                     TooltipHandler.TipRegion(fieldRect, apparelEquipedText);
-                if ((apparelEquipedThing.def.DrawMatSingle != null) &&
-                    (apparelEquipedThing.def.DrawMatSingle.mainTexture != null))
+                }
+
+                if (apparelEquipedThing.def.DrawMatSingle != null
+                    && apparelEquipedThing.def.DrawMatSingle.mainTexture != null)
+                {
                     Widgets.ThingIcon(fieldRect, apparelEquipedThing);
+                }
+
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
                     this.Close();
@@ -214,7 +278,10 @@ namespace Outfitter.Window
                     Find.CameraDriver.JumpToVisibleMapLoc(apparelEquipedThing.PositionHeld);
                     Find.Selector.ClearSelection();
                     if (apparelEquipedThing.Spawned)
+                    {
                         Find.Selector.Select(apparelEquipedThing);
+                    }
+
                     return;
                 }
             }
@@ -234,10 +301,16 @@ namespace Outfitter.Window
             {
                 fieldRect = new Rect(itemRect.xMin, itemRect.yMin, itemRect.height, itemRect.height);
                 if (!string.IsNullOrEmpty(apparelOwnerText))
+                {
                     TooltipHandler.TipRegion(fieldRect, apparelOwnerText);
-                if ((apparelOwnerThing.def.DrawMatSingle != null) &&
-                    (apparelOwnerThing.def.DrawMatSingle.mainTexture != null))
+                }
+
+                if (apparelOwnerThing.def.DrawMatSingle != null
+                    && apparelOwnerThing.def.DrawMatSingle.mainTexture != null)
+                {
                     Widgets.ThingIcon(fieldRect, apparelOwnerThing);
+                }
+
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
                     this.Close();
@@ -245,7 +318,10 @@ namespace Outfitter.Window
                     Find.CameraDriver.JumpToVisibleMapLoc(apparelOwnerThing.PositionHeld);
                     Find.Selector.ClearSelection();
                     if (apparelOwnerThing.Spawned)
+                    {
                         Find.Selector.Select(apparelOwnerThing);
+                    }
+
                     return;
                 }
             }
@@ -275,7 +351,6 @@ namespace Outfitter.Window
                     return;
                 }
             }
-
 
             itemRect.xMin += apparelScoreWidth;
 

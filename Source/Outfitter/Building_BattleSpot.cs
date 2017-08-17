@@ -1,22 +1,40 @@
-﻿using System;
-using System.Text;
-using Verse;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using RimWorld;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
 
-    using RimWorld;
-
-    using UnityEngine;
-
+    using Verse;
     using Verse.AI;
 
     [StaticConstructorOnStartup]
     public class Building_BattleSpot : Building
     {
+        private const float MinScoreGainToCare = 0.09f;
+
         private int ticksToDespawn;
+
+        // RimWorld.JobGiver_PickUpOpportunisticWeapon
+        private float MinMeleeWeaponDamageThreshold
+        {
+            get
+            {
+                List<VerbProperties> verbs = ThingDefOf.Human.Verbs;
+                float num = 0f;
+                for (int i = 0; i < verbs.Count; i++)
+                {
+                    if (verbs[i].linkedBodyPartsGroup == BodyPartGroupDefOf.LeftHand
+                        || verbs[i].linkedBodyPartsGroup == BodyPartGroupDefOf.RightHand)
+                    {
+                        num = verbs[i].meleeDamageBaseAmount;
+                        break;
+                    }
+                }
+
+                return num + 3f;
+            }
+        }
 
         public override IEnumerable<Gizmo> GetGizmos()
         {
@@ -35,20 +53,24 @@ namespace Outfitter
             // pris.isActive = (() => this.<> f__this.ForPrisoners);
             draft.action = delegate
                 {
-                    foreach (Pawn pawn in Find.VisibleMap.mapPawns.FreeColonistsSpawned)
+                    foreach (Pawn pawn in this.Map.mapPawns.FreeColonistsSpawned)
                     {
-                        if (pawn.mindState == null)
+                        if (!pawn.IsColonistPlayerControlled)
+                        {
                             continue;
-                        if (pawn.InMentalState)
-                            continue;
+                        }
+
                         if (pawn.Dead || pawn.Downed)
+                        {
                             continue;
+                        }
 
                         SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
                         pawnSave.armorOnly = true;
                         pawnSave.forceStatUpdate = true;
-                        //    GetApparelList(pawn, out List<Thing> apparelList, out List<Thing> toDrop);
-                        GetApparelList(pawn, out List<Thing> apparelList);
+
+                        // GetApparelList(pawn, out List<Thing> apparelList, out List<Thing> toDrop);
+                        this.GetApparelList(pawn, out List<Thing> apparelList);
 
                         pawn.jobs.StopAll();
 
@@ -57,20 +79,23 @@ namespace Outfitter
                             for (int i = 0; i < apparelList.Count; i++)
                             {
                                 if (!pawn.CanReserveAndReach(apparelList[i], PathEndMode.ClosestTouch, Danger.Some))
+                                {
                                     continue;
+                                }
+
                                 pawn.Reserve(apparelList[i]);
                                 Job job =
                                     new Job(JobDefOf.Wear, apparelList[i])
-                                    {
-                                        locomotionUrgency = LocomotionUrgency
+                                        {
+                                            locomotionUrgency = LocomotionUrgency
                                                 .Sprint
-                                    };
+                                        };
                                 pawn.jobs.jobQueue.EnqueueLast(job);
-
                             }
                         }
 
-                        if (!this.AlreadySatisfiedWithCurrentWeapon(pawn) && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
+                        if (!this.AlreadySatisfiedWithCurrentWeapon(pawn)
+                            && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
                             && pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                         {
                             Thing thing = GenClosest.ClosestThingReachable(
@@ -91,16 +116,15 @@ namespace Outfitter
                             }
                         }
 
-
                         Job jobby = new Job(DefDatabase<JobDef>.GetNamed("GoToDraftOf"))
-                        {
-                            targetA = this.Position.RandomAdjacentCell8Way(),
-                            locomotionUrgency = LocomotionUrgency.Sprint
-                        };
-                        jobby.playerForced = true;
+                                        {
+                                            targetA = this.Position
+                                                .RandomAdjacentCell8Way(),
+                                            locomotionUrgency =
+                                                LocomotionUrgency
+                                                    .Sprint
+                                        };
                         pawn.jobs.jobQueue.EnqueueLast(jobby);
-
-
                     }
 
                     this.DeSpawn();
@@ -121,52 +145,42 @@ namespace Outfitter
             {
                 return 0;
             }
-            if (wep.def.IsMeleeWeapon && wep.GetStatValue(StatDefOf.MeleeWeapon_DamageAmount) < this.MinMeleeWeaponDamageThreshold)
-            {
-                return 0;
-            }
-            //if (this.preferBuildingDestroyers && wep.TryGetComp<CompEquippable>().PrimaryVerb.verbProps.ai_IsBuildingDestroyer)
-            //{
-            //    return 3;
-            //}
 
-            if (wep.TryGetComp<CompExplosive>() != null)
+            if (wep.def.IsMeleeWeapon && wep.GetStatValue(StatDefOf.MeleeWeapon_DamageAmount)
+                < this.MinMeleeWeaponDamageThreshold)
             {
                 return -1;
             }
 
-            if (wep.def.IsRangedWeapon)
+            if (wep.TryGetComp<CompEquippable>().PrimaryVerb.verbProps.ai_IsIncendiary || wep
+                    .TryGetComp<CompEquippable>().PrimaryVerb.verbProps.ai_IsBuildingDestroyer)
             {
-                if (pawn.story.traits.HasTrait(TraitDefOf.Brawler))
+                return -1;
+            }
+
+            int melee = pawn.skills.GetSkill(SkillDefOf.Melee).Level;
+            int shooter = pawn.skills.GetSkill(SkillDefOf.Shooting).Level;
+
+            if (shooter > melee)
+            {
+                if (wep.def.IsMeleeWeapon)
                 {
+                    if (pawn.story.traits.HasTrait(TraitDefOf.Brawler))
+                    {
+                        return 2 * pawn.skills.GetSkill(SkillDefOf.Melee).Level;
+                    }
+
                     return -1;
                 }
+            }
+
+            if (wep.def.IsRangedWeapon)
+            {
                 return 2 * pawn.skills.GetSkill(SkillDefOf.Shooting).Level;
             }
+
             return 1 * pawn.skills.GetSkill(SkillDefOf.Melee).Level;
         }
-
-        // RimWorld.JobGiver_PickUpOpportunisticWeapon
-        private float MinMeleeWeaponDamageThreshold
-        {
-            get
-            {
-                List<VerbProperties> verbs = ThingDefOf.Human.Verbs;
-                float num = 0f;
-                for (int i = 0; i < verbs.Count; i++)
-                {
-                    if (verbs[i].linkedBodyPartsGroup == BodyPartGroupDefOf.LeftHand || verbs[i].linkedBodyPartsGroup == BodyPartGroupDefOf.RightHand)
-                    {
-                        num = (float)verbs[i].meleeDamageBaseAmount;
-                        break;
-                    }
-                }
-                return num + 3f;
-            }
-        }
-
-
-        private const float MinScoreGainToCare = 0.09f;
 
         // RimWorld.JobGiver_PickUpOpportunisticWeapon
         private bool AlreadySatisfiedWithCurrentWeapon(Pawn pawn)
@@ -176,21 +190,34 @@ namespace Outfitter
             {
                 return false;
             }
-            //if (this.preferBuildingDestroyers)
-            //{
-            //    if (!pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.ai_IsBuildingDestroyer)
-            //    {
-            //        return false;
-            //    }
-            //}
-            // else 
 
-
+            // if (this.preferBuildingDestroyers)
+            // {
+            // if (!pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.ai_IsBuildingDestroyer)
+            // {
+            // return false;
+            // }
+            // }
+            // else
             return true;
         }
 
+        public override string GetInspectString()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            string inspectString = base.GetInspectString();
+            if (!inspectString.NullOrEmpty())
+            {
+                stringBuilder.AppendLine(inspectString);
+            }
+            if (base.Spawned && this.ticksToDespawn > 0)
+            {
+                stringBuilder.AppendLine("WillDespawnIn".Translate() + ": " + this.ticksToDespawn.TicksToSecondsString());
+            }
+            return stringBuilder.ToString().TrimEndNewlines();
+        }
 
-        public static void GetApparelList(Pawn pawn, out List<Thing> apparelList)
+        public void GetApparelList(Pawn pawn, out List<Thing> apparelList)
         {
             apparelList = new List<Thing>();
             Dictionary<Thing, float> apparelStats = new Dictionary<Thing, float>();
@@ -207,25 +234,24 @@ namespace Outfitter
                 return;
             }
 
-
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
 
             Thing thing = null;
 
             float num = 0f;
-            List<Thing> list = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
+            List<Thing> list = this.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
 
             if (list.Count == 0)
             {
                 return;
             }
 
-            for (int j = 0; j < list.Count; j++)
+            foreach (Thing t in list)
             {
-                Apparel apparel = (Apparel)list[j];
+                Apparel apparel = (Apparel)t;
                 if (currentOutfit.filter.Allows(apparel))
                 {
-                    if (apparel.Map.slotGroupManager.SlotGroupAt(apparel.Position) != null)
+                    if (this.Map.slotGroupManager.SlotGroupAt(apparel.Position) != null)
                     {
                         if (!apparel.IsForbidden(pawn))
                         {
@@ -237,7 +263,10 @@ namespace Outfitter
                                 {
                                     if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
                                     {
-                                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger()))
+                                        if (pawn.CanReserveAndReach(
+                                            apparel,
+                                            PathEndMode.OnCell,
+                                            pawn.NormalMaxDanger()))
                                         {
                                             apparelStats.Add(apparel, gain);
                                         }
@@ -254,28 +283,46 @@ namespace Outfitter
             myList.Sort((x, y) => y.Value.CompareTo(x.Value));
 
             // Iterate through the list to only add the highest score to this list.
-            for (int i = 0; i < myList.Count; i++)
+            foreach (KeyValuePair<Thing, float> apparelThing in myList)
             {
                 bool change = true;
                 if (!apparelList.NullOrEmpty())
                 {
                     foreach (Thing ap in apparelList)
                     {
-                        if (!ApparelUtility.CanWearTogether(ap.def, myList[i].Key.def))
+                        if (!ApparelUtility.CanWearTogether(ap.def, apparelThing.Key.def))
                         {
-                            change = false;
-                            break;
+                            {
+                                // No gain no change
+                                change = false;
+                            }
                         }
                     }
                 }
 
+                bool flag = true;
                 if (change)
                 {
-                    apparelList.Add(myList[i].Key);
+                    foreach (Apparel apparel in pawn.apparel.WornApparel)
+                    {
+                        if (!ApparelUtility.CanWearTogether(apparel.def, (apparelThing.Key as Apparel).def))
+                        {
+                            if (pawn.ApparelScoreGain(apparel) > apparelThing.Value)
+                            {
+                                apparelList.Add(apparelThing.Key);
+                            }
+
+                            flag = false;
+                        }
+                    }
+                }
+
+                if (flag)
+                {
+                    apparelList.Add(apparelThing.Key);
                 }
             }
         }
-
 
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
         {

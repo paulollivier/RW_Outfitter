@@ -1,19 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Verse;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using System.Collections.Generic;
+
+    using Verse;
+
     // TODO: remove mapcomponent in next alpha
-    class MapComponent_Outfitter : MapComponent
+    internal class MapComponent_Outfitter : MapComponent
     {
         public List<SaveablePawn> _pawnCacheMap = new List<SaveablePawn>();
 
         private bool updated;
 
+        public MapComponent_Outfitter(Map map)
+            : base(map)
+        {
+            this.map = map;
+        }
+
         public SaveablePawn GetCache(Pawn pawn)
         {
-            foreach (SaveablePawn c in this._pawnCacheMap) if (c.Pawn == pawn) return c;
+            foreach (SaveablePawn c in this._pawnCacheMap)
+            {
+                if (c.Pawn == pawn)
+                {
+                    return c;
+                }
+            }
 
             return null;
 
@@ -35,7 +47,11 @@ namespace Outfitter
             {
                 foreach (SaveablePawn c in this._pawnCacheMap)
                 {
-                    if (GameComponent_Outfitter._pawnCache.Contains(c)) continue;
+                    if (GameComponent_Outfitter._pawnCache.Contains(c))
+                    {
+                        continue;
+                    }
+
                     GameComponent_Outfitter._pawnCache.Add(c);
                 }
 
@@ -43,12 +59,6 @@ namespace Outfitter
             }
 
             // this._pawnCacheMap = null;
-        }
-
-        public MapComponent_Outfitter(Map map)
-            : base(map)
-        {
-            this.map = map;
         }
     }
 }

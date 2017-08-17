@@ -12,6 +12,6 @@ namespace Outfitter
 
         public HashSet<StatDef> statBases;
 
-       
+        public HashSet<StatDef> infusedOffsets;
     }
 }

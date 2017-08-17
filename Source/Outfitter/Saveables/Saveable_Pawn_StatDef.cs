@@ -1,12 +1,15 @@
-﻿using RimWorld;
-using Verse;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using RimWorld;
+
+    using Verse;
+
     public class Saveable_Pawn_StatDef : IExposable
     {
-        private StatDef stat;
         private StatAssignment assignment;
+
+        private StatDef stat;
+
         private float weight;
 
         public StatDef Stat
@@ -27,7 +30,9 @@ namespace Outfitter
             set => this.weight = value;
         }
 
-        /*      
+        #region IExposable Members
+
+        /*
 public Saveable_Pawn_StatDef(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
 {
 Stat = stat;
@@ -42,11 +47,14 @@ Weight = statDefWeightPair.Value;
 Assignment = assignment;
 }
 */
+
         public void ExposeData()
         {
             Scribe_Defs.Look(ref this.stat, "Stat");
             Scribe_Values.Look(ref this.assignment, "Assignment");
             Scribe_Values.Look(ref this.weight, "Weight");
         }
+
+        #endregion IExposable Members
     }
 }

@@ -1,8 +1,9 @@
-﻿using RimWorld;
-using Verse;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using RimWorld;
+
+    using Verse;
+
     public class SpecialThingFilterWorker_DeadmansApparel : SpecialThingFilterWorker
     {
         public override bool Matches(Thing t)
@@ -17,4 +18,3 @@ namespace Outfitter
         }
     }
 }
-

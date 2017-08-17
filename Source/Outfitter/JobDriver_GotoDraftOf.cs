@@ -2,34 +2,20 @@
 // Needed
 // Needed
 // Needed when you do something with the AI
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using RimWorld;
-
-using UnityEngine;
-
-using Verse;
-using Verse.AI;
-using Verse.Sound;
 
 // Needed when you do something with the Sound
-
 namespace Outfitter
 {
     using RimWorld.Planet;
+    using System.Collections.Generic;
+    using Verse;
+    using Verse.AI;
 
     public class JobDriver_GotoDraftOf : JobDriver
     {
-        public JobDriver_GotoDraftOf() { }
-
         protected override IEnumerable<Toil> MakeNewToils()
         {
             // Set playerController to drafted
-
-
             yield return Toils_Goto.GotoCell(TargetIndex.A, PathEndMode.OnCell);
 
             Toil arrive = new Toil
@@ -72,7 +58,10 @@ namespace Outfitter
                                                    2);
                                                tp = new LocalTargetInfo(freeCell);
                                            }
-                                           else tp = new LocalTargetInfo(this.pawn.Position);
+                                           else
+                                           {
+                                               tp = new LocalTargetInfo(this.pawn.Position);
+                                           }
 
                                            this.pawn.pather.StartPath(tp, PathEndMode.OnCell);
                                        },
@@ -86,12 +75,12 @@ namespace Outfitter
                                  defaultCompleteMode = ToilCompleteMode.Instant
                              };
             yield return draft;
-
         }
 
         private void TryExitMap()
         {
-            if (this.CurJob.failIfCantJoinOrCreateCaravan && !CaravanExitMapUtility.CanExitMapAndJoinOrCreateCaravanNow(this.pawn))
+            if (this.CurJob.failIfCantJoinOrCreateCaravan
+                && !CaravanExitMapUtility.CanExitMapAndJoinOrCreateCaravanNow(this.pawn))
             {
                 return;
             }

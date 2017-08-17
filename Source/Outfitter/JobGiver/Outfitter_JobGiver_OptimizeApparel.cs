@@ -1,22 +1,23 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using RimWorld;
-using Verse;
-using Verse.AI;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using RimWorld;
+    using System.Collections.Generic;
+    using System.Text;
+    using UnityEngine;
+    using Verse;
+    using Verse.AI;
 
     public static class Outfitter_JobGiver_OptimizeApparel
     {
         private const float MinScoreGainToCare = 0.09f;
+
         private const int ApparelOptimizeCheckIntervalMin = 6000;
 
         private const int ApparelOptimizeCheckIntervalMax = 9000;
+
         private static StringBuilder debugSb;
 
-      // private static NeededWarmth neededWarmth;
+        // private static NeededWarmth neededWarmth;
         public static bool TryGiveJob_Prefix(ref Job __result, Pawn pawn)
         {
             __result = null;
@@ -117,7 +118,10 @@ namespace Outfitter
 
         private static void SetNextOptimizeTick(Pawn pawn)
         {
-            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame + UnityEngine.Random.Range(ApparelOptimizeCheckIntervalMin, ApparelOptimizeCheckIntervalMax);
+            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame
+                                                     + Random.Range(
+                                                         ApparelOptimizeCheckIntervalMin,
+                                                         ApparelOptimizeCheckIntervalMax);
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Outfitter.Helper
 
                 node = parentFilter.DisplayRootCategory;
             }
-            
+
             if (filterText != null && filterText.Length > 2)
             {
                 TreeNode_ThingCategory rootNode = new TreeNode_ThingCategory(new ThingCategoryDef());
@@ -71,7 +71,6 @@ namespace Outfitter.Helper
 
                 node = rootNode;
             }
-            
 
             listing_TreeThingFilter.DoCategoryChildren(node, 0, openMask, true);
             listing_TreeThingFilter.End();

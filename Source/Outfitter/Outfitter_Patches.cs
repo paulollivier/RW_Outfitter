@@ -1,23 +1,16 @@
-﻿using System;
-using System.Linq;
-using Harmony;
-using RimWorld;
-using UnityEngine;
-using Verse;
-using Verse.Sound;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using RimWorld;
+    using System;
+    using System.Linq;
+    using UnityEngine;
+    using Verse;
+    using Verse.Sound;
+
     [StaticConstructorOnStartup]
     public static class DoTabs_Patch
     {
-        private static readonly Texture2D InspectTabButtonFillTex = SolidColorMaterials.NewSolidColorTexture(new Color(0.07450981f, 0.08627451f, 0.105882354f, 1f));
-
-        private static float TabWidth = 72f;
-
-        private const float TabHeight = 30f;
-
-        private const float PaneWidth = 432f;
+        #region Public Methods
 
         public static bool DoTabs_Prefix(IInspectPane pane)
         {
@@ -25,12 +18,16 @@ namespace Outfitter
             {
                 int count = pane.CurTabs.Count(x => x.IsVisible);
                 if (count > 6)
-                    TabWidth = PaneWidth / count;
+                {
+                    tabWidth = PaneWidth / count;
+                }
                 else
-                    TabWidth = 72f;
+                {
+                    tabWidth = 72f;
+                }
 
                 float y = pane.PaneTopY - TabHeight;
-                float num = PaneWidth - TabWidth;
+                float num = PaneWidth - tabWidth;
                 float width = 0f;
                 bool flag = false;
 
@@ -38,7 +35,7 @@ namespace Outfitter
                 {
                     if (current.IsVisible)
                     {
-                        Rect rect = new Rect(num, y, TabWidth, TabHeight);
+                        Rect rect = new Rect(num, y, tabWidth, TabHeight);
                         width = num;
                         Text.Font = GameFont.Small;
                         if (Widgets.ButtonText(rect, current.labelKey.Translate()))
@@ -59,7 +56,7 @@ namespace Outfitter
                             flag = true;
                         }
 
-                        num -= TabWidth;
+                        num -= tabWidth;
                     }
                 }
 
@@ -76,9 +73,27 @@ namespace Outfitter
             return false;
         }
 
+        #endregion Public Methods
+
+        #region Private Fields
+
+        private const float PaneWidth = 432f;
+
+        private const float TabHeight = 30f;
+
+        private static readonly Texture2D InspectTabButtonFillTex =
+            SolidColorMaterials.NewSolidColorTexture(new Color(0.07450981f, 0.08627451f, 0.105882354f, 1f));
+
+        private static float tabWidth = 72f;
+
+        #endregion Private Fields
+
+        #region Private Methods
+
         private static void InterfaceToggleTab(InspectTabBase tab, IInspectPane pane)
         {
-            if (TutorSystem.TutorialMode && !IsOpen(tab, pane) && !TutorSystem.AllowAction("ITab-" + tab.tutorTag + "-Open"))
+            if (TutorSystem.TutorialMode && !IsOpen(tab, pane)
+                && !TutorSystem.AllowAction("ITab-" + tab.tutorTag + "-Open"))
             {
                 return;
             }
@@ -93,7 +108,7 @@ namespace Outfitter
 
         private static void ToggleTab(InspectTabBase tab, IInspectPane pane)
         {
-            if (IsOpen(tab, pane) || (tab == null && pane.OpenTabType == null))
+            if (IsOpen(tab, pane) || tab == null && pane.OpenTabType == null)
             {
                 pane.OpenTabType = null;
                 SoundDefOf.TabClose.PlayOneShotOnCamera(null);
@@ -105,7 +120,7 @@ namespace Outfitter
                 SoundDefOf.TabOpen.PlayOneShotOnCamera(null);
             }
         }
+
+        #endregion Private Methods
     }
-
 }
-

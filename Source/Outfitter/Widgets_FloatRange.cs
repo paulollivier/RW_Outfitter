@@ -1,20 +1,31 @@
-﻿using Outfitter.Textures;
-using UnityEngine;
-using Verse;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using Outfitter.Textures;
+
+    using UnityEngine;
+
+    using Verse;
+
     public static class Widgets_FloatRange
     {
+        #region Handle enum
+
+        #region Public Enums
+
         public enum Handle
         {
             None,
+
             Min,
+
             Max
         }
 
-        private static Handle draggingHandle;
-        private static int draggingId;
+        #endregion Public Enums
+
+        #endregion Handle enum
+
+        #region Public Constructors
 
         static Widgets_FloatRange()
         {
@@ -22,7 +33,17 @@ namespace Outfitter
             draggingId = 0;
         }
 
-        public static void FloatRange(Rect canvas, int id, ref FloatRange range, FloatRange sliderRange, ToStringStyle valueStyle = ToStringStyle.FloatTwo, string labelKey = null)
+        #endregion Public Constructors
+
+        #region Public Methods
+
+        public static void FloatRange(
+            Rect canvas,
+            int id,
+            ref FloatRange range,
+            FloatRange sliderRange,
+            ToStringStyle valueStyle = ToStringStyle.FloatTwo,
+            string labelKey = null)
         {
             // margin
             canvas.xMin += 8f;
@@ -53,7 +74,7 @@ namespace Outfitter
             float minHandlePos = sliderRect.xMin + (range.min - sliderRange.min) * pxPerUnit;
             float maxHandlePos = sliderRect.xMin + (range.max - sliderRange.min) * pxPerUnit;
 
-            // draw handles 
+            // draw handles
             Rect minHandleRect = new Rect(minHandlePos - 16f, sliderRect.center.y - 8f, 16f, 16f);
             GUI.DrawTexture(minHandleRect, OutfitterTextures.FloatRangeSliderTex);
             Rect maxHandleRect = new Rect(maxHandlePos + 16f, sliderRect.center.y - 8f, -16f, 16f);
@@ -89,10 +110,11 @@ namespace Outfitter
                     Event.current.Use();
                 }
 
-                if (dragging || (draggingHandle != Handle.None && Event.current.type == EventType.MouseDrag))
+                if (dragging || draggingHandle != Handle.None && Event.current.type == EventType.MouseDrag)
                 {
                     // NOTE: this deviates from vanilla, vanilla seemed to assume that max == span?
-                    float curPosValue = (Event.current.mousePosition.x - canvas.x) / canvas.width * sliderRange.Span + sliderRange.min;
+                    float curPosValue = (Event.current.mousePosition.x - canvas.x) / canvas.width * sliderRange.Span
+                                        + sliderRange.min;
                     curPosValue = Mathf.Clamp(curPosValue, sliderRange.min, sliderRange.max);
                     if (draggingHandle == Handle.Min)
                     {
@@ -122,5 +144,15 @@ namespace Outfitter
                 Event.current.Use();
             }
         }
+
+        #endregion Public Methods
+
+        #region Private Fields
+
+        private static Handle draggingHandle;
+
+        private static int draggingId;
+
+        #endregion Private Fields
     }
 }
