@@ -86,7 +86,7 @@ namespace Outfitter
             Scribe_Values.Look(ref this.TargetTemperatures, "TargetTemperatures");
             Scribe_Values.Look(ref this.SetRealComfyTemperatures, "SetRealComfyTemperatures");
 
-            Scribe_Values.Look(ref RealComfyTemperatures, "RealComfyTemperatures");
+            Scribe_Values.Look(ref this.RealComfyTemperatures, "RealComfyTemperatures");
             Scribe_Collections.Look(ref this.Stats, "Stats", LookMode.Deep);
 
             // to do: rename with next big version

@@ -1,4 +1,5 @@
-﻿namespace Outfitter
+﻿// ReSharper disable All
+namespace Outfitter
 {
     using System.Collections.Generic;
 

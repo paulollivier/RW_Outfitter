@@ -1,9 +1,12 @@
 ﻿namespace Outfitter
 {
-    using RimWorld;
     using System;
     using System.Linq;
+
+    using RimWorld;
+
     using UnityEngine;
+
     using Verse;
     using Verse.Sound;
 

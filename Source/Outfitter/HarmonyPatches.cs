@@ -4,17 +4,22 @@
 //    {
 //        public override string ModIdentifier { get { return "Outfitter"; } }
 //    }
-//}
+
+using System.Linq;
 
 using Harmony;
+
 using Outfitter;
+using Outfitter.Infused;
+
 using RimWorld;
-using System.Linq;
+
 using Verse;
 
 [StaticConstructorOnStartup]
 internal class HarmonyPatches
 {
+
     #region Public Constructors
 
     static HarmonyPatches()
@@ -33,9 +38,17 @@ internal class HarmonyPatches
                 nameof(Outfitter_JobGiver_OptimizeApparel.TryGiveJob_Prefix)),
             null);
 
-        Log.Message(
+        if (AccessTools.Method(
+                typeof(Infused.GenInfusion),
+                nameof(Infused.GenInfusion.TryGetInfusions)) != null)
+        {
+            InfusedStats.InfusedIsActive = true;
+        }
+
+            Log.Message(
             "Outfitter successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
     }
 
     #endregion Public Constructors
+
 }

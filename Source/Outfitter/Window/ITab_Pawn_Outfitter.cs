@@ -1,12 +1,16 @@
 ﻿namespace Outfitter
 {
-    using Outfitter.Textures;
-    using Outfitter.Window;
-    using RimWorld;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using Outfitter.Textures;
+    using Outfitter.Window;
+
+    using RimWorld;
+
     using UnityEngine;
+
     using Verse;
     using Verse.AI;
     using Verse.Sound;

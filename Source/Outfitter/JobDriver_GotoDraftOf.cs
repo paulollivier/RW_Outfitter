@@ -6,8 +6,10 @@
 // Needed when you do something with the Sound
 namespace Outfitter
 {
-    using RimWorld.Planet;
     using System.Collections.Generic;
+
+    using RimWorld.Planet;
+
     using Verse;
     using Verse.AI;
 

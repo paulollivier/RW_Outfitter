@@ -2,12 +2,17 @@
 
 namespace Outfitter
 {
-    using Outfitter.Textures;
-    using RimWorld;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using Outfitter.Infused;
+    using Outfitter.Textures;
+
+    using RimWorld;
+
     using UnityEngine;
+
     using Verse;
 
     public class Window_Pawn_ApparelDetail : Verse.Window
@@ -55,24 +60,24 @@ namespace Outfitter
 
         private readonly GUIStyle fontBold =
             new GUIStyle
-                {
-                    fontStyle = FontStyle.Bold,
-                    normal = {
+            {
+                fontStyle = FontStyle.Bold,
+                normal = {
                                 textColor = Color.white
                              },
-                    padding = new RectOffset(0, 0, 12, 6)
-                };
+                padding = new RectOffset(0, 0, 12, 6)
+            };
 
         private readonly GUIStyle headline =
             new GUIStyle
-                {
-                    fontStyle = FontStyle.Bold,
-                    fontSize = 16,
-                    normal = {
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 16,
+                normal = {
                                 textColor = Color.white
                              },
-                    padding = new RectOffset(0, 0, 12, 6)
-                };
+                padding = new RectOffset(0, 0, 12, 6)
+            };
 
         private readonly GUIStyle hoverBox = new GUIStyle { hover = { background = OutfitterTextures.BGColor } };
 
@@ -188,10 +193,13 @@ namespace Outfitter
                 }
             }
 
-            ApparelStatCache.infusedOffsets = new HashSet<StatDef>();
-            foreach (ApparelStatCache.StatPriority statPriority in this.pawn.GetApparelStatCache().StatCache)
+            HashSet<StatDef> infusedOffsets = new HashSet<StatDef>();
+            if (InfusedStats.InfusedIsActive)
             {
-                ApparelStatCache.FillInfusionHashset_PawnStatsHandlers(this.apparel, statPriority.Stat);
+                foreach (ApparelStatCache.StatPriority statPriority in this.pawn.GetApparelStatCache().StatCache)
+                {
+                    InfusedStats.ApparelScoreRaw_InfusionHandlers(this.apparel, statPriority.Stat, ref infusedOffsets);
+                }
             }
 
             this._scrollPosition = BeginScrollView(this._scrollPosition, Width(conRect.width));
@@ -257,11 +265,11 @@ namespace Outfitter
                 GUI.color = Color.green; // new Color(0.5f, 1f, 1f, 1f);
                 string statLabel = statPriority.Stat.LabelCap;
 
-                if (ApparelStatCache.infusedOffsets.Contains(statPriority.Stat))
+                if (infusedOffsets.Contains(statPriority.Stat))
                 {
                     // float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
                     float statValue = 0f;
-                    ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(
+                    InfusedStats.ApparelScoreRaw_PawnStatsHandlers(
                         this.apparel,
                         statPriority.Stat,
                         ref statValue);

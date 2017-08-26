@@ -53,6 +53,11 @@
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Infused, Version=34.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\731287727\Assemblies\Infused.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="UnityEngine">
@@ -64,6 +69,7 @@
     <Compile Include="ApparelEntry.cs" />
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="Building_BattleSpot.cs" />
+    <Compile Include="InfusedStats\InfusedStats.cs" />
     <Compile Include="JobDriver_GotoDraftOf.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="Outfitter_Patches.cs" />

@@ -1,37 +1,44 @@
 ﻿namespace Outfitter.Window
 {
-    using RimWorld;
     using System.Collections.Generic;
     using System.Linq;
+
+    using JetBrains.Annotations;
+
+    using RimWorld;
+
     using UnityEngine;
+
     using Verse;
 
     public class Dialog_PawnApparelComparer : Window
     {
-        private readonly Apparel _apparel;
+        [NotNull]
+        private readonly Apparel apparel;
 
-        private readonly Pawn _pawn;
+        [NotNull]
+        private readonly Pawn pawn;
 
         private Vector2 scrollPosition;
 
-        public Dialog_PawnApparelComparer(Pawn pawn, Apparel apparel)
+        public Dialog_PawnApparelComparer(Pawn p, Apparel apparel)
         {
             this.doCloseX = true;
             this.closeOnEscapeKey = true;
             this.doCloseButton = true;
 
-            this._pawn = pawn;
-            this._apparel = apparel;
+            this.pawn = p;
+            this.apparel = apparel;
         }
 
         public override Vector2 InitialSize => new Vector2(500f, 700f);
 
         public override void DoWindowContents(Rect windowRect)
         {
-            ApparelStatCache apparelStatCache = new ApparelStatCache(GameComponent_Outfitter.GetCache(this._pawn));
+            ApparelStatCache apparelStatCache = new ApparelStatCache(GameComponent_Outfitter.GetCache(this.pawn));
             List<Apparel> allApparels = new List<Apparel>(
-                this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
-            foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
+                this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
+            foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this.pawn.Map))
             {
                 foreach (Apparel pawnApparel in pawn.apparel.WornApparel)
                 {
@@ -42,7 +49,7 @@
                 }
             }
 
-            allApparels = allApparels.Where(i => !ApparelUtility.CanWearTogether(this._apparel.def, i.def)).ToList();
+            allApparels = allApparels.Where(i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def)).ToList();
 
             Rect groupRect = windowRect.ContractedBy(10f);
             groupRect.height -= 100;
@@ -95,8 +102,7 @@
             allApparels = allApparels.OrderByDescending(
                 i =>
                     {
-                        float g;
-                        if (apparelStatCache.DIALOG_CalculateApparelScoreGain(i, out g))
+                        if (apparelStatCache.DIALOG_CalculateApparelScoreGain(i, out float g))
                         {
                             return g;
                         }
@@ -139,8 +145,7 @@
                     }
                 }
 
-                float gain;
-                if (apparelStatCache.DIALOG_CalculateApparelScoreGain(currentAppel, out gain))
+                if (apparelStatCache.DIALOG_CalculateApparelScoreGain(currentAppel, out float gain))
                 {
                     this.DrawLine(
                         ref itemRect,
@@ -148,12 +153,12 @@
                         currentAppel.LabelCap,
                         apparelLabelWidth,
                         equiped,
-                        equiped == null ? null : equiped.LabelCap,
+                        equiped?.LabelCap,
                         apparelEquipedWidth,
                         target,
-                        target == null ? null : target.LabelCap,
+                        target?.LabelCap,
                         apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"),
+                        apparelStatCache.ApparelScoreRaw(currentAppel, this.pawn).ToString("N5"),
                         apparelScoreWidth,
                         gain.ToString("N5"),
                         apparelGainWidth);
@@ -166,12 +171,12 @@
                         currentAppel.LabelCap,
                         apparelLabelWidth,
                         equiped,
-                        equiped == null ? null : equiped.LabelCap,
+                        equiped?.LabelCap,
                         apparelEquipedWidth,
                         target,
-                        target == null ? null : target.LabelCap,
+                        target?.LabelCap,
                         apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, this._pawn).ToString("N5"),
+                        apparelStatCache.ApparelScoreRaw(currentAppel, this.pawn).ToString("N5"),
                         apparelScoreWidth,
                         "No Allow",
                         apparelGainWidth);
@@ -347,7 +352,7 @@
                 {
                     this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
-                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(this._pawn, apparelThing));
+                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(this.pawn, apparelThing));
                     return;
                 }
             }

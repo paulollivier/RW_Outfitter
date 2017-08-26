@@ -8,14 +8,21 @@ using static Outfitter.SaveablePawn.MainJob;
 
 namespace Outfitter
 {
-    using RimWorld;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using JetBrains.Annotations;
+
+    using Outfitter.Infused;
+
+    using RimWorld;
+
     using Verse;
 
     public static class ApparelStatsHelper
     {
+
         #region Public Fields
 
         // New curve
@@ -48,6 +55,17 @@ namespace Outfitter
 
         #endregion Public Fields
 
+        #region Private Fields
+
+        private const float ScoreFactorIfNotReplacing = 10f;
+        private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
+        private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches =
+            new Dictionary<Pawn, ApparelStatCache>();
+
+        private static List<StatDef> allApparelStats;
+
+        #endregion Private Fields
+
         #region Public Properties
 
         public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
@@ -67,19 +85,22 @@ namespace Outfitter
                     // add all stat modifiers from all apparels
                     foreach (ThingDef apparel in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.IsApparel))
                     {
-                        if (apparel.equippedStatOffsets != null && apparel.equippedStatOffsets.Count > 0)
+                        if (apparel.equippedStatOffsets.Count <= 0)
                         {
-                            foreach (StatModifier modifier in apparel.equippedStatOffsets)
-                            {
-                                if (!allApparelStats.Contains(modifier.stat))
-                                {
-                                    allApparelStats.Add(modifier.stat);
-                                }
-                            }
+                            continue;
+                        }
+
+                        foreach (StatModifier modifier in apparel.equippedStatOffsets.Where(
+                            modifier => !allApparelStats.Contains(modifier.stat)))
+                        {
+                            allApparelStats.Add(modifier.stat);
                         }
                     }
 
-                    ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
+                    if (InfusedStats.InfusedIsActive)
+                    {
+                        InfusedStats.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
+                    }
                 }
 
                 return allApparelStats;
@@ -88,28 +109,15 @@ namespace Outfitter
 
         #endregion Private Properties
 
-        #region Private Fields
-
-        private const float ScoreFactorIfNotReplacing = 10f;
-
-        private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
-
-        private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches =
-            new Dictionary<Pawn, ApparelStatCache>();
-
-        private static List<StatDef> allApparelStats;
-
-        #endregion Private Fields
-
         #region Public Methods
 
         // ReSharper disable once UnusedMember.Global
-        public static float ApparelScoreGain(this Pawn pawn, Apparel ap)
+        public static float ApparelScoreGain([NotNull] this Pawn pawn, [NotNull] Apparel newAp)
         {
             ApparelStatCache conf = new ApparelStatCache(pawn);
 
             // get the score of the considered apparel
-            float candidateScore = conf.ApparelScoreRaw(ap, pawn);
+            float candidateScore = conf.ApparelScoreRaw(newAp, pawn);
 
             // float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
 
@@ -118,20 +126,24 @@ namespace Outfitter
 
             // check if the candidate will replace existing gear
             bool willReplace = false;
-            foreach (Apparel apparel in wornApparel)
+            foreach (Apparel wornAp in wornApparel.Where(
+                apparel => !ApparelUtility.CanWearTogether(apparel.def, newAp.def)))
             {
-                if (!ApparelUtility.CanWearTogether(apparel.def, ap.def))
+                // can't drop forced gear
+                if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornAp))
                 {
-                    // can't drop forced gear
-                    if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(apparel))
-                    {
-                        return -1000f;
-                    }
-
-                    // if replaces, score is difference of the two pieces of gear + penalty x2
-                    candidateScore -= 2 * conf.ApparelScoreRaw(apparel, pawn);
-                    willReplace = true;
+                    return -1000f;
                 }
+                float offset =  -1.2f;
+                // check the coverage, reduce the offset if the new ap covers more
+                var factor = wornAp.def.apparel.HumanBodyCoverage - newAp.def.apparel.HumanBodyCoverage;
+                // if replaces, score is difference of the two pieces of gear + penalty
+                if (factor != 0)
+                {
+                    offset += factor / 5;
+                }
+                candidateScore += offset * conf.ApparelScoreRaw(wornAp, pawn);
+                willReplace = true;
             }
 
             // increase score if this piece can be worn without replacing existing gear.
@@ -143,7 +155,7 @@ namespace Outfitter
             return candidateScore;
         }
 
-        public static ApparelStatCache GetApparelStatCache(this Pawn pawn)
+        public static ApparelStatCache GetApparelStatCache([NotNull] this Pawn pawn)
         {
             if (!PawnApparelStatCaches.ContainsKey(pawn))
             {
@@ -153,7 +165,8 @@ namespace Outfitter
             return PawnApparelStatCaches[pawn];
         }
 
-        public static Dictionary<StatDef, float> GetWeightedApparelArmorStats(this Pawn pawn)
+        [NotNull]
+        public static Dictionary<StatDef, float> GetWeightedApparelArmorStats([NotNull] this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
 
@@ -191,6 +204,7 @@ namespace Outfitter
             return dict;
         }
 
+        [NotNull]
         public static Dictionary<StatDef, float> GetWeightedApparelIndividualStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
@@ -203,6 +217,8 @@ namespace Outfitter
                 bool activeDrone = false;
 
                 PsychicDroneLevel psychicDroneLevel = PsychicDroneLevel.None;
+
+                // ReSharper disable once InconsistentNaming
                 Building building_PsychicEmanator = ExtantShipPart(pawn.Map);
                 if (building_PsychicEmanator != null)
                 {
@@ -325,6 +341,7 @@ namespace Outfitter
             return dict;
         }
 
+        [NotNull]
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
@@ -339,8 +356,7 @@ namespace Outfitter
                 // add weights for all worktypes, multiplied by job priority
                 List<WorkTypeDef> allDefsListForReading = DefDatabase<WorkTypeDef>.AllDefsListForReading;
 
-                foreach (WorkTypeDef workType in allDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def))
-                )
+                foreach (WorkTypeDef workType in allDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)))
                 {
                     foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(pawn, workType))
                     {
@@ -390,7 +406,8 @@ namespace Outfitter
             return dict;
         }
 
-        public static List<StatDef> NotYetAssignedStatDefs(this Pawn pawn)
+        [NotNull]
+        public static List<StatDef> NotYetAssignedStatDefs([NotNull] this Pawn pawn)
         {
             return AllStatDefsModifiedByAnyApparel
                 .Except(pawn.GetApparelStatCache().StatCache.Select(prio => prio.Stat)).ToList();
@@ -400,7 +417,7 @@ namespace Outfitter
 
         #region Private Methods
 
-        private static void AddStatToDict(StatDef stat, float weight, ref Dictionary<StatDef, float> dict)
+        private static void AddStatToDict([NotNull] StatDef stat, float weight, [NotNull] ref Dictionary<StatDef, float> dict)
         {
             if (dict.ContainsKey(stat))
             {
@@ -412,7 +429,7 @@ namespace Outfitter
             }
         }
 
-        private static void AdjustStatsForTraits(Pawn pawn, ref Dictionary<StatDef, float> dict)
+        private static void AdjustStatsForTraits(Pawn pawn, [NotNull] ref Dictionary<StatDef, float> dict)
         {
             foreach (StatDef key in new List<StatDef>(dict.Keys))
             {
@@ -459,7 +476,7 @@ namespace Outfitter
         }
 
         // RimWorld.ThoughtWorker_PsychicDrone
-        private static Building ExtantShipPart(Map map)
+        private static Building ExtantShipPart([NotNull] Map map)
         {
             List<Thing> list = map.listerThings.ThingsOfDef(ThingDefOf.CrashedPsychicEmanatorShipPart);
             if (list.Count == 0)
@@ -890,5 +907,6 @@ namespace Outfitter
         }
 
         #endregion Private Methods
+
     }
 }

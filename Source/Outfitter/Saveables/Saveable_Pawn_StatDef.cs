@@ -47,7 +47,6 @@ Weight = statDefWeightPair.Value;
 Assignment = assignment;
 }
 */
-
         public void ExposeData()
         {
             Scribe_Defs.Look(ref this.stat, "Stat");

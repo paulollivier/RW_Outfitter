@@ -4,12 +4,15 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    using JetBrains.Annotations;
+
     using Verse;
 
     public class GameComponent_Outfitter : GameComponent
     {
         #region Public Fields
 
+        [NotNull]
         public static List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
 
         public static bool updated;
@@ -22,6 +25,7 @@
         {
         }
 
+        // ReSharper disable once UnusedMember.Global
         public GameComponent_Outfitter(Game game)
         {
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(
