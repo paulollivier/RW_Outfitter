@@ -2,19 +2,20 @@
 namespace Outfitter
 {
     using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
 
     using RimWorld;
 
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public struct ApparelEntry
     {
+        #region Public Fields
+
         public Apparel apparel;
 
         public HashSet<StatDef> equippedOffsets;
 
+        public HashSet<StatDef> infusedOffsets;
         public HashSet<StatDef> statBases;
 
-        public HashSet<StatDef> infusedOffsets;
+        #endregion Public Fields
     }
 }

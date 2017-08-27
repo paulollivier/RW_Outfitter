@@ -5,6 +5,7 @@
 //        public override string ModIdentifier { get { return "Outfitter"; } }
 //    }
 
+using System;
 using System.Linq;
 
 using Harmony;
@@ -38,15 +39,25 @@ internal class HarmonyPatches
                 nameof(Outfitter_JobGiver_OptimizeApparel.TryGiveJob_Prefix)),
             null);
 
-        if (AccessTools.Method(
-                typeof(Infused.GenInfusion),
-                nameof(Infused.GenInfusion.TryGetInfusions)) != null)
+        try
         {
-            InfusedStats.InfusedIsActive = true;
+            ((Action)(() =>
+                {
+                    if (AccessTools.Method(typeof(Infused.GenInfusion), nameof(Infused.GenInfusion.TryGetInfusions))
+                        != null)
+                    {
+                        Cache.InfusedIsActive = true;
+                    }
+                }))();
+        }
+        catch (TypeLoadException)
+        {
         }
 
-            Log.Message(
-            "Outfitter successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
+
+
+        Log.Message(
+        "Outfitter successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
     }
 
     #endregion Public Constructors

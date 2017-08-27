@@ -102,12 +102,8 @@
             allApparels = allApparels.OrderByDescending(
                 i =>
                     {
-                        if (apparelStatCache.DIALOG_CalculateApparelScoreGain(i, out float g))
-                        {
-                            return g;
-                        }
-
-                        return -1000f;
+                        apparelStatCache.DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
+                        return g;
                     }).ToList();
 
             foreach (Apparel currentAppel in allApparels)
@@ -145,42 +141,26 @@
                     }
                 }
 
-                if (apparelStatCache.DIALOG_CalculateApparelScoreGain(currentAppel, out float gain))
-                {
-                    this.DrawLine(
-                        ref itemRect,
-                        currentAppel,
-                        currentAppel.LabelCap,
-                        apparelLabelWidth,
-                        equiped,
-                        equiped?.LabelCap,
-                        apparelEquipedWidth,
-                        target,
-                        target?.LabelCap,
-                        apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, this.pawn).ToString("N5"),
-                        apparelScoreWidth,
-                        gain.ToString("N5"),
-                        apparelGainWidth);
-                }
-                else
-                {
-                    this.DrawLine(
-                        ref itemRect,
-                        currentAppel,
-                        currentAppel.LabelCap,
-                        apparelLabelWidth,
-                        equiped,
-                        equiped?.LabelCap,
-                        apparelEquipedWidth,
-                        target,
-                        target?.LabelCap,
-                        apparelOwnerWidth,
-                        apparelStatCache.ApparelScoreRaw(currentAppel, this.pawn).ToString("N5"),
-                        apparelScoreWidth,
-                        "No Allow",
-                        apparelGainWidth);
-                }
+                apparelStatCache.DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
+                string gainString = this.pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(currentAppel)
+                                        ? gain.ToString("N5")
+                                        : "No Allow";
+
+                this.DrawLine(
+                    ref itemRect,
+                    currentAppel,
+                    currentAppel.LabelCap,
+                    apparelLabelWidth,
+                    equiped,
+                    equiped?.LabelCap,
+                    apparelEquipedWidth,
+                    target,
+                    target?.LabelCap,
+                    apparelOwnerWidth,
+                    apparelStatCache.ApparelScoreRaw(currentAppel, this.pawn).ToString("N5"),
+                    apparelScoreWidth,
+                   gainString,
+                    apparelGainWidth);
 
                 listRect.yMin = itemRect.yMax;
             }
@@ -315,20 +295,6 @@
                 {
                     Widgets.ThingIcon(fieldRect, apparelOwnerThing);
                 }
-
-                if (Widgets.ButtonInvisible(fieldRect))
-                {
-                    this.Close();
-                    Find.MainTabsRoot.EscapeCurrentTab();
-                    Find.CameraDriver.JumpToVisibleMapLoc(apparelOwnerThing.PositionHeld);
-                    Find.Selector.ClearSelection();
-                    if (apparelOwnerThing.Spawned)
-                    {
-                        Find.Selector.Select(apparelOwnerThing);
-                    }
-
-                    return;
-                }
             }
             else
             {
@@ -350,8 +316,6 @@
                 Text.Anchor = TextAnchor.UpperLeft;
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    this.Close();
-                    Find.MainTabsRoot.EscapeCurrentTab();
                     Find.WindowStack.Add(new Window_Pawn_ApparelDetail(this.pawn, apparelThing));
                     return;
                 }

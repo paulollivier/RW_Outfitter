@@ -69,13 +69,14 @@
     <Compile Include="ApparelEntry.cs" />
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="Building_BattleSpot.cs" />
+    <Compile Include="Cache.cs" />
     <Compile Include="InfusedStats\InfusedStats.cs" />
     <Compile Include="JobDriver_GotoDraftOf.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="Outfitter_Patches.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
-    <Compile Include="JobGiver\Outfitter_JobGiver_OptimizeApparel.cs" />
+    <Compile Include="Outfitter_JobGiver_OptimizeApparel.cs" />
     <None Include="OF_SpecialInjector.cs" />
     <Compile Include="StatAssignment.cs" />
     <Compile Include="Window\Dialog_PawnApparelComparer.cs" />

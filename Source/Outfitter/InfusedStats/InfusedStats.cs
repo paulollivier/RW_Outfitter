@@ -1,6 +1,7 @@
 ﻿namespace Outfitter.Infused
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     using global::Infused;
 
@@ -14,9 +15,8 @@
 
     public static class InfusedStats
     {
-        public static bool InfusedIsActive = false;
 
-        public static void ApparelScoreRaw_InfusionHandlers(Apparel apparel, StatDef parentStat, ref HashSet<StatDef> infusedOffsets)
+        public static void ApparelScoreRaw_FillInfusedStat(Apparel apparel, StatDef parentStat, ref HashSet<StatDef> infusedOffsets)
         {
             if (apparel.TryGetInfusions(out InfusionSet inf))
             {
@@ -72,23 +72,19 @@
                     statInfusedSuffix += mod.multiplier - 1;
                 }
 
-                val = statInfusedPrefix + statInfusedSuffix;
-
-
+                val += statInfusedPrefix + statInfusedSuffix;
             }
         }
 
         public static void FillIgnoredInfused_PawnStatsHandlers(ref List<StatDef> allApparelStats)
         {
             // add all stat modifiers from all infusions
-            foreach (Def infusion in DefDatabase<Def>.AllDefsListForReading)
+            foreach (KeyValuePair<StatDef, StatMod> mod in DefDatabase<Def>.AllDefsListForReading.SelectMany(
+                infusion => infusion.stats))
             {
-                foreach (KeyValuePair<StatDef, StatMod> mod in infusion.stats)
+                if (!allApparelStats.Contains(mod.Key))
                 {
-                    if (!allApparelStats.Contains(mod.Key))
-                    {
-                        allApparelStats.Add(mod.Key);
-                    }
+                    allApparelStats.Add(mod.Key);
                 }
             }
         }

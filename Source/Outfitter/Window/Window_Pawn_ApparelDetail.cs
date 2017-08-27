@@ -6,6 +6,8 @@ namespace Outfitter
     using System.Collections.Generic;
     using System.Linq;
 
+    using JetBrains.Annotations;
+
     using Outfitter.Infused;
     using Outfitter.Textures;
 
@@ -79,7 +81,7 @@ namespace Outfitter
                 padding = new RectOffset(0, 0, 12, 6)
             };
 
-        private readonly GUIStyle hoverBox = new GUIStyle { hover = { background = OutfitterTextures.BGColor } };
+        private readonly GUIStyle hoverBox = new GUIStyle { hover = { background = OutfitterTextures.BgColor } };
 
         private readonly GUIStyle whiteLine = new GUIStyle { normal = { background = OutfitterTextures.White } };
 
@@ -93,6 +95,7 @@ namespace Outfitter
 
         #region Private Properties
 
+        [CanBeNull]
         private Def Def
         {
             get
@@ -176,30 +179,16 @@ namespace Outfitter
             Space(6f);
 
             HashSet<StatDef> equippedOffsets = new HashSet<StatDef>();
-            if (this.apparel.def.equippedStatOffsets != null)
-            {
-                foreach (StatModifier equippedStatOffset in this.apparel.def.equippedStatOffsets)
-                {
-                    equippedOffsets.Add(equippedStatOffset.stat);
-                }
-            }
-
             HashSet<StatDef> statBases = new HashSet<StatDef>();
-            if (this.apparel.def.statBases != null)
-            {
-                foreach (StatModifier statBase in this.apparel.def.statBases)
-                {
-                    statBases.Add(statBase.stat);
-                }
-            }
-
             HashSet<StatDef> infusedOffsets = new HashSet<StatDef>();
-            if (InfusedStats.InfusedIsActive)
+
+            Dictionary<Apparel, ApparelEntry> apparelEntries = Cache.ApparelEntries;
+
+            if (apparelEntries.ContainsKey(this.apparel))
             {
-                foreach (ApparelStatCache.StatPriority statPriority in this.pawn.GetApparelStatCache().StatCache)
-                {
-                    InfusedStats.ApparelScoreRaw_InfusionHandlers(this.apparel, statPriority.Stat, ref infusedOffsets);
-                }
+                equippedOffsets = apparelEntries[this.apparel].equippedOffsets;
+                statBases = apparelEntries[this.apparel].statBases;
+                infusedOffsets = apparelEntries[this.apparel].infusedOffsets;
             }
 
             this._scrollPosition = BeginScrollView(this._scrollPosition, Width(conRect.width));
@@ -239,7 +228,7 @@ namespace Outfitter
 
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
-                    float statValue = ApparelStatCache.GetEquippedStatValue(this.apparel, statPriority.Stat) - 1;
+                    float statValue = this.apparel.GetEquippedStatValue(statPriority.Stat) - 1;
 
                     // statValue += StatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
                     float statScore = statValue * statPriority.Weight;
@@ -265,7 +254,7 @@ namespace Outfitter
                 GUI.color = Color.green; // new Color(0.5f, 1f, 1f, 1f);
                 string statLabel = statPriority.Stat.LabelCap;
 
-                if (infusedOffsets.Contains(statPriority.Stat))
+                if (Cache.InfusedIsActive&&infusedOffsets.Contains(statPriority.Stat))
                 {
                     // float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
                     float statValue = 0f;
@@ -287,11 +276,12 @@ namespace Outfitter
                         finalValue);
                     score += statScore;
                 }
+
+                GUI.color = Color.white;
             }
 
             // end upper group
             EndScrollView();
-            GUI.color = Color.white;
 
             // begin lower group
             FlexibleSpace();
@@ -474,7 +464,8 @@ namespace Outfitter
             }
 
             float temperature = conf.ApparelScoreRaw_Temperature(this.apparel);
-            if (temperature != 1.0f)
+
+            if (Math.Abs(temperature - 1f) > 0)
             {
                 score *= temperature;
 

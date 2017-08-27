@@ -97,7 +97,7 @@ namespace Outfitter
                         }
                     }
 
-                    if (InfusedStats.InfusedIsActive)
+                    if (Cache.InfusedIsActive)
                     {
                         InfusedStats.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
                     }
@@ -134,15 +134,9 @@ namespace Outfitter
                 {
                     return -1000f;
                 }
-                float offset =  -1.2f;
-                // check the coverage, reduce the offset if the new ap covers more
-                var factor = wornAp.def.apparel.HumanBodyCoverage - newAp.def.apparel.HumanBodyCoverage;
+
                 // if replaces, score is difference of the two pieces of gear + penalty
-                if (factor != 0)
-                {
-                    offset += factor / 5;
-                }
-                candidateScore += offset * conf.ApparelScoreRaw(wornAp, pawn);
+                candidateScore -= conf.ApparelScoreRaw(wornAp, pawn);
                 willReplace = true;
             }
 

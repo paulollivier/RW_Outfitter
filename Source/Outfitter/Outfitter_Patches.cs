@@ -3,6 +3,8 @@
     using System;
     using System.Linq;
 
+    using JetBrains.Annotations;
+
     using RimWorld;
 
     using UnityEngine;
@@ -109,7 +111,7 @@
             return tab.GetType() == pane.OpenTabType;
         }
 
-        private static void ToggleTab(InspectTabBase tab, IInspectPane pane)
+        private static void ToggleTab([NotNull] InspectTabBase tab, IInspectPane pane)
         {
             if (IsOpen(tab, pane) || tab == null && pane.OpenTabType == null)
             {

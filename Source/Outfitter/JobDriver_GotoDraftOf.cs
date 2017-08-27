@@ -1,10 +1,4 @@
-﻿// Always needed
-// Needed
-// Needed
-// Needed when you do something with the AI
-
-// Needed when you do something with the Sound
-namespace Outfitter
+﻿namespace Outfitter
 {
     using System.Collections.Generic;
 

@@ -5,19 +5,36 @@ namespace Outfitter
 {
     public class SaveablePawn : IExposable
     {
-        // Exposed members
-        public Pawn Pawn;
-
-        public bool TargetTemperaturesOverride;
-
-        public bool AddWorkStats = true;
+        #region Public Fields
 
         public bool AddIndividualStats = true;
 
-        public FloatRange TargetTemperatures;
+        public bool AddWorkStats = true;
+
+        public List<Saveable_Pawn_StatDef> ApparelStats = new List<Saveable_Pawn_StatDef>();
+
+        public bool armorOnly = false;
+
+        public bool AutoEquipWeapon;
 
         // public FloatRange RealComfyTemperatures;
         public bool forceStatUpdate = false;
+
+        public MainJob mainJob;
+
+        // Exposed members
+        public Pawn Pawn;
+
+        public FloatRange RealComfyTemperatures;
+        public bool SetRealComfyTemperatures;
+        public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
+        public FloatRange TargetTemperatures;
+        public bool TargetTemperaturesOverride;
+        public FloatRange Temperatureweight;
+
+        #endregion Public Fields
+
+        #region Public Enums
 
         public enum MainJob
         {
@@ -56,21 +73,9 @@ namespace Outfitter
             Warden
         }
 
-        public MainJob mainJob;
+        #endregion Public Enums
 
-        public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
-
-        public List<Saveable_Pawn_StatDef> ApparelStats = new List<Saveable_Pawn_StatDef>();
-
-        public bool SetRealComfyTemperatures;
-
-        public bool AutoEquipWeapon;
-
-        public bool armorOnly = false;
-
-        public FloatRange Temperatureweight;
-
-        public FloatRange RealComfyTemperatures;
+        #region Public Methods
 
         // public SaveablePawn(Pawn pawn)
         // {
@@ -87,13 +92,16 @@ namespace Outfitter
             Scribe_Values.Look(ref this.SetRealComfyTemperatures, "SetRealComfyTemperatures");
 
             Scribe_Values.Look(ref this.RealComfyTemperatures, "RealComfyTemperatures");
+            // bug: stats are not saved
             Scribe_Collections.Look(ref this.Stats, "Stats", LookMode.Deep);
 
-            // to do: rename with next big version
+            // todo: rename with next big version
             Scribe_Collections.Look(ref this.ApparelStats, "WeaponStats", LookMode.Deep);
             Scribe_Values.Look(ref this.AddWorkStats, "AddWorkStats", true);
             Scribe_Values.Look(ref this.AddIndividualStats, "AddIndividualStats", true);
             Scribe_Values.Look(ref this.mainJob, "mainJob");
         }
+
+        #endregion Public Methods
     }
 }

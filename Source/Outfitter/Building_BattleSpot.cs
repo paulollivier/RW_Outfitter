@@ -143,7 +143,7 @@
                 {
                     foreach (Apparel apparel in pawn.apparel.WornApparel)
                     {
-                        if (!ApparelUtility.CanWearTogether(apparel.def, (apparelThing.Key as Apparel).def))
+                        if (!ApparelUtility.CanWearTogether(apparel.def, ((Apparel)apparelThing.Key).def))
                         {
                             if (pawn.ApparelScoreGain(apparel) > apparelThing.Value)
                             {

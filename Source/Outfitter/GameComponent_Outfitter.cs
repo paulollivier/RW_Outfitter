@@ -53,12 +53,9 @@
 
         public static SaveablePawn GetCache(Pawn pawn)
         {
-            foreach (SaveablePawn c in _pawnCache)
+            foreach (SaveablePawn c in _pawnCache.Where(c => c.Pawn == pawn))
             {
-                if (c.Pawn == pawn)
-                {
-                    return c;
-                }
+                return c;
             }
 
             SaveablePawn n = new SaveablePawn { Pawn = pawn };
@@ -78,10 +75,6 @@
 
             Scribe_Collections.Look(ref _pawnCache, "Pawns", LookMode.Deep);
 
-            if (_pawnCache == null)
-            {
-                _pawnCache = new List<SaveablePawn>();
-            }
         }
 
         #endregion Public Methods

@@ -3,20 +3,43 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
     using Outfitter.Textures;
     using Outfitter.Window;
-
     using RimWorld;
-
     using UnityEngine;
-
     using Verse;
     using Verse.AI;
     using Verse.Sound;
 
     public class ITab_Pawn_Outfitter : ITab
     {
+
+        #region Private Fields
+
+        private const float ButtonHeight = 30f;
+
+        private const float Margin = 10f;
+
+        private const float ThingIconSize = 30f;
+
+        private const float ThingLeftX = 40f;
+
+        private const float ThingRowHeight = 64f;
+
+        private static readonly Color HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+        private static readonly Color ThingLabelColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+
+        private Vector2 scrollPosition = Vector2.zero;
+
+        private Vector2 scrollPosition1 = Vector2.zero;
+
+        private float scrollViewHeight;
+
+        private float scrollViewHeight1;
+
+        #endregion Private Fields
+
         #region Public Constructors
 
         public ITab_Pawn_Outfitter()
@@ -61,6 +84,31 @@
         }
 
         #endregion Public Properties
+
+        #region Private Properties
+
+        private bool CanControl => this.SelPawn.IsColonistPlayerControlled;
+
+        private Pawn SelPawnForGear
+        {
+            get
+            {
+                if (this.SelPawn != null)
+                {
+                    return this.SelPawn;
+                }
+
+                Corpse corpse = this.SelThing as Corpse;
+                if (corpse != null)
+                {
+                    return corpse.InnerPawn;
+                }
+
+                throw new InvalidOperationException("Gear tab on non-pawn non-corpse " + this.SelThing);
+            }
+        }
+
+        #endregion Private Properties
 
         #region Protected Methods
 
@@ -162,57 +210,6 @@
         }
 
         #endregion Protected Methods
-
-        #region Private Fields
-
-        private const float ButtonHeight = 30f;
-
-        private const float Margin = 10f;
-
-        private const float ThingIconSize = 30f;
-
-        private const float ThingLeftX = 40f;
-
-        private const float ThingRowHeight = 64f;
-
-        private static readonly Color HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-
-        private static readonly Color ThingLabelColor = new Color(0.9f, 0.9f, 0.9f, 1f);
-
-        private Vector2 scrollPosition = Vector2.zero;
-
-        private Vector2 scrollPosition1 = Vector2.zero;
-
-        private float scrollViewHeight;
-
-        private float scrollViewHeight1;
-
-        #endregion Private Fields
-
-        #region Private Properties
-
-        private bool CanControl => this.SelPawn.IsColonistPlayerControlled;
-
-        private Pawn SelPawnForGear
-        {
-            get
-            {
-                if (this.SelPawn != null)
-                {
-                    return this.SelPawn;
-                }
-
-                Corpse corpse = this.SelThing as Corpse;
-                if (corpse != null)
-                {
-                    return corpse.InnerPawn;
-                }
-
-                throw new InvalidOperationException("Gear tab on non-pawn non-corpse " + this.SelThing);
-            }
-        }
-
-        #endregion Private Properties
 
         #region Private Methods
 
@@ -685,5 +682,6 @@
         }
 
         #endregion Private Methods
+
     }
 }
