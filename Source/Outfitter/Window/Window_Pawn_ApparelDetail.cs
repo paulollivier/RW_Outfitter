@@ -8,7 +8,6 @@ namespace Outfitter
 
     using JetBrains.Annotations;
 
-    using Outfitter.Infused;
     using Outfitter.Textures;
 
     using RimWorld;
@@ -254,27 +253,29 @@ namespace Outfitter
                 GUI.color = Color.green; // new Color(0.5f, 1f, 1f, 1f);
                 string statLabel = statPriority.Stat.LabelCap;
 
-                if (Cache.InfusedIsActive&&infusedOffsets.Contains(statPriority.Stat))
                 {
-                    // float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
-                    float statValue = 0f;
-                    InfusedStats.ApparelScoreRaw_PawnStatsHandlers(
-                        this.apparel,
-                        statPriority.Stat,
-                        ref statValue);
+                    if (infusedOffsets.Contains(statPriority.Stat))
+                    {
+                        // float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
+                        float statValue = 0f;
+                        ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(
+                            this.apparel,
+                            statPriority.Stat,
+                            ref statValue);
 
-                    float statScore = statValue * statPriority.Weight;
+                        float statScore = statValue * statPriority.Weight;
 
-                    this.DrawLine(
-                        statLabel,
-                        labelWidth,
-                        statValue.ToString("N2"),
-                        baseValue,
-                        statPriority.Weight.ToString("N2"),
-                        multiplierWidth,
-                        statScore.ToString("N2"),
-                        finalValue);
-                    score += statScore;
+                        this.DrawLine(
+                            statLabel,
+                            labelWidth,
+                            statValue.ToString("N2"),
+                            baseValue,
+                            statPriority.Weight.ToString("N2"),
+                            multiplierWidth,
+                            statScore.ToString("N2"),
+                            finalValue);
+                        score += statScore;
+                    }
                 }
 
                 GUI.color = Color.white;

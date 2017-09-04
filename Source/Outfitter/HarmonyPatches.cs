@@ -5,17 +5,17 @@
 //        public override string ModIdentifier { get { return "Outfitter"; } }
 //    }
 
-using System;
 using System.Linq;
 
 using Harmony;
 
 using Outfitter;
-using Outfitter.Infused;
 
 using RimWorld;
 
 using Verse;
+
+using JobGiver_OptimizeApparel = Outfitter.JobGiver_OptimizeApparel;
 
 [StaticConstructorOnStartup]
 internal class HarmonyPatches
@@ -29,31 +29,22 @@ internal class HarmonyPatches
 
         harmony.Patch(
             AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
-            new HarmonyMethod(typeof(DoTabs_Patch), nameof(DoTabs_Patch.DoTabs_Prefix)),
+            new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
             null);
 
         harmony.Patch(
-            AccessTools.Method(typeof(JobGiver_OptimizeApparel), "TryGiveJob"),
+            AccessTools.Method(typeof(RimWorld.JobGiver_OptimizeApparel), "TryGiveJob"),
             new HarmonyMethod(
-                typeof(Outfitter_JobGiver_OptimizeApparel),
-                nameof(Outfitter_JobGiver_OptimizeApparel.TryGiveJob_Prefix)),
+                typeof(JobGiver_OptimizeApparel),
+                nameof(JobGiver_OptimizeApparel.TryGiveJob_Prefix)),
             null);
 
-        try
-        {
-            ((Action)(() =>
-                {
-                    if (AccessTools.Method(typeof(Infused.GenInfusion), nameof(Infused.GenInfusion.TryGetInfusions))
-                        != null)
-                    {
-                        Cache.InfusedIsActive = true;
-                    }
-                }))();
-        }
-        catch (TypeLoadException)
-        {
-        }
-
+       // harmony.Patch(
+       //     AccessTools.Method(typeof(ITab_Bills), "FillTab"),
+       //     new HarmonyMethod(
+       //         typeof(ITab_Bills_Patch),
+       //         nameof(ITab_Bills_Patch.FillTab_Prefix)),
+       //     null);
 
 
         Log.Message(

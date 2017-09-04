@@ -58,103 +58,6 @@
             Scribe_Values.Look(ref this.ticksToDespawn, "ticksToDespawn");
         }
 
-        public void GetApparelList([NotNull] Pawn pawn, [NotNull] out List<Thing> apparelList)
-        {
-            apparelList = new List<Thing>();
-            Dictionary<Thing, float> apparelStats = new Dictionary<Thing, float>();
-
-            if (pawn.outfits == null)
-            {
-                Log.ErrorOnce(pawn + " tried to run JobGiver_OptimizeApparel without an OutfitTracker", 5643897);
-                return;
-            }
-
-            if (pawn.Faction != Faction.OfPlayer)
-            {
-                Log.ErrorOnce("Non-colonist " + pawn + " tried to optimize apparel.", 764323);
-                return;
-            }
-
-            Outfit currentOutfit = pawn.outfits.CurrentOutfit;
-
-            float num = 0f;
-            List<Thing> list = this.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
-
-            if (list.Count == 0)
-            {
-                return;
-            }
-
-            foreach (Thing t in list)
-            {
-                Apparel apparel = (Apparel)t;
-                if (currentOutfit.filter.Allows(apparel))
-                {
-                    if (this.Map.slotGroupManager.SlotGroupAt(apparel.Position) != null)
-                    {
-                        if (!apparel.IsForbidden(pawn))
-                        {
-                            float gain = pawn.ApparelScoreGain(apparel);
-
-                            if (gain >= MinScoreGainToCare)
-                            {
-                                if (gain >= num)
-                                {
-                                    if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
-                                    {
-                                        if (pawn.CanReserveAndReach(
-                                            apparel,
-                                            PathEndMode.OnCell,
-                                            pawn.NormalMaxDanger()))
-                                        {
-                                            apparelStats.Add(apparel, gain);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            List<KeyValuePair<Thing, float>> myList = apparelStats.ToList();
-
-            myList.Sort((x, y) => y.Value.CompareTo(x.Value));
-
-            // Iterate through the list to only add the highest score to this list.
-            foreach (KeyValuePair<Thing, float> apparelThing in myList)
-            {
-                bool change = true;
-                if (!apparelList.NullOrEmpty())
-                {
-                    foreach (Thing ap in apparelList)
-                    {
-                        if (ApparelUtility.CanWearTogether(ap.def, apparelThing.Key.def))
-                        {
-                            continue;
-                        }
-
-                        // No gain no change
-                        change = false;
-                    }
-                }
-
-                if (change)
-                {
-                    foreach (Apparel apparel in pawn.apparel.WornApparel)
-                    {
-                        if (!ApparelUtility.CanWearTogether(apparel.def, ((Apparel)apparelThing.Key).def))
-                        {
-                            if (pawn.ApparelScoreGain(apparel) > apparelThing.Value)
-                            {
-                                apparelList.Add(apparelThing.Key);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         // ReSharper disable once MethodTooLong
         public override IEnumerable<Gizmo> GetGizmos()
         {
@@ -173,9 +76,6 @@
             // pris.isActive = (() => this.<> f__this.ForPrisoners);
             Action draftAction = delegate
                 {
-                    Outfitter_JobGiver_OptimizeApparel.dropped.Clear();
-                    Outfitter_JobGiver_OptimizeApparel.reserved.Clear();
-
                     foreach (Pawn pawn in this.Map.mapPawns.FreeColonistsSpawned)
                     {
                         if (!pawn.IsColonistPlayerControlled)
@@ -193,57 +93,61 @@
                         pawnSave.forceStatUpdate = true;
 
                         pawn.jobs.StopAll();
+                        pawn.drafter.Drafted = true;
 
                         pawn.mindState.nextApparelOptimizeTick = -5000;
 
-                        for (int i = 0; i < 15; i++)
-                        {
-                            Job outfitJob = pawn.GetApparel();
-                            if (outfitJob != null)
-                            {
-                                pawn.jobs.jobQueue.EnqueueLast(outfitJob);
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-
+                        Job job = null;
+                        Thing thing = null;
                         if (!this.AlreadySatisfiedWithCurrentWeapon(pawn)
                             && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
                             && pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
                         {
-                            Thing thing = GenClosest.ClosestThingReachable(
-                                pawn.Position,
-                                pawn.Map,
-                                ThingRequest.ForGroup(ThingRequestGroup.Weapon),
-                                PathEndMode.OnCell,
-                                TraverseParms.For(pawn),
-                                20f,
-                                x => pawn.CanReserve(x) && this.ShouldEquip(x, pawn),
-                                null,
-                                0,
-                                15);
+                            thing = GenClosest.ClosestThingReachable(
+                               pawn.Position,
+                               pawn.Map,
+                               ThingRequest.ForGroup(ThingRequestGroup.Weapon),
+                               PathEndMode.OnCell,
+                               TraverseParms.For(pawn),
+                               20f,
+                               x => pawn.CanReserve(x) && this.ShouldEquip(x, pawn),
+                               null,
+                               0,
+                               15);
                             if (thing != null)
                             {
                                 pawn.Reserve(thing);
-                                pawn.jobs.jobQueue.EnqueueLast(new Job(JobDefOf.Equip, thing));
+                                job = new Job(JobDefOf.Equip, thing);
                             }
                         }
 
+                        if (job != null)
+                        {
+                            pawn.jobs.jobQueue.EnqueueFirst(job);
+                        }
+                        bool ranged = thing != null && thing.def.IsRangedWeapon;
+
+                          pawn.GetApparel(ranged);
+
+                       // foreach (Apparel apparel in pawn.apparel.WornApparel)
+                       // {
+                       //     pawn.jobs.jobQueue.EnqueueFirst(new Job(JobDefOf.RemoveApparel, apparel) { haulDroppedApparel = true });
+                       // }
+
                         Job jobby = new Job(DefDatabase<JobDef>.GetNamed("GoToDraftOf"))
-                                        {
-                                            targetA = this.Position
+                        {
+                            targetA = this.Position
                                                 .RandomAdjacentCell8Way(),
-                                            locomotionUrgency =
+                            locomotionUrgency =
                                                 LocomotionUrgency
                                                     .Sprint
-                                        };
+                        };
                         pawn.jobs.jobQueue.EnqueueLast(jobby);
                         pawnSave.armorOnly = false;
                     }
 
                     this.DeSpawn();
+
                 };
             draft.action = draftAction;
             yield return draft;

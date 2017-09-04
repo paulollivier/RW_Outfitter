@@ -53,11 +53,6 @@
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Infused, Version=34.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\..\workshop\content\294100\731287727\Assemblies\Infused.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="UnityEngine">
@@ -70,13 +65,15 @@
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="Building_BattleSpot.cs" />
     <Compile Include="Cache.cs" />
-    <Compile Include="InfusedStats\InfusedStats.cs" />
+    <None Include="InfusedStats\HarmonyPatchInfused.cs" />
+    <None Include="InfusedStats\InfusedStats.cs" />
+    <None Include="ITab_Bills_Patch.cs" />
     <Compile Include="JobDriver_GotoDraftOf.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
-    <Compile Include="Outfitter_Patches.cs" />
+    <Compile Include="TabsPatch.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
-    <Compile Include="Outfitter_JobGiver_OptimizeApparel.cs" />
+    <Compile Include="JobGiver_OptimizeApparel.cs" />
     <None Include="OF_SpecialInjector.cs" />
     <Compile Include="StatAssignment.cs" />
     <Compile Include="Window\Dialog_PawnApparelComparer.cs" />

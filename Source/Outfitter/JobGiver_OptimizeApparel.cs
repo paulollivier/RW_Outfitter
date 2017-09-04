@@ -4,6 +4,8 @@
     using System.Linq;
     using System.Text;
 
+    using JetBrains.Annotations;
+
     using RimWorld;
 
     using UnityEngine;
@@ -11,15 +13,12 @@
     using Verse;
     using Verse.AI;
 
-    public static class Outfitter_JobGiver_OptimizeApparel
+    public static class JobGiver_OptimizeApparel
     {
         #region Public Fields
 
         public const int ApparelStatCheck = 3750;
 
-        public static List<Apparel> dropped = new List<Apparel>();
-
-        public static Dictionary<Apparel, Pawn> reserved = new Dictionary<Apparel, Pawn>();
 
         #endregion Public Fields
 
@@ -34,59 +33,50 @@
 
         #region Public Methods
 
-        public static Job GetApparel(this Pawn pawn)
+        public static void GetApparel([NotNull] this Pawn pawn, bool ranged = false)
         {
             if (pawn.outfits == null)
             {
                 Log.ErrorOnce(pawn + " tried to run JobGiver_OptimizeApparel without an OutfitTracker", 5643897);
-                return null;
+                return;
             }
 
             if (pawn.Faction != Faction.OfPlayer)
             {
                 Log.ErrorOnce("Non-colonist " + pawn + " tried to optimize apparel.", 764323);
-                return null;
+                return;
             }
 
+            List<Thing> allApparel = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
+
+            List<Apparel> toWear = new List<Apparel>();
+
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
-            List<Apparel> wornApparel = pawn.apparel.WornApparel;
-            for (int i = wornApparel.Count - 1; i >= 0; i--)
+
+            foreach (Thing t in allApparel.OrderByDescending(x => pawn.ApparelScoreGain((Apparel)x)))
             {
-                if (dropped.Contains(wornApparel[i]))
+                Apparel apparel = (Apparel)t;
+
+                if (!currentOutfit.filter.Allows(apparel))
+                {
+                    continue;
+                }
+                bool skipWorn = false;
+                foreach (Apparel wornAp in pawn.apparel.WornApparel)
+                {
+                    if (!ApparelUtility.CanWearTogether(wornAp.def, apparel.def)
+                        && !pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornAp))
+                    {
+                        skipWorn = true;
+                        break;
+                    }
+                }
+                if (skipWorn)
                 {
                     continue;
                 }
 
-                if (!currentOutfit.filter.Allows(wornApparel[i])
-                    && pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornApparel[i]))
-                {
-                    dropped.Add(wornApparel[i]);
-                    return new Job(JobDefOf.RemoveApparel, wornApparel[i]) { haulDroppedApparel = true };
-                }
-            }
-
-            Thing thing = null;
-            float score = 0f;
-            List<Thing> list = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel);
-
-            foreach (KeyValuePair<Apparel, Pawn> kvp in reserved)
-            {
-                if (list.Contains(kvp.Key))
-                {
-                    list.Remove(kvp.Key);
-                }
-            }
-
-            if (list.Count == 0)
-            {
-                SetNextOptimizeTick(pawn);
-                return null;
-            }
-
-            for (int j = 0; j < list.Count; j++)
-            {
-                Apparel apparel = (Apparel)list[j];
-                if (!currentOutfit.filter.Allows(apparel))
+                if (ranged && apparel.def.thingClass == typeof(ShieldBelt))
                 {
                     continue;
                 }
@@ -106,42 +96,64 @@
                     continue;
                 }
 
-                float gain = pawn.ApparelScoreGain(apparel);
-
-                if (gain >= MinScoreGainToCare && gain >= score)
+                if (!pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, Danger.Deadly, 1))
                 {
+                    continue;
+                }
 
-                    bool flag = false;
-
-                    foreach (KeyValuePair<Apparel, Pawn> pair in reserved.Where(x => x.Value == pawn))
+                bool skip = false;
+                foreach (Apparel toWearAp in toWear)
+                {
+                    if (!ApparelUtility.CanWearTogether(toWearAp.def, apparel.def))
                     {
-                        if (!ApparelUtility.CanWearTogether(pair.Key.def, apparel.def))
-                        {
-                            flag = true;
-                            break;
-                        }
-                    }
-
-                    if (flag)
-                    {
-                        continue;
-                    }
-
-                    if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
-                    {
-                        thing = apparel;
-                        score = gain;
+                        skip = true;
                     }
                 }
+                if (skip)
+                {
+                    continue;
+                }
+
+                pawn.Reserve(apparel);
+
+                toWear.Add(apparel);
             }
 
-            if (thing == null)
+           // List<Apparel> toDrop = new List<Apparel>();
+           // foreach (Apparel wornAp in pawn.apparel.WornApparel)
+           // {
+           //     bool flag = toWear.Any(ap => !ApparelUtility.CanWearTogether(wornAp.def, ap.def));
+           //     if (!currentOutfit.filter.Allows(wornAp)
+           //         && pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornAp))
+           //     {
+           //         flag = true;
+           //     }
+           //     if (ranged && wornAp.def.thingClass == typeof(ShieldBelt))
+           //     {
+           //         flag = true;
+           //     }
+           //     if (flag)
+           //     {
+           //         toDrop.Add(wornAp);
+           //     }
+           // }
+           //
+           // for (int index = 0; index < toDrop.Count; index++)
+           // {
+           //     Apparel ap = toDrop[index];
+           //     Job job2 = new Job(JobDefOf.RemoveApparel, ap) { haulDroppedApparel = true };
+           //     pawn.jobs.jobQueue.EnqueueLast(job2);
+           // }
+
+            foreach (Apparel ap in toWear)
             {
-                return null;
+                Job job3 = new Job(JobDefOf.Wear, ap);
+                pawn.jobs.jobQueue.EnqueueLast(job3);
             }
 
-            reserved.Add((Apparel)thing, pawn);
-            return new Job(JobDefOf.Wear, thing);
+
+
+            SetNextOptimizeTick(pawn);
         }
 
         // private static NeededWarmth neededWarmth;

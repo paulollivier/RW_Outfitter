@@ -13,10 +13,11 @@
     using Verse.Sound;
 
     [StaticConstructorOnStartup]
-    public static class DoTabs_Patch
+    public static class TabsPatch
     {
         #region Public Methods
 
+        // Resizes the tabs if more than 6 visible
         public static bool DoTabs_Prefix(IInspectPane pane)
         {
             try

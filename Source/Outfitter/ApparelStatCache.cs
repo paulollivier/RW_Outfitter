@@ -12,7 +12,6 @@ namespace Outfitter
 
     using JetBrains.Annotations;
 
-    using Outfitter.Infused;
     using Outfitter.Textures;
 
     using RimWorld;
@@ -20,6 +19,7 @@ namespace Outfitter
     using UnityEngine;
 
     using Verse;
+
 
     public class ApparelStatCache
     {
@@ -80,7 +80,7 @@ namespace Outfitter
                 SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this._pawn);
 
                 // update auto stat priorities roughly between every vanilla gear check cycle
-                if (Find.TickManager.TicksGame - this._lastStatUpdate > Outfitter_JobGiver_OptimizeApparel.ApparelStatCheck || pawnSave.forceStatUpdate)
+                if (Find.TickManager.TicksGame - this._lastStatUpdate > JobGiver_OptimizeApparel.ApparelStatCheck || pawnSave.forceStatUpdate)
                 {
                     // list of auto stats
                     if (this._cache.Count < 1 && pawnSave.Stats.Count > 0)
@@ -365,6 +365,31 @@ namespace Outfitter
             // advance row
             cur.y += 30f;
         }
+        public delegate void ApparelScoreRawIgnored_WTHandlers(ref List<StatDef> statDef);
+
+        public delegate void ApparelScoreRawInfusionHandlers(Apparel apparel, StatDef parentStat, ref HashSet<StatDef> infusedOffsets);
+
+        public delegate void ApparelScoreRawStatsHandler(Apparel apparel, StatDef statDef, ref float num);
+
+        public static event ApparelScoreRawInfusionHandlers ApparelScoreRaw_FillInfusedStat;
+
+        public static event ApparelScoreRawStatsHandler ApparelScoreRaw_PawnStatsHandlers;
+
+        public static event ApparelScoreRawIgnored_WTHandlers Ignored_WTHandlers;
+
+        public static void DoApparelScoreRaw_PawnStatsHandlers(Apparel apparel, StatDef statDef, ref float num)
+        {
+            ApparelScoreRaw_PawnStatsHandlers?.Invoke(apparel, statDef, ref num);
+        }
+        public static void FillIgnoredInfused_PawnStatsHandlers(ref List<StatDef> _allApparelStats)
+        {
+            Ignored_WTHandlers?.Invoke(ref _allApparelStats);
+        }
+
+        public static void FillInfusionHashset_PawnStatsHandlers(Apparel apparel, StatDef parentStat, ref HashSet<StatDef> infusedOffsets)
+        {
+            ApparelScoreRaw_FillInfusedStat?.Invoke(apparel, parentStat, ref infusedOffsets);
+        }
 
 
         public float ApparelScoreRaw([NotNull] Apparel ap, [NotNull] Pawn pawn)
@@ -390,7 +415,9 @@ namespace Outfitter
             else
             {
                 this.GetStatsOfApparel(ap, ref equippedOffsets, ref statBases);
-                this.GetStatsOfApparelInfused(ap, ref infusedOffsets);
+                {
+                    this.GetStatsOfApparelInfused(ap, ref infusedOffsets);
+                }
 
                 ApparelEntry entry = new ApparelEntry();
                 entry.equippedOffsets = equippedOffsets;
@@ -432,13 +459,15 @@ namespace Outfitter
                 }
 
                 // infusions
-                if (Cache.InfusedIsActive && infusedOffsets.Contains(statPriority.Stat))
                 {
-                    // float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
-                    float statInfused = 0f;
-                    InfusedStats.ApparelScoreRaw_PawnStatsHandlers(ap, statPriority.Stat, ref statInfused);
+                    if (infusedOffsets.Contains(statPriority.Stat))
+                    {
+                        // float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
+                        float statInfused = 0f;
+                        DoApparelScoreRaw_PawnStatsHandlers(ap, statPriority.Stat, ref statInfused);
 
-                    score += statInfused * statPriority.Weight;
+                        score += statInfused * statPriority.Weight;
+                    }
                 }
             }
 
@@ -549,10 +578,9 @@ namespace Outfitter
             insulationHeat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(StatDefOf.Insulation_Heat);
 
             // offsets on apparel infusions
-            if (Cache.InfusedIsActive)
             {
-                InfusedStats.ApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Cold, ref insulationCold);
-                InfusedStats.ApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Heat, ref insulationHeat);
+                DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Cold, ref insulationCold);
+                DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Heat, ref insulationHeat);
             }
 
             // string log = apparel.LabelCap + " - InsCold: " + insulationCold + " - InsHeat: " + insulationHeat + " - TargTemp: "
@@ -582,16 +610,14 @@ namespace Outfitter
                             insulationColdWorn += ap.def.equippedStatOffsets.GetStatOffsetFromList(StatDefOf.Insulation_Cold);
                             insulationHeatWorn += ap.def.equippedStatOffsets.GetStatOffsetFromList(StatDefOf.Insulation_Heat);
 
-
-                            if (Cache.InfusedIsActive)
                             {
 
                                 // offsets on apparel infusions
-                                InfusedStats.ApparelScoreRaw_PawnStatsHandlers(
+                                DoApparelScoreRaw_PawnStatsHandlers(
                                     ap,
                                     StatDefOf.Insulation_Cold,
                                     ref insulationColdWorn);
-                                InfusedStats.ApparelScoreRaw_PawnStatsHandlers(
+                                DoApparelScoreRaw_PawnStatsHandlers(
                                     ap,
                                     StatDefOf.Insulation_Heat,
                                     ref insulationHeatWorn);
@@ -677,7 +703,7 @@ namespace Outfitter
 
         public void UpdateTemperatureIfNecessary(bool force = false, bool forceweight = false)
         {
-            if (Find.TickManager.TicksGame - this._lastTempUpdate > Outfitter_JobGiver_OptimizeApparel.ApparelStatCheck || force)
+            if (Find.TickManager.TicksGame - this._lastTempUpdate > JobGiver_OptimizeApparel.ApparelStatCheck || force)
             {
                 // get desired temperatures
                 if (!this.pawnSave.TargetTemperaturesOverride)
@@ -712,7 +738,7 @@ namespace Outfitter
                 this.pawnSave.SetRealComfyTemperatures = true;
             }
 
-            if (Find.TickManager.TicksGame - this._lastWeightUpdate > Outfitter_JobGiver_OptimizeApparel.ApparelStatCheck || forceweight)
+            if (Find.TickManager.TicksGame - this._lastWeightUpdate > JobGiver_OptimizeApparel.ApparelStatCheck || forceweight)
             {
                 FloatRange weight = new FloatRange(1f, 1f);
 
@@ -769,14 +795,9 @@ namespace Outfitter
 
         private void GetStatsOfApparelInfused(Apparel ap, ref HashSet<StatDef> infusedOffsets)
         {
-            if (!Cache.InfusedIsActive)
-            {
-                return;
-            }
-
             foreach (StatPriority statPriority in this._pawn.GetApparelStatCache().StatCache)
             {
-                InfusedStats.ApparelScoreRaw_FillInfusedStat(ap, statPriority.Stat, ref infusedOffsets);
+                FillInfusionHashset_PawnStatsHandlers(ap, statPriority.Stat, ref infusedOffsets);
             }
         }
 

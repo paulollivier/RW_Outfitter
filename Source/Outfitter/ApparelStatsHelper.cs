@@ -14,8 +14,6 @@ namespace Outfitter
 
     using JetBrains.Annotations;
 
-    using Outfitter.Infused;
-
     using RimWorld;
 
     using Verse;
@@ -97,9 +95,8 @@ namespace Outfitter
                         }
                     }
 
-                    if (Cache.InfusedIsActive)
                     {
-                        InfusedStats.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
+                        ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
                     }
                 }
 
@@ -124,8 +121,8 @@ namespace Outfitter
             // get the current list of worn apparel
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
 
-            // check if the candidate will replace existing gear
             bool willReplace = false;
+            // check if the candidate will replace existing gear
             foreach (Apparel wornAp in wornApparel.Where(
                 apparel => !ApparelUtility.CanWearTogether(apparel.def, newAp.def)))
             {

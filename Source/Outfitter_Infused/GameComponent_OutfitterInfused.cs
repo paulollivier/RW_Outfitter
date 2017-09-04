@@ -1,14 +1,30 @@
-﻿namespace Outfitter.Infused
+using System.Collections.Generic;
+using Infused;
+using Outfitter;
+using RimWorld;
+
+using Verse;
+
+namespace OutfitterInfused
 {
-    using System.Collections.Generic;
     using System.Linq;
 
-    using RimWorld;
+    using Def = Infused.Def;
 
-    using Verse;
-
-    public static class InfusedStats
+    public class GameComponent_OutfitterInfused : GameComponent
     {
+        public GameComponent_OutfitterInfused()
+        {
+            Log.Message("Outfitter with Infused Initialized");
+            ApparelStatCache.ApparelScoreRaw_PawnStatsHandlers += ApparelScoreRaw_PawnStatsHandlers;
+            ApparelStatCache.ApparelScoreRaw_FillInfusedStat += ApparelScoreRaw_FillInfusedStat;
+            ApparelStatCache.Ignored_WTHandlers += Ignored_WTHandlers;
+        }
+
+        public GameComponent_OutfitterInfused(Game game)
+        {
+        }
+
         public static void ApparelScoreRaw_FillInfusedStat(Apparel apparel, StatDef parentStat, ref HashSet<StatDef> infusedOffsets)
         {
             if (apparel.TryGetInfusions(out InfusionSet inf))
@@ -27,25 +43,12 @@
                 {
                     infusedOffsets.Add(parentStat);
                 }
-
-
-
-                // if (!infusionSet.PassPre && prefix.GetStatValue(parentStat, out statMod))
-                // {
-                // val += statMod.offset;
-                // val *= statMod.multiplier;
-                // }
-                // if (infusionSet.PassSuf || !suffix.GetStatValue(parentStat, out statMod))
-                // return;
-                // val += statMod.offset;
-                // val *= statMod.multiplier;
             }
         }
 
         public static void ApparelScoreRaw_PawnStatsHandlers(Apparel apparel, StatDef statPriority, ref float val)
         {
-            InfusionSet inf;
-            if (apparel.TryGetInfusions(out inf))
+            if (apparel.TryGetInfusions(out InfusionSet inf))
             {
                 Def prefix = inf.prefix;
                 Def suffix = inf.suffix;
@@ -81,6 +84,5 @@
                 }
             }
         }
-
     }
 }

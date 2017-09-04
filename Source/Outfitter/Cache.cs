@@ -8,8 +8,8 @@
 
     public static class Cache
     {
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public static Dictionary<Apparel, ApparelEntry> ApparelEntries = new Dictionary<Apparel, ApparelEntry>();
-        public static bool InfusedIsActive = false;
 
         public static float GetEquippedStatValue([NotNull] this Apparel apparel, StatDef stat)
         {
