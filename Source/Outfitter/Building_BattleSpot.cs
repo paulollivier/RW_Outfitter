@@ -110,7 +110,7 @@
                                PathEndMode.OnCell,
                                TraverseParms.For(pawn),
                                20f,
-                               x => pawn.CanReserve(x) && this.ShouldEquip(x, pawn),
+                               x => !x.IsForbidden(pawn) && pawn.CanReserve(x) && this.ShouldEquip(x, pawn),
                                null,
                                0,
                                15);
@@ -127,12 +127,12 @@
                         }
                         bool ranged = thing != null && thing.def.IsRangedWeapon;
 
-                          pawn.GetApparel(ranged);
+                        pawn.DoApparelJobs(ranged);
 
-                       // foreach (Apparel apparel in pawn.apparel.WornApparel)
-                       // {
-                       //     pawn.jobs.jobQueue.EnqueueFirst(new Job(JobDefOf.RemoveApparel, apparel) { haulDroppedApparel = true });
-                       // }
+                        // foreach (Apparel apparel in pawn.apparel.WornApparel)
+                        // {
+                        //     pawn.jobs.jobQueue.EnqueueFirst(new Job(JobDefOf.RemoveApparel, apparel) { haulDroppedApparel = true });
+                        // }
 
                         Job jobby = new Job(DefDatabase<JobDef>.GetNamed("GoToDraftOf"))
                         {
