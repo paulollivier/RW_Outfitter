@@ -73,6 +73,10 @@
             draft.icon = TexCommand.Draft;
             draft.activateSound = SoundDefOf.DraftOn;
 
+            List<Thing> weaponList = this.Map.listerThings.ThingsInGroup(ThingRequestGroup.Weapon)
+                .Where(x => !x.Map.reservationManager.IsReserved(x, Faction.OfPlayer) && x.def.IsRangedWeapon)
+                .OrderBy(x => this.GetWeaponScore(x)).ToList();
+
             // pris.isActive = (() => this.<> f__this.ForPrisoners);
             Action draftAction = delegate
                 {
@@ -99,25 +103,28 @@
 
                         Job job = null;
                         Thing thing = null;
-                        if (!this.AlreadySatisfiedWithCurrentWeapon(pawn)
+                        if (pawn.equipment.Primary == null
                             && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
-                            && pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                            && pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation)
+                    && !pawn.story.traits.HasTrait(TraitDefOf.Brawler) && !weaponList.NullOrEmpty())
                         {
-                            thing = GenClosest.ClosestThingReachable(
-                               pawn.Position,
-                               pawn.Map,
-                               ThingRequest.ForGroup(ThingRequestGroup.Weapon),
-                               PathEndMode.OnCell,
-                               TraverseParms.For(pawn),
-                               20f,
-                               x => !x.IsForbidden(pawn) && pawn.CanReserve(x) && this.ShouldEquip(x, pawn),
-                               null,
-                               0,
-                               15);
+                            thing = weaponList.Last();
+                          //  thing = GenClosest.ClosestThingReachable(
+                          // pawn.Position,
+                          // pawn.Map,
+                          // ThingRequest.ForGroup(ThingRequestGroup.Weapon),
+                          // PathEndMode.OnCell,
+                          // TraverseParms.For(pawn),
+                          // 50f,
+                          // x => !x.IsForbidden(pawn) && pawn.CanReserve(x) && x.def.IsRangedWeapon,
+                          // null,
+                          // 0,
+                          // 15);
                             if (thing != null)
                             {
                                 pawn.Reserve(thing);
                                 job = new Job(JobDefOf.Equip, thing);
+                                weaponList.Remove(weaponList.Last());
                             }
                         }
 
@@ -215,54 +222,25 @@
         }
 
         // RimWorld.JobGiver_PickUpOpportunisticWeapon
-        private float GetWeaponScore([NotNull] Pawn pawn, [CanBeNull] Thing wep)
+        private float GetWeaponScore([CanBeNull] Thing wep)
         {
             if (wep == null)
             {
                 return 0;
             }
 
-            if (wep.def.IsMeleeWeapon && wep.GetStatValue(StatDefOf.MeleeWeapon_DamageAmount)
-                < this.MinMeleeWeaponDamageThreshold)
+            VerbProperties verbProps = wep.TryGetComp<CompEquippable>().PrimaryVerb.verbProps;
+            if (verbProps.ai_IsIncendiary || verbProps.ai_IsBuildingDestroyer
+                || verbProps.projectileDef.projectile.damageDef == DamageDefOf.Bomb
+                || verbProps.projectileDef.projectile.damageDef == DamageDefOf.Burn)
             {
                 return -1;
             }
-
-            if (wep.TryGetComp<CompEquippable>().PrimaryVerb.verbProps.ai_IsIncendiary || wep
-                    .TryGetComp<CompEquippable>().PrimaryVerb.verbProps.ai_IsBuildingDestroyer)
-            {
-                return -1;
-            }
-
-            int melee = pawn.skills.GetSkill(SkillDefOf.Melee).Level;
-            int shooter = pawn.skills.GetSkill(SkillDefOf.Shooting).Level;
-
-            if (shooter > melee)
-            {
-                if (wep.def.IsMeleeWeapon)
-                {
-                    if (pawn.story.traits.HasTrait(TraitDefOf.Brawler))
-                    {
-                        return 2 * pawn.skills.GetSkill(SkillDefOf.Melee).Level;
-                    }
-
-                    return -1;
-                }
-            }
-
-            if (wep.def.IsRangedWeapon)
-            {
-                return 2 * pawn.skills.GetSkill(SkillDefOf.Shooting).Level;
-            }
-
-            return 1 * pawn.skills.GetSkill(SkillDefOf.Melee).Level;
+            float score = 1f;
+            score *= verbProps.range / verbProps.defaultCooldownTime;
+            return score;
         }
 
-        // RimWorld.JobGiver_PickUpOpportunisticWeapon
-        private bool ShouldEquip([NotNull] Thing newWep, [NotNull] Pawn pawn)
-        {
-            return this.GetWeaponScore(pawn, newWep) > this.GetWeaponScore(pawn, pawn.equipment.Primary);
-        }
 
         #endregion Private Methods
     }

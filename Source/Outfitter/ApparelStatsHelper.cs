@@ -76,14 +76,14 @@ namespace Outfitter
         {
             get
             {
-                if (allApparelStats == null)
+                if (allApparelStats.NullOrEmpty())
                 {
                     allApparelStats = new List<StatDef>();
 
                     // add all stat modifiers from all apparels
                     foreach (ThingDef apparel in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.IsApparel))
                     {
-                        if (apparel.equippedStatOffsets.Count <= 0)
+                        if (apparel.equippedStatOffsets == null || apparel.equippedStatOffsets.Count <= 0)
                         {
                             continue;
                         }
@@ -94,10 +94,7 @@ namespace Outfitter
                             allApparelStats.Add(modifier.stat);
                         }
                     }
-
-                    {
-                        ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
-                    }
+                    ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
                 }
 
                 return allApparelStats;

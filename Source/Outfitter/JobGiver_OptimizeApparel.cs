@@ -102,15 +102,7 @@
                     continue;
                 }
 
-                bool skip = false;
-                foreach (Apparel toWearAp in toWear)
-                {
-                    if (!ApparelUtility.CanWearTogether(toWearAp.def, apparel.def))
-                    {
-                        skip = true;
-                    }
-                }
-                if (skip)
+                if (toWear.Any(x => !ApparelUtility.CanWearTogether(x.def, apparel.def)))
                 {
                     continue;
                 }
