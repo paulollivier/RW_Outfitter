@@ -47,6 +47,7 @@ namespace Outfitter
 
         private int _lastWeightUpdate;
 
+        public List<Apparel> recentApparel = new List<Apparel>();
 
         #endregion Private Fields
 

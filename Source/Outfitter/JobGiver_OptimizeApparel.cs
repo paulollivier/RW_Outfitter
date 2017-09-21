@@ -193,9 +193,9 @@
                 return false;
             }
 
-            for (int j = 0; j < list.Count; j++)
+            foreach (Thing t in list)
             {
-                Apparel apparel = (Apparel)list[j];
+                Apparel apparel = (Apparel)t;
                 if (!currentOutfit.filter.Allows(apparel))
                 {
                     continue;
@@ -212,6 +212,12 @@
                 }
 
                 float gain = pawn.ApparelScoreGain(apparel);
+
+                if (pawn.GetApparelStatCache().recentApparel.Contains(apparel))
+                {
+                    gain *= 0.1f;
+                }
+
                 if (DebugViewSettings.debugApparelOptimize)
                 {
                     debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
@@ -244,8 +250,11 @@
             }
 
             __result = new Job(JobDefOf.Wear, thing);
+            pawn.GetApparelStatCache().recentApparel = wornApparel;
             return false;
         }
+
+        private static Apparel lastItem;
 
         #endregion Public Methods
 

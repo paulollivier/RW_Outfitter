@@ -83,7 +83,7 @@ namespace Outfitter
                     // add all stat modifiers from all apparels
                     foreach (ThingDef apparel in DefDatabase<ThingDef>.AllDefsListForReading.Where(td => td.IsApparel))
                     {
-                        if (apparel.equippedStatOffsets == null || apparel.equippedStatOffsets.Count <= 0)
+                        if (apparel.equippedStatOffsets.NullOrEmpty())
                         {
                             continue;
                         }
@@ -481,7 +481,7 @@ namespace Outfitter
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 3f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 3f);
-            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 2.4f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 2.4f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -2.4f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1.2f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
@@ -508,7 +508,7 @@ namespace Outfitter
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 1.8f);
-            yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 1f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -1f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
@@ -525,7 +525,7 @@ namespace Outfitter
             {
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 3f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
-                yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 2.4f);
+                yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 2.4f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 3f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 3f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 1.8f);
@@ -560,18 +560,14 @@ namespace Outfitter
                 case "Doctor":
                     if (pawnSave.mainJob == Doctor)
                     {
-                        yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"),
-                            3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, 1.5f);
                         yield break;
                     }
 
-                    yield return new KeyValuePair<StatDef, float>(
-                        DefDatabase<StatDef>.GetNamed("MedicalOperationSpeed"),
-                        1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, 0.5f);
@@ -606,7 +602,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherYield, 1.2f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherSpeed, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.3f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 0.6f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 0.6f);
@@ -623,7 +619,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherYield, 0.4f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherSpeed, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 0.2f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 0.2f);
@@ -632,15 +628,15 @@ namespace Outfitter
                 case "Cooking":
                     if (pawnSave.mainJob == Cook)
                     {
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CookSpeed"), 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.CookSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("BrewingSpeed"),
+                            StatDefOf2.BrewingSpeed,
                             3f);
                         yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"),
+                            StatDefOf2.ButcheryFleshSpeed,
                             3f);
                         yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"),
+                            StatDefOf2.ButcheryFleshEfficiency,
                             3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
@@ -650,13 +646,13 @@ namespace Outfitter
 
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.05f);
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("CookSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("BrewingSpeed"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.CookSpeed, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(
-                        DefDatabase<StatDef>.GetNamed("ButcheryFleshSpeed"),
+                        StatDefOf2.ButcheryFleshSpeed,
                         1f);
                     yield return new KeyValuePair<StatDef, float>(
-                        DefDatabase<StatDef>.GetNamed("ButcheryFleshEfficiency"),
+                        StatDefOf2.ButcheryFleshEfficiency,
                         1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.1f);
@@ -671,7 +667,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 1.2f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 1.2f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 1.2f);
-                        yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 0.75f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 0.75f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 0.75f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 0.75f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 0.75f);
@@ -685,7 +681,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 0.4f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 0.4f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 0.4f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("MeleeDPS"), 0.25f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 0.25f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 0.25f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 0.25f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 0.25f);
@@ -764,13 +760,13 @@ namespace Outfitter
                     if (pawnSave.mainJob == Smith)
                     {
                         yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("SmithingSpeed"),
+                            StatDefOf2.SmithingSpeed,
                             3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
 
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmithingSpeed"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmithingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield break;
 
@@ -778,13 +774,13 @@ namespace Outfitter
                     if (pawnSave.mainJob == Tailor)
                     {
                         yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("TailoringSpeed"),
+                            StatDefOf2.TailoringSpeed,
                             3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
 
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("TailoringSpeed"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.TailoringSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield break;
 
@@ -792,13 +788,13 @@ namespace Outfitter
                     if (pawnSave.mainJob == Artist)
                     {
                         yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("SculptingSpeed"),
+                            StatDefOf2.SculptingSpeed,
                             3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
 
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SculptingSpeed"), 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.SculptingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield break;
 
@@ -806,32 +802,18 @@ namespace Outfitter
                     if (pawnSave.mainJob == Crafter)
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
-                        yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("StonecuttingSpeed"),
-                            3f);
-                        yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("SmeltingSpeed"),
-                            3f);
-                        yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("ButcheryMechanoidSpeed"),
-                            1.5f);
-                        yield return new KeyValuePair<StatDef, float>(
-                            DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"),
-                            1.5f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.StonecuttingSpeed, 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidSpeed, 1.5f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidEfficiency, 1.5f);
                         yield break;
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(
-                        DefDatabase<StatDef>.GetNamed("StonecuttingSpeed"),
-                        1f);
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("SmeltingSpeed"), 1f);
-                    yield return new KeyValuePair<StatDef, float>(
-                        DefDatabase<StatDef>.GetNamed("ButcheryMechanoidSpeed"),
-                        0.5f);
-                    yield return new KeyValuePair<StatDef, float>(
-                        DefDatabase<StatDef>.GetNamed("ButcheryMechanoidEfficiency"),
-                        0.5f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.StonecuttingSpeed, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidSpeed, 0.5f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidEfficiency, 0.5f);
                     yield break;
 
                 case "Hauling":
