@@ -19,8 +19,6 @@ namespace Outfitter
 
     public static class ITab_Bills_Patch
     {
-
-
         private static float viewHeight = 1000f;
 
         private static Vector2 scrollPosition = default(Vector2);
@@ -75,8 +73,6 @@ namespace Outfitter
                 "mouseoverBill",
                 BindingFlags.Instance | BindingFlags.NonPublic).SetValue(typeof(Bill), mouseoverBill);
             return false;
-
         }
-
     }
 }

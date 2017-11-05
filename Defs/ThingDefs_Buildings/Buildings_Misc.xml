@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Buildings>
+<Defs>
 
   <ThingDef Name="OF_BuildingBase" Abstract="True">
     <category>Building</category>
@@ -21,23 +21,23 @@
   <ThingDef ParentName="OF_BuildingBase">
     <defName>OutfitterSpot</defName>
     <label>outfitter battle beacon</label>
-    <Description>Designates a spot where pawns can summoned in full battle gear. After activation, pawns will grab their best combat gear, grab a weapon if not already equipped and move to the spot. Despawns after usage and also after a certain amount of time.</Description>
+    <description>Designates a spot where pawns can summoned in full battle gear. After activation, pawns will grab their best combat gear, grab a weapon if not already equipped and move to the spot. Despawns after usage and also after a certain amount of time.</description>
     <thingClass>Outfitter.Building_BattleSpot</thingClass>
     <graphicData>
       <texPath>Things/Building/Misc/CaravanPackingSpot</texPath>
       <graphicClass>Graphic_Single</graphicClass>
       <drawSize>(1,1)</drawSize>
     </graphicData>
-    <AltitudeLayer>FloorEmplacement</AltitudeLayer>
+    <altitudeLayer>FloorEmplacement</altitudeLayer>
     <statBases>
       <WorkToBuild>0</WorkToBuild>
     </statBases>
     <tickerType>Normal</tickerType>
     <useHitPoints>False</useHitPoints>
     <scatterableOnMapGen>false</scatterableOnMapGen>
-    <Size>(1,1)</Size>
-    <DesignationCategory>Misc</DesignationCategory>
-    <Passability>Standable</Passability>
+    <size>(1,1)</size>
+    <designationCategory>Misc</designationCategory>
+    <passability>Standable</passability>
     <building>
       <sowTag>SupportPlantsOnly</sowTag>
       <canPlaceOverImpassablePlant>false</canPlaceOverImpassablePlant>
@@ -46,4 +46,4 @@
     </building>
     <!--  <designationHotkey>Misc10</designationHotkey> -->
   </ThingDef>
-</Buildings>
+</Defs>

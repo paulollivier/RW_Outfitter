@@ -17,7 +17,6 @@ using Verse;
 [StaticConstructorOnStartup]
 internal class HarmonyPatchInfused
 {
-
     #region Public Constructors
 
     static HarmonyPatchInfused()
@@ -73,5 +72,4 @@ internal class HarmonyPatchInfused
     }
 
     #endregion Public Constructors
-
 }

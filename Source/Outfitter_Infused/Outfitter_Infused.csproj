@@ -30,12 +30,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>\\Mac\Home\Desktop\RoadsUnited_Core-master\RoadsUnited_Core\RoadsUnited_Core\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Infused">
-      <HintPath>..\..\..\..\..\..\workshop\content\294100\731287727\Assemblies\Infused.dll</HintPath>
+      <HintPath>..\..\..\RimWorld-Infused-master\Assemblies\Infused.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />
@@ -45,7 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GameComponent_OutfitterInfused.cs" />
+    <Compile Include="OutfitterInfused.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
     using RimWorld;
 
@@ -11,30 +6,28 @@ namespace Outfitter
     [DefOf]
     public static class StatDefOf2
     {
-        public static StatDef MeleeDPS;
-
-        public static StatDef CookSpeed;
-
         public static StatDef BrewingSpeed;
+
+        public static StatDef ButcheryFleshEfficiency;
 
         public static StatDef ButcheryFleshSpeed;
 
-        public static StatDef ButcheryFleshEfficiency;
+        public static StatDef ButcheryMechanoidEfficiency;
+
+        public static StatDef ButcheryMechanoidSpeed;
+
+        public static StatDef CookSpeed;
+
+        public static StatDef MedicalOperationSpeed;
+
+        public static StatDef MeleeDPS;
+
+        public static StatDef SculptingSpeed;
+
+        public static StatDef SmeltingSpeed;
 
         public static StatDef SmithingSpeed;
 
         public static StatDef TailoringSpeed;
-
-        public static StatDef SculptingSpeed;
-
-        public static StatDef StonecuttingSpeed;
-
-        public static StatDef SmeltingSpeed;
-
-        public static StatDef ButcheryMechanoidSpeed;
-
-        public static StatDef ButcheryMechanoidEfficiency;
-
-        public static StatDef MedicalOperationSpeed;
     }
 }

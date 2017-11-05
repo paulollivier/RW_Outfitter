@@ -13,8 +13,7 @@
 
         public static float GetEquippedStatValue([NotNull] this Apparel apparel, StatDef stat)
         {
-            float baseStat = apparel.GetStatValue(stat);
-            float currentStat = baseStat + apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
+            float currentStat = apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
 
             // currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef);
 
@@ -22,10 +21,6 @@
             // {
             // return apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef) - baseStat;
             // }
-            if (baseStat != 0)
-            {
-                currentStat = currentStat / baseStat;
-            }
 
             return currentStat;
         }

@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using Verse;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using System.Collections.Generic;
+
+    using Verse;
+
     public class SaveablePawn : IExposable
     {
-        #region Public Fields
-
         public bool AddIndividualStats = true;
 
         public bool AddWorkStats = true;
@@ -26,15 +25,16 @@ namespace Outfitter
         public Pawn Pawn;
 
         public FloatRange RealComfyTemperatures;
+
         public bool SetRealComfyTemperatures;
+
         public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
+
         public FloatRange TargetTemperatures;
+
         public bool TargetTemperaturesOverride;
+
         public FloatRange Temperatureweight;
-
-        #endregion Public Fields
-
-        #region Public Enums
 
         public enum MainJob
         {
@@ -73,10 +73,6 @@ namespace Outfitter
             Warden
         }
 
-        #endregion Public Enums
-
-        #region Public Methods
-
         // public SaveablePawn(Pawn pawn)
         // {
         // Pawn = pawn;
@@ -92,6 +88,7 @@ namespace Outfitter
             Scribe_Values.Look(ref this.SetRealComfyTemperatures, "SetRealComfyTemperatures");
 
             Scribe_Values.Look(ref this.RealComfyTemperatures, "RealComfyTemperatures");
+
             // bug: stats are not saved
             Scribe_Collections.Look(ref this.Stats, "Stats", LookMode.Deep);
 
@@ -101,7 +98,5 @@ namespace Outfitter
             Scribe_Values.Look(ref this.AddIndividualStats, "AddIndividualStats", true);
             Scribe_Values.Look(ref this.mainJob, "mainJob");
         }
-
-        #endregion Public Methods
     }
 }

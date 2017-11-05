@@ -1,14 +1,11 @@
 ﻿namespace Outfitter
 {
+    using JetBrains.Annotations;
+    using RimWorld;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-
-    using JetBrains.Annotations;
-
-    using RimWorld;
-
     using Verse;
     using Verse.AI;
 
@@ -17,15 +14,9 @@
     // ReSharper disable once UnusedMember.Global
     public class Building_BattleSpot : Building
     {
-        #region Private Fields
-
         private const float MinScoreGainToCare = 0.09f;
 
         private int ticksToDespawn;
-
-        #endregion Private Fields
-
-        #region Private Properties
 
         // RimWorld.JobGiver_PickUpOpportunisticWeapon
         private float MinMeleeWeaponDamageThreshold
@@ -48,10 +39,6 @@
             }
         }
 
-        #endregion Private Properties
-
-        #region Public Methods
-
         public override void ExposeData()
         {
             base.ExposeData();
@@ -66,15 +53,17 @@
                 yield return c;
             }
 
-            Command_Action draft = new Command_Action();
-            draft.hotKey = KeyBindingDefOf.CommandColonistDraft;
-            draft.defaultLabel = "CommandDraftLabel".Translate();
-            draft.defaultDesc = "CommandToggleDraftDesc".Translate();
-            draft.icon = TexCommand.Draft;
-            draft.activateSound = SoundDefOf.DraftOn;
+            Command_Action draft = new Command_Action
+                                       {
+                                           hotKey = KeyBindingDefOf.CommandColonistDraft,
+                                           defaultLabel = "CommandDraftLabel".Translate(),
+                                           defaultDesc = "CommandToggleDraftDesc".Translate(),
+                                           icon = TexCommand.Draft,
+                                           activateSound = SoundDefOf.DraftOn
+                                       };
 
             List<Thing> weaponList = this.Map.listerThings.ThingsInGroup(ThingRequestGroup.Weapon)
-                .Where(x => !x.Map.reservationManager.IsReserved(x, Faction.OfPlayer) && x.def.IsRangedWeapon)
+                .Where(x => !x.Map.reservationManager.IsReservedByAnyoneOf(x, Faction.OfPlayer) && x.def.IsRangedWeapon)
                 .OrderBy(x => this.GetWeaponScore(x)).ToList();
 
             // pris.isActive = (() => this.<> f__this.ForPrisoners);
@@ -103,27 +92,27 @@
 
                         Job job = null;
                         Thing thing = null;
-                        if (pawn.equipment.Primary == null
-                            && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
+                        if (pawn.equipment.Primary == null && !pawn.story.WorkTagIsDisabled(WorkTags.Violent)
                             && pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation)
-                    && !pawn.story.traits.HasTrait(TraitDefOf.Brawler) && !weaponList.NullOrEmpty())
+                            && !pawn.story.traits.HasTrait(TraitDefOf.Brawler) && !weaponList.NullOrEmpty())
                         {
                             thing = weaponList.Last();
-                          //  thing = GenClosest.ClosestThingReachable(
-                          // pawn.Position,
-                          // pawn.Map,
-                          // ThingRequest.ForGroup(ThingRequestGroup.Weapon),
-                          // PathEndMode.OnCell,
-                          // TraverseParms.For(pawn),
-                          // 50f,
-                          // x => !x.IsForbidden(pawn) && pawn.CanReserve(x) && x.def.IsRangedWeapon,
-                          // null,
-                          // 0,
-                          // 15);
+
+                            // thing = GenClosest.ClosestThingReachable(
+                            // pawn.Position,
+                            // pawn.Map,
+                            // ThingRequest.ForGroup(ThingRequestGroup.Weapon),
+                            // PathEndMode.OnCell,
+                            // TraverseParms.For(pawn),
+                            // 50f,
+                            // x => !x.IsForbidden(pawn) && pawn.CanReserve(x) && x.def.IsRangedWeapon,
+                            // null,
+                            // 0,
+                            // 15);
                             if (thing != null)
                             {
-                                pawn.Reserve(thing);
                                 job = new Job(JobDefOf.Equip, thing);
+                                pawn.Reserve(thing, job);
                                 weaponList.Remove(weaponList.Last());
                             }
                         }
@@ -132,29 +121,28 @@
                         {
                             pawn.jobs.jobQueue.EnqueueFirst(job);
                         }
+
                         bool ranged = thing != null && thing.def.IsRangedWeapon;
 
                         pawn.DoApparelJobs(ranged);
 
                         // foreach (Apparel apparel in pawn.apparel.WornApparel)
                         // {
-                        //     pawn.jobs.jobQueue.EnqueueFirst(new Job(JobDefOf.RemoveApparel, apparel) { haulDroppedApparel = true });
+                        // pawn.jobs.jobQueue.EnqueueFirst(new Job(JobDefOf.RemoveApparel, apparel) { haulDroppedApparel = true });
                         // }
-
                         Job jobby = new Job(DefDatabase<JobDef>.GetNamed("GoToDraftOf"))
-                        {
-                            targetA = this.Position
+                                        {
+                                            targetA = this.Position
                                                 .RandomAdjacentCell8Way(),
-                            locomotionUrgency =
+                                            locomotionUrgency =
                                                 LocomotionUrgency
                                                     .Sprint
-                        };
+                                        };
                         pawn.jobs.jobQueue.EnqueueLast(jobby);
                         pawnSave.armorOnly = false;
                     }
 
                     this.DeSpawn();
-
                 };
             draft.action = draftAction;
             yield return draft;
@@ -197,10 +185,6 @@
             }
         }
 
-        #endregion Public Methods
-
-        #region Private Methods
-
         // RimWorld.JobGiver_PickUpOpportunisticWeapon
         private bool AlreadySatisfiedWithCurrentWeapon([NotNull] Pawn pawn)
         {
@@ -230,18 +214,15 @@
             }
 
             VerbProperties verbProps = wep.TryGetComp<CompEquippable>().PrimaryVerb.verbProps;
-            if (verbProps.ai_IsIncendiary || verbProps.ai_IsBuildingDestroyer
-                || verbProps.projectileDef.projectile.damageDef == DamageDefOf.Bomb
-                || verbProps.projectileDef.projectile.damageDef == DamageDefOf.Burn)
+            if (verbProps.ai_IsBuildingDestroyer || verbProps.defaultProjectile.projectile.damageDef == DamageDefOf.Bomb
+                || verbProps.defaultProjectile.projectile.damageDef == DamageDefOf.Burn)
             {
                 return -1;
             }
+
             float score = 1f;
             score *= verbProps.range / verbProps.defaultCooldownTime;
             return score;
         }
-
-
-        #endregion Private Methods
     }
 }

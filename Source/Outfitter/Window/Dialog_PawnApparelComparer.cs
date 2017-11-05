@@ -1,14 +1,10 @@
 ﻿namespace Outfitter.Window
 {
+    using JetBrains.Annotations;
+    using RimWorld;
     using System.Collections.Generic;
     using System.Linq;
-
-    using JetBrains.Annotations;
-
-    using RimWorld;
-
     using UnityEngine;
-
     using Verse;
 
     public class Dialog_PawnApparelComparer : Window
@@ -49,7 +45,8 @@
                 }
             }
 
-            allApparels = allApparels.Where(i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def)).ToList();
+            allApparels = allApparels.Where(
+                i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def, this.pawn.RaceProps.body)).ToList();
 
             Rect groupRect = windowRect.ContractedBy(10f);
             groupRect.height -= 100;
@@ -58,7 +55,7 @@
             float apparelScoreWidth = 100f;
             float apparelGainWidth = 100f;
             float apparelLabelWidth = (groupRect.width - apparelScoreWidth - apparelGainWidth) / 3 - 8f - 8f;
-            float apparelEquipedWidth = apparelLabelWidth;
+            float apparelEquippedWidth = apparelLabelWidth;
             float apparelOwnerWidth = apparelLabelWidth;
 
             Rect itemRect = new Rect(groupRect.xMin + 4f, groupRect.yMin, groupRect.width - 8f, 28f);
@@ -70,7 +67,7 @@
                 apparelLabelWidth,
                 null,
                 "Equiped",
-                apparelEquipedWidth,
+                apparelEquippedWidth,
                 null,
                 "Target",
                 apparelOwnerWidth,
@@ -102,7 +99,7 @@
             allApparels = allApparels.OrderByDescending(
                 i =>
                     {
-                        apparelStatCache.DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
+                        DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
                         return g;
                     }).ToList();
 
@@ -141,7 +138,7 @@
                     }
                 }
 
-                apparelStatCache.DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
+                DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
                 string gainString = this.pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(currentAppel)
                                         ? gain.ToString("N5")
                                         : "No Allow";
@@ -153,13 +150,13 @@
                     apparelLabelWidth,
                     equiped,
                     equiped?.LabelCap,
-                    apparelEquipedWidth,
+                    apparelEquippedWidth,
                     target,
                     target?.LabelCap,
                     apparelOwnerWidth,
                     apparelStatCache.ApparelScoreRaw(currentAppel, this.pawn).ToString("N5"),
                     apparelScoreWidth,
-                   gainString,
+                    gainString,
                     apparelGainWidth);
 
                 listRect.yMin = itemRect.yMax;
@@ -173,15 +170,40 @@
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.EndGroup();
         }
+        private List<Apparel> _calculatedApparelItems;
+
+        private List<float> _calculatedApparelScore;
+
+        public void DIALOG_CalculateApparelScoreGain(Pawn pawn, Apparel apparel, out float gain)
+        {
+            if (this._calculatedApparelItems == null)
+            {
+                this.DIALOG_InitializeCalculatedApparelScoresFromWornApparel();
+            }
+
+            gain = pawn.ApparelScoreGain(apparel);
+        }
+
+        private void DIALOG_InitializeCalculatedApparelScoresFromWornApparel()
+        {
+            var conf = this.pawn.GetApparelStatCache();
+            this._calculatedApparelItems = new List<Apparel>();
+            this._calculatedApparelScore = new List<float>();
+            foreach (Apparel apparel in this.pawn.apparel.WornApparel)
+            {
+                this._calculatedApparelItems.Add(apparel);
+                this._calculatedApparelScore.Add(conf.ApparelScoreRaw(apparel, this.pawn));
+            }
+        }
 
         private void DrawLine(
             ref Rect itemRect,
-            Apparel apparelThing,
+            [CanBeNull] Apparel apparelThing,
             string apparelText,
             float textureWidth,
-            Pawn apparelEquipedThing,
+            Pawn apparelEquippedThing,
             string apparelEquipedText,
-            float apparelEquipedWidth,
+            float apparelEquippedWidth,
             Pawn apparelOwnerThing,
             string apparelOwnerText,
             float apparelOwnerWidth,
@@ -208,13 +230,13 @@
                 {
                     this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
-                    if (apparelEquipedThing != null)
+                    if (apparelEquippedThing != null)
                     {
-                        Find.CameraDriver.JumpToVisibleMapLoc(apparelEquipedThing.PositionHeld);
+                        Find.CameraDriver.JumpToVisibleMapLoc(apparelEquippedThing.PositionHeld);
                         Find.Selector.ClearSelection();
-                        if (apparelEquipedThing.Spawned)
+                        if (apparelEquippedThing.Spawned)
                         {
-                            Find.Selector.Select(apparelEquipedThing);
+                            Find.Selector.Select(apparelEquippedThing);
                         }
                     }
                     else
@@ -242,7 +264,7 @@
 
             itemRect.xMin += textureWidth;
 
-            if (apparelEquipedThing != null)
+            if (apparelEquippedThing != null)
             {
                 fieldRect = new Rect(itemRect.xMin, itemRect.yMin, itemRect.height, itemRect.height);
                 if (!string.IsNullOrEmpty(apparelEquipedText))
@@ -250,21 +272,21 @@
                     TooltipHandler.TipRegion(fieldRect, apparelEquipedText);
                 }
 
-                if (apparelEquipedThing.def.DrawMatSingle != null
-                    && apparelEquipedThing.def.DrawMatSingle.mainTexture != null)
+                if (apparelEquippedThing.def.DrawMatSingle != null
+                    && apparelEquippedThing.def.DrawMatSingle.mainTexture != null)
                 {
-                    Widgets.ThingIcon(fieldRect, apparelEquipedThing);
+                    Widgets.ThingIcon(fieldRect, apparelEquippedThing);
                 }
 
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
                     this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
-                    Find.CameraDriver.JumpToVisibleMapLoc(apparelEquipedThing.PositionHeld);
+                    Find.CameraDriver.JumpToVisibleMapLoc(apparelEquippedThing.PositionHeld);
                     Find.Selector.ClearSelection();
-                    if (apparelEquipedThing.Spawned)
+                    if (apparelEquippedThing.Spawned)
                     {
-                        Find.Selector.Select(apparelEquipedThing);
+                        Find.Selector.Select(apparelEquippedThing);
                     }
 
                     return;
@@ -274,13 +296,13 @@
             {
                 if (!string.IsNullOrEmpty(apparelEquipedText))
                 {
-                    fieldRect = new Rect(itemRect.xMin, itemRect.yMin, apparelEquipedWidth, itemRect.height);
+                    fieldRect = new Rect(itemRect.xMin, itemRect.yMin, apparelEquippedWidth, itemRect.height);
                     Text.Anchor = TextAnchor.UpperLeft;
                     Widgets.Label(fieldRect, apparelText);
                 }
             }
 
-            itemRect.xMin += apparelEquipedWidth;
+            itemRect.xMin += apparelEquippedWidth;
 
             if (apparelOwnerThing != null)
             {

@@ -16,12 +16,13 @@ namespace Outfitter
 
     using RimWorld;
 
+    using UnityEngine;
+
     using Verse;
 
     public static class ApparelStatsHelper
     {
-
-        #region Public Fields
+        private const float ScoreFactorIfNotReplacing = 10f;
 
         // New curve
         public static readonly SimpleCurve HitPointsPercentScoreFactorCurve = new SimpleCurve
@@ -51,26 +52,14 @@ namespace Outfitter
                                                                                       // new CurvePoint( 1f, 1f )
                                                                                   };
 
-        #endregion Public Fields
-
-        #region Private Fields
-
-        private const float ScoreFactorIfNotReplacing = 10f;
         private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
+
         private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches =
             new Dictionary<Pawn, ApparelStatCache>();
 
         private static List<StatDef> allApparelStats;
 
-        #endregion Private Fields
-
-        #region Public Properties
-
         public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
-
-        #endregion Public Properties
-
-        #region Private Properties
 
         private static List<StatDef> AllStatDefsModifiedByAnyApparel
         {
@@ -94,6 +83,7 @@ namespace Outfitter
                             allApparelStats.Add(modifier.stat);
                         }
                     }
+
                     ApparelStatCache.FillIgnoredInfused_PawnStatsHandlers(ref allApparelStats);
                 }
 
@@ -101,14 +91,10 @@ namespace Outfitter
             }
         }
 
-        #endregion Private Properties
-
-        #region Public Methods
-
         // ReSharper disable once UnusedMember.Global
         public static float ApparelScoreGain([NotNull] this Pawn pawn, [NotNull] Apparel newAp)
         {
-            ApparelStatCache conf = new ApparelStatCache(pawn);
+            ApparelStatCache conf = pawn.GetApparelStatCache();
 
             // get the score of the considered apparel
             float candidateScore = conf.ApparelScoreRaw(newAp, pawn);
@@ -119,9 +105,10 @@ namespace Outfitter
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
 
             bool willReplace = false;
+
             // check if the candidate will replace existing gear
             foreach (Apparel wornAp in wornApparel.Where(
-                apparel => !ApparelUtility.CanWearTogether(apparel.def, newAp.def)))
+                apparel => !ApparelUtility.CanWearTogether(apparel.def, newAp.def, pawn.RaceProps.body)))
             {
                 // can't drop forced gear
                 if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornAp))
@@ -344,6 +331,10 @@ namespace Outfitter
                 // add weights for all worktypes, multiplied by job priority
                 List<WorkTypeDef> allDefsListForReading = DefDatabase<WorkTypeDef>.AllDefsListForReading;
 
+                int maxPriority = allDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)).Aggregate(
+                    1,
+                    (current, workType) => Mathf.Max(current, pawn.workSettings.GetPriority(workType)));
+
                 foreach (WorkTypeDef workType in allDefsListForReading.Where(def => pawn.workSettings.WorkIsActive(def)))
                 {
                     foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(pawn, workType))
@@ -353,21 +344,16 @@ namespace Outfitter
                         float priorityAdjust;
                         switch (priority)
                         {
-                            case 1:
-                                priorityAdjust = 1f;
-                                break;
-
-                            case 2:
-                                priorityAdjust = 0.5f;
-                                break;
-
-                            case 3:
-                                priorityAdjust = 0.25f;
-                                break;
-
+                           // case 2:
+                           //     {
+                           //         priorityAdjust = 0.7f;
+                           //         break;
+                           //     }
                             default:
-                                priorityAdjust = 0.125f;
-                                break;
+                                {
+                                    priorityAdjust = 1f / priority / maxPriority;
+                                    break;
+                                }
                         }
 
                         float weight = stat.Value * priorityAdjust;
@@ -401,11 +387,10 @@ namespace Outfitter
                 .Except(pawn.GetApparelStatCache().StatCache.Select(prio => prio.Stat)).ToList();
         }
 
-        #endregion Public Methods
-
-        #region Private Methods
-
-        private static void AddStatToDict([NotNull] StatDef stat, float weight, [NotNull] ref Dictionary<StatDef, float> dict)
+        private static void AddStatToDict(
+            [NotNull] StatDef stat,
+            float weight,
+            [NotNull] ref Dictionary<StatDef, float> dict)
         {
             if (dict.ContainsKey(stat))
             {
@@ -482,8 +467,8 @@ namespace Outfitter
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 3f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 2.4f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -2.4f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1.2f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, -2.4f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, 1.2f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
@@ -509,8 +494,8 @@ namespace Outfitter
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, 1.8f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 1f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -1f);
-            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, -1f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, 1f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 2.5f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
@@ -531,8 +516,9 @@ namespace Outfitter
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, 1.8f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 1.8f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 1.8f);
-                yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 1.2f);
-                yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -2.4f);
+                yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, 1.2f);
+                yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, -2.4f);
+                yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, 3f);
                 yield break;
             }
 
@@ -548,6 +534,7 @@ namespace Outfitter
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, 0.5f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -3f);
+                yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, 3f);
                 yield break;
             }
 
@@ -604,8 +591,8 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 0.6f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -0.6f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 0.6f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, -0.6f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, 0.6f);
                         yield break;
                     }
 
@@ -621,23 +608,17 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, 0.1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.MeleeDPS, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_Cooldown, -0.2f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageAmount, 0.2f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, -0.2f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, 0.2f);
                     yield break;
 
                 case "Cooking":
                     if (pawnSave.mainJob == Cook)
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.CookSpeed, 3f);
-                        yield return new KeyValuePair<StatDef, float>(
-                            StatDefOf2.BrewingSpeed,
-                            3f);
-                        yield return new KeyValuePair<StatDef, float>(
-                            StatDefOf2.ButcheryFleshSpeed,
-                            3f);
-                        yield return new KeyValuePair<StatDef, float>(
-                            StatDefOf2.ButcheryFleshEfficiency,
-                            3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, 3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.FoodPoisonChance, -1.5f);
@@ -648,12 +629,8 @@ namespace Outfitter
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.CookSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, 1f);
-                    yield return new KeyValuePair<StatDef, float>(
-                        StatDefOf2.ButcheryFleshSpeed,
-                        1f);
-                    yield return new KeyValuePair<StatDef, float>(
-                        StatDefOf2.ButcheryFleshEfficiency,
-                        1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.FoodPoisonChance, -0.5f);
@@ -673,6 +650,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 0.75f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -2.4f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, 3f);
                         yield break;
                     }
 
@@ -687,6 +665,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 0.25f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.RangedWeapon_Cooldown, -0.8f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, -1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, 1f);
                     yield break;
 
                 case "Construction":
@@ -759,9 +738,7 @@ namespace Outfitter
                 case "Smithing":
                     if (pawnSave.mainJob == Smith)
                     {
-                        yield return new KeyValuePair<StatDef, float>(
-                            StatDefOf2.SmithingSpeed,
-                            3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmithingSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
@@ -773,9 +750,7 @@ namespace Outfitter
                 case "Tailoring":
                     if (pawnSave.mainJob == Tailor)
                     {
-                        yield return new KeyValuePair<StatDef, float>(
-                            StatDefOf2.TailoringSpeed,
-                            3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.TailoringSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
@@ -787,9 +762,7 @@ namespace Outfitter
                 case "Art":
                     if (pawnSave.mainJob == Artist)
                     {
-                        yield return new KeyValuePair<StatDef, float>(
-                            StatDefOf2.SculptingSpeed,
-                            3f);
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.SculptingSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
                         yield break;
                     }
@@ -802,7 +775,6 @@ namespace Outfitter
                     if (pawnSave.mainJob == Crafter)
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.6f);
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.StonecuttingSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, 3f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidSpeed, 1.5f);
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidEfficiency, 1.5f);
@@ -810,7 +782,6 @@ namespace Outfitter
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.StonecuttingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidSpeed, 0.5f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidEfficiency, 0.5f);
@@ -854,7 +825,7 @@ namespace Outfitter
                 // Hospitality
                 case "Diplomat":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, 0.5f);
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.GiftImpact, 1f);
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.DiplomacyPower, 1f);
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, 1f);
                     yield break;
 
@@ -875,8 +846,5 @@ namespace Outfitter
                     yield break;
             }
         }
-
-        #endregion Private Methods
-
     }
 }

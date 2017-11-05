@@ -28,8 +28,6 @@
                     infusedOffsets.Add(parentStat);
                 }
 
-
-
                 // if (!infusionSet.PassPre && prefix.GetStatValue(parentStat, out statMod))
                 // {
                 // val += statMod.offset;
@@ -81,6 +79,5 @@
                 }
             }
         }
-
     }
 }

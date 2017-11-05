@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<JobDefs>
+<Defs>
 
 	<JobDef>
 		<defName>GoToDraftOf</defName>
 		<driverClass>Outfitter.JobDriver_GotoDraftOf</driverClass>
 		<reportString>Going to battle spot.</reportString>
 	</JobDef>
-</JobDefs>
+</Defs>

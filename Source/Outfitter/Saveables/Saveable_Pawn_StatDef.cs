@@ -12,16 +12,16 @@
 
         private float weight;
 
-        public StatDef Stat
-        {
-            get => this.stat;
-            set => this.stat = value;
-        }
-
         public StatAssignment Assignment
         {
             get => this.assignment;
             set => this.assignment = value;
+        }
+
+        public StatDef Stat
+        {
+            get => this.stat;
+            set => this.stat = value;
         }
 
         public float Weight
@@ -29,8 +29,6 @@
             get => this.weight;
             set => this.weight = value;
         }
-
-        #region IExposable Members
 
         /*
 public Saveable_Pawn_StatDef(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
@@ -53,7 +51,5 @@ Assignment = assignment;
             Scribe_Values.Look(ref this.assignment, "Assignment");
             Scribe_Values.Look(ref this.weight, "Weight");
         }
-
-        #endregion IExposable Members
     }
 }

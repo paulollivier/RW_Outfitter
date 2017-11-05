@@ -1,4 +1,5 @@
 ﻿// ReSharper disable All
+
 namespace Outfitter
 {
     using System.Collections.Generic;
@@ -16,25 +17,6 @@ namespace Outfitter
             : base(map)
         {
             this.map = map;
-        }
-
-        public SaveablePawn GetCache(Pawn pawn)
-        {
-            foreach (SaveablePawn c in this._pawnCacheMap)
-            {
-                if (c.Pawn == pawn)
-                {
-                    return c;
-                }
-            }
-
-            return null;
-
-            // if (!PawnApparelStatCaches.ContainsKey(pawn))
-            // {
-            // PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
-            // }
-            // return PawnApparelStatCaches[pawn];
         }
 
         public override void ExposeData()
@@ -60,6 +42,25 @@ namespace Outfitter
             }
 
             // this._pawnCacheMap = null;
+        }
+
+        public SaveablePawn GetCache(Pawn pawn)
+        {
+            foreach (SaveablePawn c in this._pawnCacheMap)
+            {
+                if (c.Pawn == pawn)
+                {
+                    return c;
+                }
+            }
+
+            return null;
+
+            // if (!PawnApparelStatCaches.ContainsKey(pawn))
+            // {
+            // PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
+            // }
+            // return PawnApparelStatCaches[pawn];
         }
     }
 }

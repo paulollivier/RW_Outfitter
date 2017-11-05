@@ -1,31 +1,31 @@
-using System.Collections.Generic;
-using Infused;
-using Outfitter;
-using RimWorld;
-
-using Verse;
-
 namespace OutfitterInfused
 {
+    using Infused;
+    using Outfitter;
+    using RimWorld;
+    using System.Collections.Generic;
     using System.Linq;
 
+    using Harmony;
+
+    using Verse;
     using Def = Infused.Def;
 
     public class GameComponent_OutfitterInfused : GameComponent
     {
-        public GameComponent_OutfitterInfused()
+        public GameComponent_OutfitterInfused(Game game)
         {
             Log.Message("Outfitter with Infused Initialized");
             ApparelStatCache.ApparelScoreRaw_PawnStatsHandlers += ApparelScoreRaw_PawnStatsHandlers;
             ApparelStatCache.ApparelScoreRaw_FillInfusedStat += ApparelScoreRaw_FillInfusedStat;
             ApparelStatCache.Ignored_WTHandlers += Ignored_WTHandlers;
+
         }
 
-        public GameComponent_OutfitterInfused(Game game)
-        {
-        }
-
-        public static void ApparelScoreRaw_FillInfusedStat(Apparel apparel, StatDef parentStat, ref HashSet<StatDef> infusedOffsets)
+        private static void ApparelScoreRaw_FillInfusedStat(
+            Apparel apparel,
+            StatDef parentStat,
+            ref HashSet<StatDef> infusedOffsets)
         {
             if (apparel.TryGetInfusions(out InfusionSet inf))
             {
@@ -46,8 +46,11 @@ namespace OutfitterInfused
             }
         }
 
-        public static void ApparelScoreRaw_PawnStatsHandlers(Apparel apparel, StatDef statPriority, ref float val)
+        private static void ApparelScoreRaw_PawnStatsHandlers(Apparel apparel, StatDef statPriority, out float val)
         {
+            val = 0f;
+
+            // string log = "Infused: " + apparel + " - " + statPriority + " - " + val;
             if (apparel.TryGetInfusions(out InfusionSet inf))
             {
                 Def prefix = inf.prefix;
@@ -60,19 +63,24 @@ namespace OutfitterInfused
                 {
                     statInfusedPrefix += mod.offset;
                     statInfusedPrefix += mod.multiplier - 1;
+
+                    // log += "\nprefix - " + mod.offset + " - " + mod.multiplier;
                 }
 
                 if (suffix != null && suffix.TryGetStatValue(statPriority, out mod))
                 {
                     statInfusedSuffix += mod.offset;
                     statInfusedSuffix += mod.multiplier - 1;
+
+                    // log += "\nsuffix - " + mod.offset + " - " + mod.multiplier;
                 }
 
+                // Log.Message(log);
                 val += statInfusedPrefix + statInfusedSuffix;
             }
         }
 
-        public static void Ignored_WTHandlers(ref List<StatDef> allApparelStats)
+        private static void Ignored_WTHandlers(ref List<StatDef> allApparelStats)
         {
             // add all stat modifiers from all infusions
             foreach (KeyValuePair<StatDef, StatMod> mod in DefDatabase<Def>.AllDefsListForReading.SelectMany(

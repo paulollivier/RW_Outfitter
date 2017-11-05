@@ -1,4 +1,4 @@
-<SpecialThingFilters>
+<Defs>
 	<SpecialThingFilterDef>
 		<defName>AllowDeadmansApparel</defName>
 		<label>allow deadman's apparel</label>
@@ -8,4 +8,14 @@
 		<saveKey>allowDeadmansApparel</saveKey>
 		<workerClass>Outfitter.SpecialThingFilterWorker_DeadmansApparel</workerClass>
 	</SpecialThingFilterDef>
-</SpecialThingFilters>
+
+  <SpecialThingFilterDef>
+		<defName>ApparelWithoutHitpoints</defName>
+		<label>apparel without hitpoints</label>
+		<description>Allow apparel that uses no hitpoints</description>
+		<parentCategory>Apparel</parentCategory>
+		<allowedByDefault>true</allowedByDefault>
+		<saveKey>allowApparelWithoutHitpoints</saveKey>
+		<workerClass>Outfitter.SpecialThingFilterWorker_ApparelWithoutHitpoints</workerClass>
+	</SpecialThingFilterDef>
+</Defs>

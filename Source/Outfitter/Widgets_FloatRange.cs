@@ -8,9 +8,15 @@
 
     public static class Widgets_FloatRange
     {
-        #region Handle enum
+        private static Handle draggingHandle;
 
-        #region Public Enums
+        private static int draggingId;
+
+        static Widgets_FloatRange()
+        {
+            draggingHandle = Handle.None;
+            draggingId = 0;
+        }
 
         public enum Handle
         {
@@ -20,22 +26,6 @@
 
             Max
         }
-
-        #endregion Public Enums
-
-        #endregion Handle enum
-
-        #region Public Constructors
-
-        static Widgets_FloatRange()
-        {
-            draggingHandle = Handle.None;
-            draggingId = 0;
-        }
-
-        #endregion Public Constructors
-
-        #region Public Methods
 
         public static void FloatRange(
             Rect canvas,
@@ -144,15 +134,5 @@
                 Event.current.Use();
             }
         }
-
-        #endregion Public Methods
-
-        #region Private Fields
-
-        private static Handle draggingHandle;
-
-        private static int draggingId;
-
-        #endregion Private Fields
     }
 }

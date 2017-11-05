@@ -10,16 +10,10 @@
 
     public class GameComponent_Outfitter : GameComponent
     {
-        #region Public Fields
-
         [NotNull]
         public static List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
 
         public static bool updated;
-
-        #endregion Public Fields
-
-        #region Public Constructors
 
         public GameComponent_Outfitter()
         {
@@ -47,10 +41,6 @@
             }
         }
 
-        #endregion Public Constructors
-
-        #region Public Methods
-
         public static SaveablePawn GetCache(Pawn pawn)
         {
             foreach (SaveablePawn c in _pawnCache.Where(c => c.Pawn == pawn))
@@ -74,9 +64,6 @@
             base.ExposeData();
 
             Scribe_Collections.Look(ref _pawnCache, "Pawns", LookMode.Deep);
-
         }
-
-        #endregion Public Methods
     }
 }

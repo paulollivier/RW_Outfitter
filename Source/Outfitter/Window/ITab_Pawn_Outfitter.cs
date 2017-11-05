@@ -3,19 +3,22 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
+    using JetBrains.Annotations;
+
     using Outfitter.Textures;
     using Outfitter.Window;
+
     using RimWorld;
+
     using UnityEngine;
+
     using Verse;
     using Verse.AI;
     using Verse.Sound;
 
     public class ITab_Pawn_Outfitter : ITab
     {
-
-        #region Private Fields
-
         private const float ButtonHeight = 30f;
 
         private const float Margin = 10f;
@@ -38,19 +41,11 @@
 
         private float scrollViewHeight1;
 
-        #endregion Private Fields
-
-        #region Public Constructors
-
         public ITab_Pawn_Outfitter()
         {
             this.size = new Vector2(770f, 550f);
             this.labelKey = "OutfitterTab";
         }
-
-        #endregion Public Constructors
-
-        #region Public Properties
 
         public override bool IsVisible
         {
@@ -83,10 +78,6 @@
             }
         }
 
-        #endregion Public Properties
-
-        #region Private Properties
-
         private bool CanControl => this.SelPawn.IsColonistPlayerControlled;
 
         private Pawn SelPawnForGear
@@ -107,10 +98,6 @@
                 throw new InvalidOperationException("Gear tab on non-pawn non-corpse " + this.SelThing);
             }
         }
-
-        #endregion Private Properties
-
-        #region Protected Methods
 
         protected override void FillTab()
         {
@@ -209,10 +196,6 @@
             Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        #endregion Protected Methods
-
-        #region Private Methods
-
         private static void DrawCheckBoxArea(Rect rect, string name, ref bool stat)
         {
             Widgets.CheckboxLabeled(rect, name, ref stat);
@@ -299,7 +282,7 @@
                                 {
                                     this.SelPawnForGear.GetApparelStatCache().StatCache.Insert(
                                         0,
-                                        new ApparelStatCache.StatPriority(def, 0f, StatAssignment.Manual));
+                                        new StatPriority(def, 0f, StatAssignment.Manual));
 
                                     // pawnStatCache.Stats.Insert(0, new Saveable_Pawn_StatDef(def, 0f, StatAssignment.Manual));
                                 }));
@@ -359,7 +342,7 @@
                 cur.y += 15f;
 
                 // stat weight sliders
-                foreach (ApparelStatCache.StatPriority stat in this.SelPawnForGear.GetApparelStatCache().StatCache)
+                foreach (StatPriority stat in this.SelPawnForGear.GetApparelStatCache().StatCache)
                 {
                     ApparelStatCache.DrawStatRow(ref cur, viewRect.width, stat, this.SelPawnForGear, out bool stop_UI);
                     if (stop_UI)
@@ -379,7 +362,7 @@
             Widgets.EndScrollView();
         }
 
-        private void DrawTemperatureStats(SaveablePawn pawnSave, ref Vector2 cur, Rect canvas)
+        private void DrawTemperatureStats([NotNull] SaveablePawn pawnSave, ref Vector2 cur, Rect canvas)
         {
             // header
             Rect tempHeaderRect = new Rect(cur.x, cur.y, canvas.width, 30f);
@@ -520,7 +503,7 @@
             Rect textRect = new Rect(ThingLeftX, y, width - ThingLeftX, ThingRowHeight - Text.LineHeight);
             Rect scoreRect = new Rect(ThingLeftX, textRect.yMax, width - ThingLeftX, Text.LineHeight);
 
-            ApparelStatCache conf = new ApparelStatCache(this.SelPawn);
+            ApparelStatCache conf = this.SelPawn.GetApparelStatCache();
             string text = apparel.LabelCap;
             string text_Score = Math.Round(conf.ApparelScoreRaw(apparel, this.SelPawn), 2).ToString("N2");
 
@@ -605,7 +588,7 @@
             y += ThingRowHeight;
         }
 
-        private void InterfaceDrop(Thing t)
+        private void InterfaceDrop([NotNull] Thing t)
         {
             ThingWithComps thingWithComps = t as ThingWithComps;
             Apparel apparel = t as Apparel;
@@ -680,8 +663,5 @@
                     statValue2.ToStringTemperature("F0")));
             curY += 22f;
         }
-
-        #endregion Private Methods
-
     }
 }
