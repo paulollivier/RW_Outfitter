@@ -4,11 +4,11 @@
 
     using Verse;
 
-    public class SaveablePawn : IExposable
+    public partial class SaveablePawn : IExposable
     {
-        public bool AddIndividualStats = true;
+        private bool addIndividualStats = true;
 
-        public bool AddWorkStats = true;
+        private bool addWorkStats = true;
 
         public List<Saveable_Pawn_StatDef> ApparelStats = new List<Saveable_Pawn_StatDef>();
 
@@ -36,41 +36,28 @@
 
         public FloatRange Temperatureweight;
 
-        public enum MainJob
+        public bool AddWorkStats
         {
-            Anything,
+            get
+            {
+                return addWorkStats;
+            }
+            set
+            {
+                addWorkStats = value;
+                this.forceStatUpdate = true;
+            }
+        }
 
-            Soldier00Close_Combat,
+        public bool AddIndividualStats
+        {
+            get => this.addIndividualStats;
+            set
+            {
+                this.addIndividualStats = value;
+                this.forceStatUpdate = true;
+            }
 
-            Soldier00Ranged_Combat,
-
-            Artist,
-
-            Constructor,
-
-            Cook,
-
-            Crafter,
-
-            Doctor,
-
-            Grower,
-
-            Handler,
-
-            Hauler,
-
-            Hunter,
-
-            Miner,
-
-            Researcher,
-
-            Smith,
-
-            Tailor,
-
-            Warden
         }
 
         // public SaveablePawn(Pawn pawn)
@@ -94,8 +81,8 @@
 
             // todo: rename with next big version
             Scribe_Collections.Look(ref this.ApparelStats, "WeaponStats", LookMode.Deep);
-            Scribe_Values.Look(ref this.AddWorkStats, "AddWorkStats", true);
-            Scribe_Values.Look(ref this.AddIndividualStats, "AddIndividualStats", true);
+            Scribe_Values.Look(ref this.addWorkStats, "AddWorkStats", true);
+            Scribe_Values.Look(ref this.addIndividualStats, "AddIndividualStats", true);
             Scribe_Values.Look(ref this.mainJob, "mainJob");
         }
     }

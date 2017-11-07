@@ -209,10 +209,10 @@
 
                 // this blocks pawns constantly switching between the recent apparel, due to shifting calculations
                 // not very elegant but working
-                if (pawn.GetApparelStatCache().recentApparel.Contains(apparel))
-                {
-                    gain *= 0.01f;
-                }
+               // if (pawn.GetApparelStatCache().recentApparel.Contains(apparel))
+               // {
+               //     gain *= 0.01f;
+               // }
 
                 if (DebugViewSettings.debugApparelOptimize)
                 {
@@ -245,10 +245,10 @@
                 return false;
             }
 
-            foreach (Apparel apparel in wornApparel)
-            {
-                pawn.GetApparelStatCache().recentApparel.Add(apparel);
-            }
+           // foreach (Apparel apparel in wornApparel)
+           // {
+           //     pawn.GetApparelStatCache().recentApparel.Add(apparel);
+           // }
 
             __result = new Job(JobDefOf.Wear, thing);
             return false;
@@ -260,7 +260,7 @@
                                                      + Random.Range(
                                                          ApparelOptimizeCheckIntervalMin,
                                                          ApparelOptimizeCheckIntervalMax);
-            pawn.GetApparelStatCache().recentApparel.Clear();
+           // pawn.GetApparelStatCache().recentApparel.Clear();
 
         }
     }

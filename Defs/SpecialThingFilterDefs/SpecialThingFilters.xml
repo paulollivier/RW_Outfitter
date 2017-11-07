@@ -8,7 +8,7 @@
 		<saveKey>allowDeadmansApparel</saveKey>
 		<workerClass>Outfitter.SpecialThingFilterWorker_DeadmansApparel</workerClass>
 	</SpecialThingFilterDef>
-
+<!--
   <SpecialThingFilterDef>
 		<defName>ApparelWithoutHitpoints</defName>
 		<label>apparel without hitpoints</label>
@@ -18,4 +18,5 @@
 		<saveKey>allowApparelWithoutHitpoints</saveKey>
 		<workerClass>Outfitter.SpecialThingFilterWorker_ApparelWithoutHitpoints</workerClass>
 	</SpecialThingFilterDef>
+  -->
 </Defs>

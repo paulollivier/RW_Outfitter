@@ -142,13 +142,13 @@
             // job outfit
             if (Widgets.ButtonText(
                 outfitJobRect,
-                pawnSave.mainJob == SaveablePawn.MainJob.Anything
+                pawnSave.mainJob == MainJob.Anything
                     ? "MainJob".Translate()
                     : "PreferedGear".Translate() + " " + pawnSave.mainJob.ToString().Replace("00", " - ")
                           .Replace("_", " ")))
             {
                 List<FloatMenuOption> options = new List<FloatMenuOption>();
-                foreach (SaveablePawn.MainJob mainJob in Enum.GetValues(typeof(SaveablePawn.MainJob)))
+                foreach (MainJob mainJob in Enum.GetValues(typeof(MainJob)))
                 {
                     options.Add(
                         new FloatMenuOption(
@@ -176,8 +176,20 @@
             Rect rectCheckboxes = new Rect(rectStatus.x, rectStatus.yMax + Margin, rectStatus.width, 48f);
             Rect check1 = new Rect(rectCheckboxes.x, rectCheckboxes.y, rectCheckboxes.width, 24f);
             Rect check2 = new Rect(rectCheckboxes.x, check1.yMax, rectCheckboxes.width, 24f);
-            DrawCheckBoxArea(check1, "AddWorkStats".Translate(), ref pawnSave.AddWorkStats);
-            DrawCheckBoxArea(check2, "AddIndividualStats".Translate(), ref pawnSave.AddIndividualStats);
+
+            bool pawnSaveAddWorkStats = pawnSave.AddWorkStats;
+            bool pawnSaveAddIndividualStats = pawnSave.AddIndividualStats;
+            DrawCheckBoxArea(check1, "AddWorkStats".Translate(), ref pawnSaveAddWorkStats);
+            DrawCheckBoxArea(check2, "AddIndividualStats".Translate(), ref pawnSaveAddIndividualStats);
+
+            if (pawnSaveAddWorkStats != pawnSave.AddWorkStats)
+            {
+                pawnSave.AddWorkStats = pawnSaveAddWorkStats;
+            }
+            if (pawnSaveAddIndividualStats != pawnSave.AddIndividualStats)
+            {
+                pawnSave.AddIndividualStats = pawnSaveAddIndividualStats;
+            }
 
             // main canvas
             Rect canvas = new Rect(20f, rectCheckboxes.yMax, 392f, this.size.y - rectCheckboxes.yMax - 20f);
@@ -333,9 +345,9 @@
                 Text.Font = GameFont.Tiny;
                 GUI.color = Color.grey;
                 Text.Anchor = TextAnchor.LowerLeft;
-                Widgets.Label(legendRect, "-2.5");
+                Widgets.Label(legendRect,"-"+ ApparelStatCache.MaxValue.ToString("N1"));
                 Text.Anchor = TextAnchor.LowerRight;
-                Widgets.Label(legendRect, "2.5");
+                Widgets.Label(legendRect, ApparelStatCache.MaxValue.ToString("N1"));
                 Text.Anchor = TextAnchor.UpperLeft;
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;

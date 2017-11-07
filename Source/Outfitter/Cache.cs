@@ -6,6 +6,8 @@
 
     using RimWorld;
 
+    using Verse;
+
     public static class Cache
     {
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
@@ -15,6 +17,13 @@
         {
             float currentStat = apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
 
+           // float pawnStat = p.GetStatValue(stat);
+           //
+           // var x = pawnStat;
+           // if (!p.apparel.WornApparel.Contains(apparel))
+           // {
+           //     x += currentStat;
+           // }
             // currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef);
 
             // if (stat.StatDef.defName.Equals("PsychicSensitivity"))

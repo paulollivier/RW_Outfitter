@@ -70,6 +70,7 @@
     <None Include="ITab_Bills_Patch.cs" />
     <Compile Include="JobDriver_GotoDraftOf.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
+    <Compile Include="MainJob.cs" />
     <Compile Include="SpecialThingFilterWorker_ApparelWithoutHitpoints.cs" />
     <Compile Include="StatDefOf2.cs" />
     <None Include="TabsPatch.cs" />

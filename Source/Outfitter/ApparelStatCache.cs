@@ -22,9 +22,11 @@ namespace Outfitter
 
     public partial class ApparelStatCache
     {
-        public List<Apparel> recentApparel = new List<Apparel>();
+      //  public List<Apparel> recentApparel = new List<Apparel>();
 
         public readonly List<StatPriority> Cache;
+
+        public const float MaxValue = 2.5f;
 
         private readonly Pawn pawn;
 
@@ -55,8 +57,8 @@ namespace Outfitter
         public delegate void ApparelScoreRawIgnored_WTHandlers(ref List<StatDef> statDef);
 
         public delegate void ApparelScoreRawInfusionHandlers(
-            Apparel apparel,
-            StatDef parentStat,
+            [NotNull] Apparel apparel,
+            [NotNull] StatDef parentStat,
             ref HashSet<StatDef> infusedOffsets);
 
         public delegate void ApparelScoreRawStatsHandler(Apparel apparel, StatDef statDef, out float num);
@@ -79,9 +81,9 @@ namespace Outfitter
                     // list of auto stats
                     if (this.Cache.Count < 1 && this.pawnSave.Stats.Count > 0)
                     {
-                        foreach (Saveable_Pawn_StatDef vari in this.pawnSave.Stats)
+                        foreach (Saveable_Pawn_StatDef statDef in this.pawnSave.Stats)
                         {
-                            this.Cache.Add(new StatPriority(vari.Stat, vari.Weight, vari.Assignment));
+                            this.Cache.Add(new StatPriority(statDef.Stat, statDef.Weight, statDef.Assignment));
                         }
                     }
 
@@ -109,7 +111,7 @@ namespace Outfitter
                             else
                             {
                                 // it exists, make sure existing is (now) of type override.
-                                this.Cache[i].Weight = pair.Value;
+                                this.Cache[i].Weight += pair.Value;
                             }
                         }
                     }
@@ -133,7 +135,7 @@ namespace Outfitter
                             }
                             else
                             {
-                                // it exists, make sure existing is (now) of type override.
+                                // if exists, make sure existing is (now) of type override.
                                 this.Cache[i].Assignment = StatAssignment.Override;
                             }
                         }
@@ -150,7 +152,7 @@ namespace Outfitter
                             }
                             else
                             {
-                                // it exists, make sure existing is (now) of type override.
+                                // if exists, make sure existing is (now) of type override.
                                 this.Cache[i].Assignment = StatAssignment.Override;
                             }
                         }
@@ -164,11 +166,6 @@ namespace Outfitter
                         statPriority => statPriority.Assignment != StatAssignment.Automatic
                                         && statPriority.Assignment != StatAssignment.Individual))
                     {
-                        if (statPriority.Assignment != StatAssignment.Override)
-                        {
-                            statPriority.Assignment = StatAssignment.Manual;
-                        }
-
                         bool exists = false;
                         foreach (Saveable_Pawn_StatDef stat in this.pawnSave.Stats.Where(
                             stat => stat.Stat.Equals(statPriority.Stat)))
@@ -230,7 +227,7 @@ namespace Outfitter
             return num + num2 * 1.25f;
         }
 
-        public static void DoApparelScoreRaw_PawnStatsHandlers(Apparel apparel, StatDef statDef, out float num)
+        public static void DoApparelScoreRaw_PawnStatsHandlers([NotNull] Apparel apparel, [NotNull] StatDef statDef, out float num)
         {
             num = 0f;
             ApparelScoreRaw_PawnStatsHandlers?.Invoke(apparel, statDef, out num);
@@ -270,7 +267,7 @@ namespace Outfitter
                     break;
 
                 case StatAssignment.Override:
-                    GUI.color = new Color(0.75f, 0.75f, 0.75f);
+                    GUI.color = new Color(0.75f, 0.69f, 0.33f);
                     break;
 
                 default:
@@ -327,14 +324,14 @@ namespace Outfitter
                     break;
 
                 case StatAssignment.Override:
-                    GUI.color = new Color(0.8f, 0.8f, 0.8f);
+                    GUI.color = new Color(0.75f, 0.69f, 0.33f);
                     break;
 
                 default:
                     GUI.color = Color.white;
                     break;
             }
-            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -2.5f, 2.5f);
+            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -MaxValue, MaxValue);
             if (Mathf.Abs(weight - stat.Weight) > 1e-4)
             {
                 stat.Weight = weight;
@@ -400,8 +397,6 @@ namespace Outfitter
                 {
                     float statValue = ap.GetEquippedStatValue(statPriority.Stat);
 
-                    // statValue += StatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
-                    // DoApparelScoreRaw_PawnStatsHandlers(_pawn, apparel, statPriority.Stat, ref statValue);
                     score += statValue * statPriority.Weight;
 
                     // multiply score to favour items with multiple offsets

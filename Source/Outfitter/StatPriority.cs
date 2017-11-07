@@ -8,6 +8,8 @@ namespace Outfitter
 {
     using System.Collections.Generic;
 
+    using JetBrains.Annotations;
+
     using RimWorld;
 
     using Verse;
@@ -37,7 +39,7 @@ namespace Outfitter
 
         public float Weight { get; set; }
 
-        public void Delete(Pawn pawn)
+        public void Delete([NotNull] Pawn pawn)
         {
             pawn.GetApparelStatCache().Cache.Remove(this);
 
