@@ -615,6 +615,14 @@ namespace Outfitter
                         this.pawnSave.TargetTemperatures.max = 32;
                     }
 
+                    if (this.pawn.workSettings.WorkIsActive(DefDatabase<WorkTypeDef>.GetNamed("Cooking")))
+                    {
+                        {
+                            this.pawnSave.TargetTemperatures.min = Mathf.Min(this.pawnSave.TargetTemperatures.min, -3);
+                        }
+
+                    }
+
                     this.lastTempUpdate = Find.TickManager.TicksGame;
                 }
             }
