@@ -31,7 +31,7 @@
 
         public override void DoWindowContents(Rect windowRect)
         {
-            ApparelStatCache apparelStatCache = new ApparelStatCache(GameComponent_Outfitter.GetCache(this.pawn));
+            ApparelStatCache apparelStatCache = new ApparelStatCache(pawn.GetSaveablePawn());
             List<Apparel> allApparels = new List<Apparel>(
                 this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
             foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this.pawn.Map))
@@ -126,7 +126,7 @@
                         }
                     }
 
-                    // foreach (Apparel a in mapComponent.GetCache(pawn).targetApparel)
+                    // foreach (Apparel a in mapComponent.GetSaveablePawn(pawn).targetApparel)
                     // if (a == currentAppel)
                     // {
                     // target = pawn;

@@ -43,7 +43,7 @@ namespace Outfitter
         {
             pawn.GetApparelStatCache().Cache.Remove(this);
 
-            GameComponent_Outfitter.GetCache(pawn).Stats.RemoveAll(i => i.Stat == this.Stat);
+            pawn.GetSaveablePawn().Stats.RemoveAll(i => i.Stat == this.Stat);
         }
 
         public void Reset(Pawn pawn)
@@ -63,7 +63,7 @@ namespace Outfitter
                 this.Assignment = StatAssignment.Individual;
             }
 
-            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
+            SaveablePawn pawnSave = pawn.GetSaveablePawn();
             pawnSave.Stats.RemoveAll(i => i.Stat == this.Stat);
         }
     }

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<Defs>
-
-	<JobDef>
-		<defName>GoToDraftOf</defName>
-		<driverClass>Outfitter.JobDriver_GotoDraftOf</driverClass>
-		<reportString>Going to battle spot.</reportString>
-	</JobDef>
-</Defs>

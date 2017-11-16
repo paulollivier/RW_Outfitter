@@ -24,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>..\..\..\FacialStuff\Source\RW_FacialStuff\FacialStuff.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -33,6 +34,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>..\..\..\FacialStuff\Source\RW_FacialStuff\FacialStuff.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'NoCCL|AnyCPU'">
     <OutputPath>..\..\Assemblies\</OutputPath>
@@ -41,7 +43,7 @@
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\..\FacialStuff\Source\RW_FacialStuff\FacialStuff.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
@@ -51,6 +53,10 @@
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DD_WorkTab">
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\1195421846\Assemblies\DD_WorkTab.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -63,20 +69,20 @@
   <ItemGroup>
     <Compile Include="ApparelEntry.cs" />
     <Compile Include="ApparelStatCache.cs" />
-    <Compile Include="Building_BattleSpot.cs" />
     <Compile Include="Cache.cs" />
     <None Include="InfusedStats\HarmonyPatchInfused.cs" />
     <None Include="InfusedStats\InfusedStats.cs" />
     <None Include="ITab_Bills_Patch.cs" />
-    <Compile Include="JobDriver_GotoDraftOf.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="MainJob.cs" />
-    <Compile Include="SpecialThingFilterWorker_ApparelWithoutHitpoints.cs" />
+    <None Include="SpecialThingFilterWorker_ApparelWithoutHitpoints.cs" />
+    <Compile Include="Optional\Harmony_DDWorkTab.cs" />
     <Compile Include="StatDefOf2.cs" />
     <None Include="TabsPatch.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="SpecialThingFilterWorker_DeadmansApparel.cs" />
-    <Compile Include="JobGiver_OptimizeApparel.cs" />
+    <Compile Include="JobGiver_OutfitterOptimizeApparel.cs" />
     <None Include="OF_SpecialInjector.cs" />
     <Compile Include="StatAssignment.cs" />
     <Compile Include="StatPriority.cs" />
@@ -98,15 +104,8 @@
       <Link>About.xml</Link>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="..\..\Defs\JobDefs\Job.xml">
-      <Link>Defs\Job.xml</Link>
-    </Content>
     <Content Include="..\..\Defs\SpecialThingFilterDefs\SpecialThingFilters.xml">
       <Link>SpecialThingFilters.xml</Link>
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="..\..\Defs\ThingDefs_Buildings\Buildings_Misc.xml">
-      <Link>Defs\Buildings_Misc.xml</Link>
       <SubType>Designer</SubType>
     </Content>
     <Content Include="..\..\Languages\English\Keyed\Outfitter_Keyed.xml">

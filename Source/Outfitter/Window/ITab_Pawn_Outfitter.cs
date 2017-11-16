@@ -101,7 +101,7 @@
 
         protected override void FillTab()
         {
-            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(this.SelPawnForGear);
+            SaveablePawn pawnSave = this.SelPawnForGear.GetSaveablePawn();
 
             // Outfit + Status button
             Rect rectStatus = new Rect(20f, 15f, 380f, ButtonHeight);
@@ -392,7 +392,7 @@
             cur.y += Margin;
 
             // temperature slider
-            // SaveablePawn pawnStatCache = MapComponent_Outfitter.Get.GetCache(SelPawn);
+            // SaveablePawn pawnStatCache = MapComponent_Outfitter.Get.GetSaveablePawn(SelPawn);
             ApparelStatCache pawnStatCache = this.SelPawnForGear.GetApparelStatCache();
             FloatRange targetTemps = pawnStatCache.TargetTemperatures;
             FloatRange minMaxTemps = ApparelStatsHelper.MinMaxTemperatureRange;
@@ -422,7 +422,7 @@
                 {
                     pawnSave.TargetTemperaturesOverride = false;
 
-                    // var saveablePawn = MapComponent_Outfitter.Get.GetCache(SelPawn);
+                    // var saveablePawn = MapComponent_Outfitter.Get.GetSaveablePawn(SelPawn);
                     // saveablePawn.targetTemperaturesOverride = false;
                     pawnStatCache.UpdateTemperatureIfNecessary(true);
                 }

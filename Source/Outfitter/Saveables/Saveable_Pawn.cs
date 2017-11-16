@@ -24,10 +24,6 @@
         // Exposed members
         public Pawn Pawn;
 
-        public FloatRange RealComfyTemperatures;
-
-        public bool SetRealComfyTemperatures;
-
         public List<Saveable_Pawn_StatDef> Stats = new List<Saveable_Pawn_StatDef>();
 
         public FloatRange TargetTemperatures;
@@ -72,9 +68,6 @@
             Scribe_References.Look(ref this.Pawn, "Pawn");
             Scribe_Values.Look(ref this.TargetTemperaturesOverride, "targetTemperaturesOverride");
             Scribe_Values.Look(ref this.TargetTemperatures, "TargetTemperatures");
-            Scribe_Values.Look(ref this.SetRealComfyTemperatures, "SetRealComfyTemperatures");
-
-            Scribe_Values.Look(ref this.RealComfyTemperatures, "RealComfyTemperatures");
 
             // bug: stats are not saved
             Scribe_Collections.Look(ref this.Stats, "Stats", LookMode.Deep);

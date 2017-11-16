@@ -11,7 +11,7 @@
     public class GameComponent_Outfitter : GameComponent
     {
         [NotNull]
-        public static List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
+        public List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
 
         public static bool updated;
 
@@ -41,23 +41,6 @@
             }
         }
 
-        public static SaveablePawn GetCache(Pawn pawn)
-        {
-            foreach (SaveablePawn c in _pawnCache.Where(c => c.Pawn == pawn))
-            {
-                return c;
-            }
-
-            SaveablePawn n = new SaveablePawn { Pawn = pawn };
-            _pawnCache.Add(n);
-            return n;
-
-            // if (!PawnApparelStatCaches.ContainsKey(pawn))
-            // {
-            // PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
-            // }
-            // return PawnApparelStatCaches[pawn];
-        }
 
         public override void ExposeData()
         {

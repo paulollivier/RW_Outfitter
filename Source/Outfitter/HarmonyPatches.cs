@@ -8,7 +8,12 @@
 using Harmony;
 using Outfitter;
 using System.Linq;
+using System.Reflection;
+
+using RimWorld;
+
 using Verse;
+using Verse.AI;
 
 [StaticConstructorOnStartup]
 internal class HarmonyPatches
@@ -23,8 +28,23 @@ internal class HarmonyPatches
         // null);
         harmony.Patch(
             AccessTools.Method(typeof(RimWorld.JobGiver_OptimizeApparel), "TryGiveJob"),
-            new HarmonyMethod(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.TryGiveJob_Prefix)),
+            new HarmonyMethod(typeof(JobGiver_OutfitterOptimizeApparel), nameof(JobGiver_OutfitterOptimizeApparel.TryGiveJob_Prefix)),
             null);
+
+        harmony.Patch(
+            AccessTools.Method(typeof(Pawn_WorkSettings), nameof(Pawn_WorkSettings.SetPriority)),
+            null,
+            new HarmonyMethod(typeof(HarmonyPatches), nameof(UpdatePriorities)));
+
+        harmony.Patch(
+            AccessTools.Method(typeof(Pawn_WorkSettings), nameof(Pawn_WorkSettings.Notify_UseWorkPrioritiesChanged)),
+            null,
+            new HarmonyMethod(typeof(HarmonyPatches), nameof(UpdatePriorities)));
+
+       // harmony.Patch(
+       //     AccessTools.Method(typeof(ThinkNode_JobGiver), nameof(ThinkNode_JobGiver.TryIssueJobPackage)),
+       //     null,
+       //     new HarmonyMethod(typeof(HarmonyPatches), nameof(LogJobActivities)));
 
         // harmony.Patch(
         // AccessTools.Method(typeof(ITab_Bills), "FillTab"),
@@ -34,5 +54,20 @@ internal class HarmonyPatches
         // null);
         Log.Message(
             "Outfitter successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
+    }
+
+    private static void UpdatePriorities(Pawn_WorkSettings __instance)
+    {
+        FieldInfo fieldInfo = typeof(Pawn_WorkSettings).GetField("pawn", BindingFlags.NonPublic | BindingFlags.Instance);
+        Pawn pawn = (Pawn)fieldInfo?.GetValue(__instance);
+        pawn.GetSaveablePawn().forceStatUpdate = true;
+    }
+
+    private static void LogJobActivities(ThinkNode_JobGiver __instance, ThinkResult __result, Pawn pawn, JobIssueParams jobParams)
+    {
+       // if (__result.Job.def.driverClass.)
+       // {
+       //     __result.Job.
+       // }
     }
 }

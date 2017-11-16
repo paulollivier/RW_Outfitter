@@ -183,7 +183,7 @@ namespace Outfitter
         public static Dictionary<StatDef, float> GetWeightedApparelIndividualStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
-            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
+            SaveablePawn pawnSave = pawn.GetSaveablePawn();
 
             // dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
             // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
@@ -329,7 +329,7 @@ namespace Outfitter
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
             Dictionary<StatDef, float> dict = new Dictionary<StatDef, float>();
-            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
+            SaveablePawn pawnSave = pawn.GetSaveablePawn();
 
             // dict.Add(StatDefOf.ArmorRating_Blunt, 0.25f);
             // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
@@ -338,31 +338,51 @@ namespace Outfitter
             if (pawnSave.AddWorkStats)
             {
                 // add weights for all worktypes, multiplied by job priority
-                List<WorkTypeDef> allDefsListForReading = DefDatabase<WorkTypeDef>.AllDefsListForReading
+                List<WorkTypeDef> workTypes = DefDatabase<WorkTypeDef>.AllDefsListForReading
                     .Where(def => pawn.workSettings.WorkIsActive(def)).ToList();
 
-                int maxPriority = allDefsListForReading.Aggregate(
+                int maxPriority = workTypes.Aggregate(
                     1,
-                    (current, workType) => Mathf.Max(current, pawn.workSettings.GetPriority(workType)));
-                if (maxPriority < 4)
-                {
-                    maxPriority = 4;
-                }
+                    (current, workType) => Mathf.Max(current, pawn.GetWorkPriority(workType)));
 
-                foreach (WorkTypeDef workType in allDefsListForReading)
+                int minPriority = workTypes.Aggregate(
+                    1,
+                    (current, workType) => Mathf.Min(current, pawn.GetWorkPriority(workType)));
+
+                var log = "Outfitter Priorities, Pawn: " + pawn + " - Max: " + minPriority + "/" + maxPriority;
+
+                foreach (WorkTypeDef workType in workTypes)
                 {
                     foreach (KeyValuePair<StatDef, float> stat in GetStatsOfWorkType(pawn, workType))
                     {
-                        int priority = pawn.workSettings.GetPriority(workType);
+                        int priority = Find.PlaySettings.useWorkPriorities ? pawn.GetWorkPriority(workType) : 3;
 
                         float priorityAdjust = 1f / priority / maxPriority;
 
                         float weight = stat.Value * priorityAdjust;
+                        for (int i = 0; i < workType.relevantSkills.Count; i++)
+                        {
+                            var relSkill = workType.relevantSkills[i];
+                            SkillRecord record = pawn.skills.GetSkill(relSkill);
+                            float skillMod = 1 + (record.Level / 20);
+                            switch (record.passion)
+                            {
+                                case Passion.None: break;
+                                case Passion.Minor:
+                                    skillMod *= 2;
+                                    break;
+                                case Passion.Major:
+                                    skillMod *= 4;
+                                    break;
+                            }
+                            priorityAdjust *= skillMod;
+                        }
 
                         AddStatToDict(stat.Key, weight, ref dict);
+                        log += "\n" + workType.defName + " - priority " + "-" + priority + " - adjusted " + priorityAdjust;
                     }
                 }
-
+                Log.Message(log);
                 // adjustments for traits
                 AdjustStatsForTraits(pawn, ref dict);
             }
@@ -377,9 +397,12 @@ namespace Outfitter
                     dict[key] /= max / num;
                 }
             }
+            dict.OrderByDescending(x => x.Value);
 
             return dict;
         }
+
+
 
         [NotNull]
         public static List<StatDef> NotYetAssignedStatDefs([NotNull] this Pawn pawn)
@@ -501,7 +524,7 @@ namespace Outfitter
 
         private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType(Pawn pawn, WorkTypeDef worktype)
         {
-            SaveablePawn pawnSave = GameComponent_Outfitter.GetCache(pawn);
+            SaveablePawn pawnSave = pawn.GetSaveablePawn();
 
             if (pawnSave.mainJob == MainJob.Soldier00Close_Combat)
             {
@@ -539,7 +562,7 @@ namespace Outfitter
             {
                 case "Firefighter": yield break;
 
-                case "PatientEmergency": yield break;
+                case "Patient": yield break;
 
                 case "Doctor":
                     if (pawnSave.mainJob == MainJob.Doctor)
