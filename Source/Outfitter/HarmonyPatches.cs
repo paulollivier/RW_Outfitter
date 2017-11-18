@@ -11,6 +11,7 @@ using System.Reflection;
 using Harmony;
 
 using Outfitter;
+using Outfitter.TabPatch;
 
 using RimWorld;
 
@@ -46,14 +47,10 @@ internal class HarmonyPatches
             new HarmonyMethod(typeof(HarmonyPatches), nameof(UpdatePriorities)));
 
         harmony.Patch(
-            AccessTools.Method(typeof(ITab_Bills), "FillTab"),
-            new HarmonyMethod(typeof(ITab_Bills_Patch), nameof(ITab_Bills_Patch.FillTab_Prefix)),
+            AccessTools.Method(typeof(BillStack), nameof(BillStack.DoListing)),
+            new HarmonyMethod(typeof(ITab_Bills_Patch), nameof(ITab_Bills_Patch.DoListing)),
             null);
 
-        harmony.Patch(
-            AccessTools.Method(typeof(ITab_Bills), "TabUpdate"),
-            new HarmonyMethod(typeof(ITab_Bills_Patch), nameof(ITab_Bills_Patch.TabUpdate_Prefix)),
-            null);
 
         // harmony.Patch(
         // AccessTools.Method(typeof(ThinkNode_JobGiver), nameof(ThinkNode_JobGiver.TryIssueJobPackage)),

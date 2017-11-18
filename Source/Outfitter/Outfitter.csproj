@@ -70,7 +70,10 @@
     <Compile Include="ApparelEntry.cs" />
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="Cache.cs" />
-    <Compile Include="ITab_Bills_Patch.cs" />
+    <Compile Include="TabPatch\Tools.cs" />
+    <Compile Include="TabPatch\FloatMenuColonists.cs" />
+    <Compile Include="TabPatch\FloatMenuLabels.cs" />
+    <Compile Include="TabPatch\ITab_Bills_Patch.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="MainJob.cs" />
