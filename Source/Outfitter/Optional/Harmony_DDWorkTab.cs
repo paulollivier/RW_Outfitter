@@ -9,11 +9,7 @@
 
     using Harmony;
 
-    using RimWorld;
-
     using Verse;
-
-    using Extensions = Outfitter.Extensions;
 
     // Blatantly stolen from "Psychology"
     [StaticConstructorOnStartup]
@@ -26,14 +22,12 @@
             {
                 ((Action)(() =>
                     {
-                        if (AccessTools.Method(
-                                typeof(PawnSurface),
-                                nameof(PawnSurface.EnableWorkType)) != null)
+                        if (AccessTools.Method(typeof(PawnSurface), nameof(PawnSurface.EnableWorkType)) != null)
                         {
-                             harmony.Patch(
-                                 AccessTools.Method(typeof(PawnSurface), "UpdatePawnPriorities"),
-                                 null,
-                                 new HarmonyMethod(typeof(Harmony_DDWorkTab), nameof(UpdatePriorities)));
+                            harmony.Patch(
+                                AccessTools.Method(typeof(PawnSurface), "UpdatePawnPriorities"),
+                                null,
+                                new HarmonyMethod(typeof(Harmony_DDWorkTab), nameof(UpdatePriorities)));
 
                             harmony.Patch(
                                 AccessTools.Method(typeof(ApparelStatsHelper), nameof(Extensions.GetWorkPriority)),
@@ -66,27 +60,33 @@
             }
         }
 
-        private static void UpdatePriorities(PawnSurface __instance)
-        {
-            __instance.pawn.GetSaveablePawn().forceStatUpdate = true;
-        }
-
         private static bool GetWorkPriorityDD(Pawn pawn, WorkTypeDef workType, ref int __result)
         {
             __result = 20;
 
-            var GetManager = Current.Game.GetComponent<SurfaceManager>();
+            SurfaceManager GetManager = Current.Game.GetComponent<SurfaceManager>();
             PawnSurface surface = GetManager.GetPawnSurface(pawn);
 
-            var childrenFieldInfo = typeof(PawnSurface).GetField("children", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo childrenFieldInfo =
+                typeof(PawnSurface).GetField("children", BindingFlags.NonPublic | BindingFlags.Instance);
             List<DraggableWork> children = (List<DraggableWork>)childrenFieldInfo?.GetValue(surface);
 
             if (children.NullOrEmpty())
             {
                 return true;
             }
-            List<string> ignoreList = new List<string>() { "Firefighter", "Patient", "PatientBedRest", "Flicker", "HaulingUrgent", "FinishingOff" };
-            List<DraggableWork> filtered = children.Where(x => !x.Disabled && !ignoreList.Contains(x.Def.defName)).ToList();
+
+            List<string> ignoreList = new List<string>
+                                          {
+                                              "Firefighter",
+                                              "Patient",
+                                              "PatientBedRest",
+                                              "Flicker",
+                                              "HaulingUrgent",
+                                              "FinishingOff"
+                                          };
+            List<DraggableWork> filtered = children.Where(x => !x.Disabled && !ignoreList.Contains(x.Def.defName))
+                .ToList();
 
             for (int i = 0; i < filtered.Count; i++)
             {
@@ -96,11 +96,18 @@
                 {
                     continue;
                 }
+
                 int priority = i + 1;
                 __result = priority;
                 break;
             }
+
             return false;
+        }
+
+        private static void UpdatePriorities(PawnSurface __instance)
+        {
+            __instance.pawn.GetSaveablePawn().forceStatUpdate = true;
         }
     }
 }

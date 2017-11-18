@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Outfitter
+﻿namespace Outfitter
 {
+    using System.Linq;
+
     using Verse;
 
     public static class Extensions

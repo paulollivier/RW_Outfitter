@@ -18,24 +18,30 @@ namespace Outfitter
 
     public class Window_Pawn_ApparelDetail : Verse.Window
     {
+        private const float baseValue = 85f;
+
         private readonly Apparel apparel;
 
         private readonly GUIStyle fontBold =
             new GUIStyle
-            {
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = Color.white },
-                padding = new RectOffset(0, 0, 12, 6)
-            };
+                {
+                    fontStyle = FontStyle.Bold,
+                    normal = {
+                                textColor = Color.white
+                             },
+                    padding = new RectOffset(0, 0, 12, 6)
+                };
 
         private readonly GUIStyle headline =
             new GUIStyle
-            {
-                fontStyle = FontStyle.Bold,
-                fontSize = 16,
-                normal = { textColor = Color.white },
-                padding = new RectOffset(0, 0, 12, 6)
-            };
+                {
+                    fontStyle = FontStyle.Bold,
+                    fontSize = 16,
+                    normal = {
+                                textColor = Color.white
+                             },
+                    padding = new RectOffset(0, 0, 12, 6)
+                };
 
         private readonly GUIStyle hoverBox = new GUIStyle { hover = { background = OutfitterTextures.BgColor } };
 
@@ -195,7 +201,6 @@ namespace Outfitter
                     if (infusedOffsets.Contains(statPriority.Stat))
                     {
                         // float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
-
                         ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(
                             this.apparel,
                             statPriority.Stat,
@@ -352,9 +357,14 @@ namespace Outfitter
                 this.InitialSize.x,
                 this.InitialSize.y).Rounded();
         }
-        private const float baseValue = 85f;
 
-        private void DrawLine(string statDefLabelText, float statDefLabelWidth, string statDefValueText, string multiplierText, string finalValueText, GUIStyle style = null)
+        private void DrawLine(
+            string statDefLabelText,
+            float statDefLabelWidth,
+            string statDefValueText,
+            string multiplierText,
+            string finalValueText,
+            GUIStyle style = null)
         {
             if (style != null)
             {

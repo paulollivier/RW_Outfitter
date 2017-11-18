@@ -173,22 +173,25 @@
             }
 
             // Status checkboxes
-            Rect rectCheckboxes = new Rect(rectStatus.x, rectStatus.yMax + Margin, rectStatus.width, 48f);
+            Rect rectCheckboxes = new Rect(rectStatus.x, rectStatus.yMax + Margin, rectStatus.width, 72f);
             Rect check1 = new Rect(rectCheckboxes.x, rectCheckboxes.y, rectCheckboxes.width, 24f);
             Rect check2 = new Rect(rectCheckboxes.x, check1.yMax, rectCheckboxes.width, 24f);
+            Rect check3 = new Rect(rectCheckboxes.x, check2.yMax, rectCheckboxes.width, 24f);
 
             bool pawnSaveAddWorkStats = pawnSave.AddWorkStats;
             bool pawnSaveAddIndividualStats = pawnSave.AddIndividualStats;
-            DrawCheckBoxArea(check1, "AddWorkStats".Translate(), ref pawnSaveAddWorkStats);
-            DrawCheckBoxArea(check2, "AddIndividualStats".Translate(), ref pawnSaveAddIndividualStats);
+            bool pawnSaveAddPersonalStats = pawnSave.AddPersonalStats;
+            Widgets.CheckboxLabeled(check1, "AddWorkStats".Translate(), ref pawnSaveAddWorkStats);
+            Widgets.CheckboxLabeled(check2, "AddIndividualStats".Translate(), ref pawnSaveAddIndividualStats);
+            Widgets.CheckboxLabeled(check3, "AddPersonalStats".Translate(), ref pawnSaveAddPersonalStats);
 
-            if (pawnSaveAddWorkStats != pawnSave.AddWorkStats)
+            if (GUI.changed)
             {
                 pawnSave.AddWorkStats = pawnSaveAddWorkStats;
-            }
-            if (pawnSaveAddIndividualStats != pawnSave.AddIndividualStats)
-            {
+
                 pawnSave.AddIndividualStats = pawnSaveAddIndividualStats;
+
+                pawnSave.AddPersonalStats = pawnSaveAddPersonalStats;
             }
 
             // main canvas
@@ -206,11 +209,6 @@
 
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
-        }
-
-        private static void DrawCheckBoxArea(Rect rect, string name, ref bool stat)
-        {
-            Widgets.CheckboxLabeled(rect, name, ref stat);
         }
 
         private void DrawApparelList()
@@ -345,7 +343,7 @@
                 Text.Font = GameFont.Tiny;
                 GUI.color = Color.grey;
                 Text.Anchor = TextAnchor.LowerLeft;
-                Widgets.Label(legendRect,"-"+ ApparelStatCache.MaxValue.ToString("N1"));
+                Widgets.Label(legendRect, "-" + ApparelStatCache.MaxValue.ToString("N1"));
                 Text.Anchor = TextAnchor.LowerRight;
                 Widgets.Label(legendRect, ApparelStatCache.MaxValue.ToString("N1"));
                 Text.Anchor = TextAnchor.UpperLeft;

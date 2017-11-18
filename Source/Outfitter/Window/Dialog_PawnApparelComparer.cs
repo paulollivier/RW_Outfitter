@@ -1,10 +1,14 @@
 ﻿namespace Outfitter.Window
 {
-    using JetBrains.Annotations;
-    using RimWorld;
     using System.Collections.Generic;
     using System.Linq;
+
+    using JetBrains.Annotations;
+
+    using RimWorld;
+
     using UnityEngine;
+
     using Verse;
 
     public class Dialog_PawnApparelComparer : Window
@@ -14,6 +18,10 @@
 
         [NotNull]
         private readonly Pawn pawn;
+
+        private List<Apparel> _calculatedApparelItems;
+
+        private List<float> _calculatedApparelScore;
 
         private Vector2 scrollPosition;
 
@@ -29,9 +37,19 @@
 
         public override Vector2 InitialSize => new Vector2(500f, 700f);
 
+        public void DIALOG_CalculateApparelScoreGain(Pawn pawn, Apparel apparel, out float gain)
+        {
+            if (this._calculatedApparelItems == null)
+            {
+                this.DIALOG_InitializeCalculatedApparelScoresFromWornApparel();
+            }
+
+            gain = pawn.ApparelScoreGain(apparel);
+        }
+
         public override void DoWindowContents(Rect windowRect)
         {
-            ApparelStatCache apparelStatCache = new ApparelStatCache(pawn.GetSaveablePawn());
+            ApparelStatCache apparelStatCache = new ApparelStatCache(this.pawn.GetSaveablePawn());
             List<Apparel> allApparels = new List<Apparel>(
                 this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
             foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this.pawn.Map))
@@ -99,7 +117,7 @@
             allApparels = allApparels.OrderByDescending(
                 i =>
                     {
-                        DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
+                        this.DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
                         return g;
                     }).ToList();
 
@@ -138,7 +156,7 @@
                     }
                 }
 
-                DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
+                this.DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
                 string gainString = this.pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(currentAppel)
                                         ? gain.ToString("N5")
                                         : "No Allow";
@@ -170,23 +188,10 @@
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.EndGroup();
         }
-        private List<Apparel> _calculatedApparelItems;
-
-        private List<float> _calculatedApparelScore;
-
-        public void DIALOG_CalculateApparelScoreGain(Pawn pawn, Apparel apparel, out float gain)
-        {
-            if (this._calculatedApparelItems == null)
-            {
-                this.DIALOG_InitializeCalculatedApparelScoresFromWornApparel();
-            }
-
-            gain = pawn.ApparelScoreGain(apparel);
-        }
 
         private void DIALOG_InitializeCalculatedApparelScoresFromWornApparel()
         {
-            var conf = this.pawn.GetApparelStatCache();
+            ApparelStatCache conf = this.pawn.GetApparelStatCache();
             this._calculatedApparelItems = new List<Apparel>();
             this._calculatedApparelScore = new List<float>();
             foreach (Apparel apparel in this.pawn.apparel.WornApparel)

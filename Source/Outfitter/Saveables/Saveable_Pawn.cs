@@ -4,12 +4,8 @@
 
     using Verse;
 
-    public partial class SaveablePawn : IExposable
+    public class SaveablePawn : IExposable
     {
-        private bool addIndividualStats = true;
-
-        private bool addWorkStats = true;
-
         public List<Saveable_Pawn_StatDef> ApparelStats = new List<Saveable_Pawn_StatDef>();
 
         public bool armorOnly = false;
@@ -17,8 +13,7 @@
         public bool AutoEquipWeapon;
 
         // public FloatRange RealComfyTemperatures;
-        public bool forceStatUpdate = false;
-
+        public bool forceStatUpdate;
         public MainJob mainJob;
 
         // Exposed members
@@ -32,18 +27,10 @@
 
         public FloatRange Temperatureweight;
 
-        public bool AddWorkStats
-        {
-            get
-            {
-                return addWorkStats;
-            }
-            set
-            {
-                addWorkStats = value;
-                this.forceStatUpdate = true;
-            }
-        }
+        private bool addIndividualStats = true;
+        private bool addPersonalStats = true;
+
+        private bool addWorkStats = true;
 
         public bool AddIndividualStats
         {
@@ -53,7 +40,26 @@
                 this.addIndividualStats = value;
                 this.forceStatUpdate = true;
             }
+        }
+        public bool AddPersonalStats
+        {
+            get => this.addPersonalStats;
+            set
+            {
+                this.addPersonalStats = value;
+                this.forceStatUpdate = true;
+            }
+        }
 
+        public bool AddWorkStats
+        {
+            get => this.addWorkStats;
+
+            set
+            {
+                this.addWorkStats = value;
+                this.forceStatUpdate = true;
+            }
         }
 
         // public SaveablePawn(Pawn pawn)
@@ -76,6 +82,7 @@
             Scribe_Collections.Look(ref this.ApparelStats, "WeaponStats", LookMode.Deep);
             Scribe_Values.Look(ref this.addWorkStats, "AddWorkStats", true);
             Scribe_Values.Look(ref this.addIndividualStats, "AddIndividualStats", true);
+            Scribe_Values.Look(ref this.addPersonalStats, "addPersonalStats", true);
             Scribe_Values.Look(ref this.mainJob, "mainJob");
         }
     }

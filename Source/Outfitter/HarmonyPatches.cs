@@ -5,10 +5,12 @@
 //        public override string ModIdentifier { get { return "Outfitter"; } }
 //    }
 
-using Harmony;
-using Outfitter;
 using System.Linq;
 using System.Reflection;
+
+using Harmony;
+
+using Outfitter;
 
 using RimWorld;
 
@@ -27,8 +29,10 @@ internal class HarmonyPatches
         // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
         // null);
         harmony.Patch(
-            AccessTools.Method(typeof(RimWorld.JobGiver_OptimizeApparel), "TryGiveJob"),
-            new HarmonyMethod(typeof(JobGiver_OutfitterOptimizeApparel), nameof(JobGiver_OutfitterOptimizeApparel.TryGiveJob_Prefix)),
+            AccessTools.Method(typeof(JobGiver_OptimizeApparel), "TryGiveJob"),
+            new HarmonyMethod(
+                typeof(JobGiver_OutfitterOptimizeApparel),
+                nameof(JobGiver_OutfitterOptimizeApparel.TryGiveJob_Prefix)),
             null);
 
         harmony.Patch(
@@ -41,10 +45,20 @@ internal class HarmonyPatches
             null,
             new HarmonyMethod(typeof(HarmonyPatches), nameof(UpdatePriorities)));
 
-       // harmony.Patch(
-       //     AccessTools.Method(typeof(ThinkNode_JobGiver), nameof(ThinkNode_JobGiver.TryIssueJobPackage)),
-       //     null,
-       //     new HarmonyMethod(typeof(HarmonyPatches), nameof(LogJobActivities)));
+        harmony.Patch(
+            AccessTools.Method(typeof(ITab_Bills), "FillTab"),
+            new HarmonyMethod(typeof(ITab_Bills_Patch), nameof(ITab_Bills_Patch.FillTab_Prefix)),
+            null);
+
+        harmony.Patch(
+            AccessTools.Method(typeof(ITab_Bills), "TabUpdate"),
+            new HarmonyMethod(typeof(ITab_Bills_Patch), nameof(ITab_Bills_Patch.TabUpdate_Prefix)),
+            null);
+
+        // harmony.Patch(
+        // AccessTools.Method(typeof(ThinkNode_JobGiver), nameof(ThinkNode_JobGiver.TryIssueJobPackage)),
+        // null,
+        // new HarmonyMethod(typeof(HarmonyPatches), nameof(LogJobActivities)));
 
         // harmony.Patch(
         // AccessTools.Method(typeof(ITab_Bills), "FillTab"),
@@ -56,18 +70,23 @@ internal class HarmonyPatches
             "Outfitter successfully completed " + harmony.GetPatchedMethods().Count() + " patches with harmony.");
     }
 
-    private static void UpdatePriorities(Pawn_WorkSettings __instance)
+    private static void LogJobActivities(
+        ThinkNode_JobGiver __instance,
+        ThinkResult __result,
+        Pawn pawn,
+        JobIssueParams jobParams)
     {
-        FieldInfo fieldInfo = typeof(Pawn_WorkSettings).GetField("pawn", BindingFlags.NonPublic | BindingFlags.Instance);
-        Pawn pawn = (Pawn)fieldInfo?.GetValue(__instance);
-        pawn.GetSaveablePawn().forceStatUpdate = true;
+        // if (__result.Job.def.driverClass.)
+        // {
+        // __result.Job.
+        // }
     }
 
-    private static void LogJobActivities(ThinkNode_JobGiver __instance, ThinkResult __result, Pawn pawn, JobIssueParams jobParams)
+    private static void UpdatePriorities(Pawn_WorkSettings __instance)
     {
-       // if (__result.Job.def.driverClass.)
-       // {
-       //     __result.Job.
-       // }
+        FieldInfo fieldInfo =
+            typeof(Pawn_WorkSettings).GetField("pawn", BindingFlags.NonPublic | BindingFlags.Instance);
+        Pawn pawn = (Pawn)fieldInfo?.GetValue(__instance);
+        pawn.GetSaveablePawn().forceStatUpdate = true;
     }
 }

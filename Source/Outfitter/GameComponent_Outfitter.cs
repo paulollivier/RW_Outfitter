@@ -10,10 +10,10 @@
 
     public class GameComponent_Outfitter : GameComponent
     {
+        public static bool updated;
+
         [NotNull]
         public List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
-
-        public static bool updated;
 
         public GameComponent_Outfitter()
         {
@@ -41,12 +41,11 @@
             }
         }
 
-
         public override void ExposeData()
         {
             base.ExposeData();
 
-            Scribe_Collections.Look(ref _pawnCache, "Pawns", LookMode.Deep);
+            Scribe_Collections.Look(ref this._pawnCache, "Pawns", LookMode.Deep);
         }
     }
 }

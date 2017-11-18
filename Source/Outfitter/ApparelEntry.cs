@@ -8,7 +8,11 @@ namespace Outfitter
 
     public class ApparelEntry
     {
-        #region Public Fields
+        public HashSet<StatDef> equippedOffsets;
+
+        public HashSet<StatDef> infusedOffsets;
+
+        public HashSet<StatDef> statBases;
 
         public ApparelEntry()
         {
@@ -16,13 +20,5 @@ namespace Outfitter
             this.infusedOffsets = new HashSet<StatDef>();
             this.statBases = new HashSet<StatDef>();
         }
-
-        public HashSet<StatDef> equippedOffsets;
-
-        public HashSet<StatDef> infusedOffsets;
-
-        public HashSet<StatDef> statBases;
-
-        #endregion Public Fields
     }
 }

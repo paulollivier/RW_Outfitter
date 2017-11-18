@@ -1,11 +1,15 @@
 ﻿namespace Outfitter
 {
-    using JetBrains.Annotations;
-    using RimWorld;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+
+    using JetBrains.Annotations;
+
+    using RimWorld;
+
     using UnityEngine;
+
     using Verse;
     using Verse.AI;
 
@@ -23,6 +27,15 @@
 
         private static Apparel lastItem;
 
+        public static void SetNextOptimizeTick([NotNull] Pawn pawn)
+        {
+            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame
+                                                     + Random.Range(
+                                                         ApparelOptimizeCheckIntervalMin,
+                                                         ApparelOptimizeCheckIntervalMax);
+
+            // pawn.GetApparelStatCache().recentApparel.Clear();
+        }
 
         // private static NeededWarmth neededWarmth;
         public static bool TryGiveJob_Prefix(ref Job __result, Pawn pawn)
@@ -30,7 +43,9 @@
             __result = null;
             if (pawn.outfits == null)
             {
-                Log.ErrorOnce(pawn + " tried to run JobGiver_OutfitterOptimizeApparel without an OutfitTracker", 5643897);
+                Log.ErrorOnce(
+                    pawn + " tried to run JobGiver_OutfitterOptimizeApparel without an OutfitTracker",
+                    5643897);
                 return false;
             }
 
@@ -77,6 +92,7 @@
                         pawn.GetApparelStatCache().ToDropList[ap].mindState.Notify_OutfitChanged();
                         pawn.GetApparelStatCache().ToDropList.Remove(ap);
                     }
+
                     return false;
                 }
             }
@@ -115,9 +131,8 @@
                 // not very elegant but working
                 // if (pawn.GetApparelStatCache().recentApparel.Contains(apparel))
                 // {
-                //     gain *= 0.01f;
+                // gain *= 0.01f;
                 // }
-
                 if (DebugViewSettings.debugApparelOptimize)
                 {
                     debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
@@ -144,15 +159,15 @@
             }
 
             // New stuff
-
             if (false)
             {
-                var list2 = pawn.Map.mapPawns.FreeColonistsSpawned.Where(x => x.IsColonistPlayerControlled);
+                IEnumerable<Pawn> list2 = pawn.Map.mapPawns.FreeColonistsSpawned.Where(x => x.IsColonistPlayerControlled);
                 foreach (Apparel ap in wornApparel)
                 {
                     foreach (Pawn otherPawn in list2)
                     {
-                        foreach (Apparel otherAp in otherPawn.apparel.WornApparel.Where(x => !ApparelUtility.CanWearTogether(ap.def, x.def, pawn.RaceProps.body)))
+                        foreach (Apparel otherAp in otherPawn.apparel.WornApparel.Where(
+                            x => !ApparelUtility.CanWearTogether(ap.def, x.def, pawn.RaceProps.body)))
                         {
                             float gain = pawn.ApparelScoreGain(otherAp);
                             float otherGain = otherPawn.ApparelScoreGain(ap);
@@ -183,21 +198,10 @@
 
             // foreach (Apparel apparel in wornApparel)
             // {
-            //     pawn.GetApparelStatCache().recentApparel.Add(apparel);
+            // pawn.GetApparelStatCache().recentApparel.Add(apparel);
             // }
-
             __result = new Job(JobDefOf.Wear, thing);
             return false;
-        }
-
-        public static void SetNextOptimizeTick([NotNull] Pawn pawn)
-        {
-            pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame
-                                                     + Random.Range(
-                                                         ApparelOptimizeCheckIntervalMin,
-                                                         ApparelOptimizeCheckIntervalMax);
-            // pawn.GetApparelStatCache().recentApparel.Clear();
-
         }
     }
 }

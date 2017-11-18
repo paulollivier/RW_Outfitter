@@ -14,7 +14,6 @@ namespace Outfitter
 
     using Verse;
 
-
     public class StatPriority
     {
         public StatPriority(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)
@@ -69,5 +68,4 @@ namespace Outfitter
     }
 
     // ReSharper disable once CollectionNeverUpdated.Global
-
 }

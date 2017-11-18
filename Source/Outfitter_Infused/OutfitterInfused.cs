@@ -1,14 +1,16 @@
 namespace OutfitterInfused
 {
-    using Infused;
-    using Outfitter;
-    using RimWorld;
     using System.Collections.Generic;
     using System.Linq;
 
-    using Harmony;
+    using Infused;
+
+    using Outfitter;
+
+    using RimWorld;
 
     using Verse;
+
     using Def = Infused.Def;
 
     public class GameComponent_OutfitterInfused : GameComponent
@@ -19,7 +21,6 @@ namespace OutfitterInfused
             ApparelStatCache.ApparelScoreRaw_PawnStatsHandlers += ApparelScoreRaw_PawnStatsHandlers;
             ApparelStatCache.ApparelScoreRaw_FillInfusedStat += ApparelScoreRaw_FillInfusedStat;
             ApparelStatCache.Ignored_WTHandlers += Ignored_WTHandlers;
-
         }
 
         private static void ApparelScoreRaw_FillInfusedStat(

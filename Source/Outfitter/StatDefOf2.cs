@@ -20,7 +20,6 @@
 
         public static StatDef MedicalOperationSpeed;
 
-        public static StatDef MeleeDPS;
 
         public static StatDef SculptingSpeed;
 

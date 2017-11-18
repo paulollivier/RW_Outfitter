@@ -6,8 +6,6 @@
 
     using RimWorld;
 
-    using Verse;
-
     public static class Cache
     {
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
@@ -18,25 +16,22 @@
             float currentStat = apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
 
             // {
-            //     float baseStat = apparel.GetStatValue(stat, true);
-            //     float currentStat = baseStat;
-            //     currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.);
-            // 
-           // DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Cold, out float infInsulationCold);
-           // DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Heat, out float infInsulationHeat);
-            // 
-            //     if (baseStat == 0)
-            //         return currentStat;
-            //     else
-            //         return currentStat / baseStat;
+            // float baseStat = apparel.GetStatValue(stat, true);
+            // float currentStat = baseStat;
+            // currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.);
+            // DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Cold, out float infInsulationCold);
+            // DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Heat, out float infInsulationHeat);
+            // if (baseStat == 0)
+            // return currentStat;
+            // else
+            // return currentStat / baseStat;
             // }
 
             // float pawnStat = p.GetStatValue(stat);
-            //
             // var x = pawnStat;
             // if (!p.apparel.WornApparel.Contains(apparel))
             // {
-            //     x += currentStat;
+            // x += currentStat;
             // }
             // currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef);
 
@@ -44,7 +39,6 @@
             // {
             // return apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef) - baseStat;
             // }
-
             return currentStat;
         }
     }

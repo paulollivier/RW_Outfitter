@@ -70,9 +70,7 @@
     <Compile Include="ApparelEntry.cs" />
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="Cache.cs" />
-    <None Include="InfusedStats\HarmonyPatchInfused.cs" />
-    <None Include="InfusedStats\InfusedStats.cs" />
-    <None Include="ITab_Bills_Patch.cs" />
+    <Compile Include="ITab_Bills_Patch.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="MainJob.cs" />
@@ -87,7 +85,6 @@
     <Compile Include="StatAssignment.cs" />
     <Compile Include="StatPriority.cs" />
     <Compile Include="Window\Dialog_PawnApparelComparer.cs" />
-    <None Include="Helper\HelperThingFilterUI.cs" />
     <Compile Include="Window\Window_Pawn_ApparelDetail.cs" />
     <Compile Include="Textures\OutfitterTextures.cs" />
     <Compile Include="Window\ITab_Pawn_Outfitter.cs" />
