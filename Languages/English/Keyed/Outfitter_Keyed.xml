@@ -26,7 +26,8 @@
   <EquipmentAndInventory>Equipment and Inventory</EquipmentAndInventory>
   <WornApparel>Worn Apparel</WornApparel>
   <AddWorkStats>Add Work Stats</AddWorkStats>
-  <AddIndividualStats>Add Individual Stats</AddIndividualStats>
+  <AddIndividualStats><![CDATA[Add Individual Stats (traits & incidents)]]></AddIndividualStats>
+  <AddPersonalStats>Add Personal Stats (skills)</AddPersonalStats>
   <DropThingHaul>Drop and Haul</DropThingHaul>
   <MainJob>Set Prefered Gear</MainJob>
   <PreferedGear>Prefered Gear:</PreferedGear>
