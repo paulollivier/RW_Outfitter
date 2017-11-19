@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    using KillfaceTools.FMO;
+
     using RimWorld;
 
     using UnityEngine;
@@ -26,7 +28,7 @@
         {
             Building_WorkTable selTable = (Building_WorkTable)Find.Selector.SingleSelectedThing;
             if (selTable.def != ThingDef.Named("HandTailoringBench")
-                || selTable.def != ThingDef.Named("ElectricTailoringBench"))
+                && selTable.def != ThingDef.Named("ElectricTailoringBench"))
             {
                 return true;
             }
@@ -34,86 +36,105 @@
             float x = WinSize.x;
             Vector2 winSize2 = WinSize;
             Rect rect2 = new Rect(0f, 0f, x, winSize2.y).ContractedBy(10f);
-            Func<List<FloatMenuOption>> recipeOptionsMaker = delegate
+
+            Func<Dictionary<string, List<FloatMenuOption>>> labeledSortingActions = delegate
                 {
-                    List<FloatMenuOption> list = new List<FloatMenuOption>();
+                    Dictionary<string, List<FloatMenuOption>> list = new Dictionary<string, List<FloatMenuOption>>();
+
                     for (int i = 0; i < selTable.def.AllRecipes.Count; i++)
                     {
                         if (selTable.def.AllRecipes[i].AvailableNow)
                         {
                             RecipeDef recipe = selTable.def.AllRecipes[i];
-                            // Outfitter jump in here
-                            {
-                                for (int j = 0; j < recipe.products.Count; j++)
-                                {
-                                    ThingCountClass rec = recipe.products[i];
-                                    for (int k = 0; k < rec.thingDef.apparel.bodyPartGroups.Count; k++)
+                            bool hasPart = false;
+
+                            FloatMenuOption floatMenuOption = new FloatMenuOption(
+                                recipe.LabelCap,
+                                delegate
                                     {
-                                        list.Add(new FloatMenuOption(rec.thingDef.apparel.bodyPartGroups[k].label, null));
-
-                                    }
-
-                                }
-                            }
-                            // Outfitter end
-                            list.Add(
-                                new FloatMenuOption(
-                                    recipe.LabelCap,
-                                    delegate
+                                        if (!selTable.Map.mapPawns.FreeColonists.Any(
+                                                col => recipe.PawnSatisfiesSkillRequirements(col)))
                                         {
-                                            if (!selTable.Map.mapPawns.FreeColonists.Any(
-                                                    col => recipe.PawnSatisfiesSkillRequirements(col)))
-                                            {
-                                                Bill.CreateNoPawnsWithSkillDialog(recipe);
-                                            }
+                                            Bill.CreateNoPawnsWithSkillDialog(recipe);
+                                        }
 
-                                            Bill bill = recipe.MakeNewBill();
-                                            selTable.billStack.AddBill(bill);
-                                            if (recipe.conceptLearned != null)
-                                            {
-                                                PlayerKnowledgeDatabase.KnowledgeDemonstrated(
-                                                    recipe.conceptLearned,
-                                                    KnowledgeAmount.Total);
-                                            }
+                                        Bill bill = recipe.MakeNewBill();
+                                        selTable.billStack.AddBill(bill);
+                                        if (recipe.conceptLearned != null)
+                                        {
+                                            PlayerKnowledgeDatabase.KnowledgeDemonstrated(
+                                                recipe.conceptLearned,
+                                                KnowledgeAmount.Total);
+                                        }
 
-                                            if (TutorSystem.TutorialMode)
-                                            {
-                                                TutorSystem.Notify_Event("AddBill-" + recipe.LabelCap);
-                                            }
-                                        },
-                                    MenuOptionPriority.Default,
-                                    null,
-                                    null,
-                                    29f,
-                                    rect => Widgets.InfoCardButton(
-                                        (float)(rect.x + 5.0),
-                                        (float)(rect.y + (rect.height - 24.0) / 2.0),
-                                        recipe)));
+                                        if (TutorSystem.TutorialMode)
+                                        {
+                                            TutorSystem.Notify_Event("AddBill-" + recipe.LabelCap);
+                                        }
+                                    },
+                                MenuOptionPriority.Default,
+                                null,
+                                null,
+                                29f,
+                                rect => Widgets.InfoCardButton(
+                                    (float)(rect.x + 5.0),
+                                    (float)(rect.y + (rect.height - 24.0) / 2.0),
+                                    recipe));
+
+                            //  list.Add(new FloatMenuOption("LoL", null));
+                            // Outfitter jump in here
+
+                            //  for (int j = 0; j < recipe.products.Count; j++)
+                            //  {
+                            //
+                            ThingCountClass rec = recipe.products[0];
+                            int count = selTable.Map.listerThings.AllThings.FindAll(thing => thing.def == rec.thingDef).Count;
+
+                            for (int k = 0; k < rec?.thingDef?.apparel?.bodyPartGroups?.Count; k++)
+                            {
+                                BodyPartGroupDef bPart = rec.thingDef.apparel.bodyPartGroups[k];
+                                hasPart = true;
+
+                                string key = bPart.LabelCap + " ►";
+
+                                if (!list.ContainsKey(key))
+                                {
+                                    list.Add(key, new List<FloatMenuOption>());
+                                }
+                                if (k == 0)
+                                {
+                                    floatMenuOption.Label += " (" + count + ")";
+                                }
+                                list[key].Add(floatMenuOption);
+                            }
+
+                            if (!hasPart)
+                            {
+                                list.Add(
+                                    recipe.LabelCap,
+                                    new List<FloatMenuOption>() { floatMenuOption });
+                            }
                         }
                     }
 
                     if (!list.Any())
                     {
-                        list.Add(
-                            new FloatMenuOption(
-                                "NoneBrackets".Translate(),
-                                null));
+                        list.Add("NoneBrackets".Translate(), new List<FloatMenuOption>() { null });
                     }
 
                     return list;
                 };
 
-            mouseoverBill = DoListing(selTable.BillStack, rect2, recipeOptionsMaker, ref scrollPosition, ref viewHeight);
+            mouseoverBill = DoListing(selTable.BillStack, rect2, labeledSortingActions, ref scrollPosition, ref viewHeight);
 
             return false;
-
         }
 
         public static bool TabUpdate_Prefix()
         {
             Building_WorkTable selTable = (Building_WorkTable)Find.Selector.SingleSelectedThing;
             if (selTable.def != ThingDef.Named("HandTailoringBench")
-                || selTable.def != ThingDef.Named("ElectricTailoringBench"))
+                && selTable.def != ThingDef.Named("ElectricTailoringBench"))
             {
                 return true;
             }
@@ -126,7 +147,7 @@
             return false;
         }
 
-        public static Bill DoListing(BillStack __instance, Rect rect, Func<List<FloatMenuOption>> recipeOptionsMaker, ref Vector2 scrollPosition, ref float viewHeight)
+        public static Bill DoListing(BillStack __instance, Rect rect, Func<Dictionary<string, List<FloatMenuOption>>> labeledSortingActions, ref Vector2 scrollPosition, ref float viewHeight)
         {
             Bill result = null;
             GUI.BeginGroup(rect);
@@ -138,24 +159,18 @@
                 {
                     // Outfitter Code
 
-                    // for (int i = 0; i < __instance.Bills.Count; i++)
-                    // {
-                    //     Bill bill = __instance.Bills[i];
-                    //     bill
-                    // }
-                    //
-                    // List<FloatMenuOption> items = labeledSortingActions.Keys.Select(
-                    //     label =>
-                    //         {
-                    //             List<FloatMenuOption> fmo = labeledSortingActions[label];
-                    //             return Tools.MakeMenuItemForLabel(label, fmo);
-                    //         }).ToList();
-                    //
-                    // Tools.LabelMenu = new FloatMenuLabels(items);
-                    // Find.WindowStack.Add(Tools.LabelMenu);
+                    List<FloatMenuOption> items = labeledSortingActions.Invoke().Keys.Select(
+                        label =>
+                            {
+                                List<FloatMenuOption> fmo = labeledSortingActions.Invoke()[label];
+                                return Tools.MakeMenuItemForLabel(label, fmo);
+                            }).ToList();
+
+                    Tools.LabelMenu = new FloatMenuLabels(items);
+                    Find.WindowStack.Add(Tools.LabelMenu);
 
                     // Vanilla
-                    Find.WindowStack.Add(new FloatMenu(recipeOptionsMaker()));
+                    //   Find.WindowStack.Add(new FloatMenu(recipeOptionsMaker()));
                 }
                 UIHighlighter.HighlightOpportunity(rect2, "AddBill");
             }

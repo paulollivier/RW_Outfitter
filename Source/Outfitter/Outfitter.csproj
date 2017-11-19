@@ -51,6 +51,9 @@
       <HintPath>..\..\..\..\..\..\workshop\content\294100\818773962\Assemblies\0Harmony.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="0KillfaceTools">
+      <HintPath>..\..\..\RW_ColonistBarKF\Assemblies\0KillfaceTools.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -70,10 +73,7 @@
     <Compile Include="ApparelEntry.cs" />
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="Cache.cs" />
-    <Compile Include="TabPatch\Tools.cs" />
-    <Compile Include="TabPatch\FloatMenuColonists.cs" />
-    <Compile Include="TabPatch\FloatMenuLabels.cs" />
-    <None Include="TabPatch\ITab_Bills_Patch.cs" />
+    <Compile Include="TabPatch\ITab_Bills_Patch.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="MainJob.cs" />
