@@ -41,7 +41,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Infused">
-      <HintPath>..\..\..\RimWorld-Infused-master\Assemblies\Infused.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\workshop\content\294100\731287727\Assemblies\Infused.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />

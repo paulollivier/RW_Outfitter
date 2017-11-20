@@ -597,9 +597,12 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFSurgeon"))
+                    {
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, PosMax(mainJob));
+                    }
 
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, PosMed(mainJob));
                     yield break;
@@ -623,22 +626,25 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFTraining"))
+                    {
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMed(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
+                    }
 
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMed(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherSpeed, PosMax(mainJob));
-                  //  yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
                     yield break;
+                //  yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
 
                 case "Cooking":
                     if (pawnSave.mainJob == MainJob.Cook)
@@ -648,10 +654,17 @@ namespace Outfitter
 
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.05f);
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
+
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFBrewing"))
+                    {
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
+                    }
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFButcher"))
+                    {
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, PosMax(mainJob));
+                    }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.CookSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.FoodPoisonChance, NegMax(mainJob));
@@ -682,12 +695,14 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
-
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFRepair"))
+                    {
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
+                    }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructionSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructSuccessChance, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SmoothingSpeed, PosMax(mainJob));
-                   // yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
+                    // yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
@@ -718,14 +733,14 @@ namespace Outfitter
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningSpeed, PosMax(mainJob));
-                   // yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
+                    // yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield break;
 
                 case "PlantCutting":
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMed(mainJob));
+                    //  yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, PosMin(mainJob));
+                    //  yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
@@ -815,6 +830,83 @@ namespace Outfitter
                 case "FinishingOff": yield break;
 
                 case "Feeding": yield break;
+
+                // FSF Complex Jobs
+                case "FSFTraining":
+                    if (pawnSave.mainJob == MainJob.Handler)
+                    {
+                        mainJob = true;
+                    }
+
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
+
+                    yield break;
+                case "FSFButcher":
+                    if (pawnSave.mainJob == MainJob.Cook)
+                    {
+                        mainJob = true;
+                    }
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, PosMax(mainJob));
+                    yield break;
+                case "FSFBrewing":
+                    if (pawnSave.mainJob == MainJob.Cook)
+                    {
+                        mainJob = true;
+                    }
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
+                    yield break;
+                case "FSFRepair":
+                    if (pawnSave.mainJob == MainJob.Constructor)
+                    {
+                        mainJob = true;
+                    }
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
+                    yield break;
+                case "FSFRearming": yield break;
+                case "FSFRefueling": yield break;
+                case "FSFDrilling":
+                    if (pawnSave.mainJob == MainJob.Miner)
+                    {
+                        mainJob = true;
+                    }
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningSpeed, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningYield, PosMax(mainJob));
+                    yield break;
+                case "FSFDrugs":
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMax(mainJob));
+                    yield break;
+                case "FSFComponents":
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMax(mainJob));
+                    yield break;
+                case "FSFRefining":
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMax(mainJob));
+                    yield break;
+                case "FSFLoading":
+                    yield break;
+                case "FSFCremating":
+                    yield break;
+                case "FSFDeconstruct":
+                    yield break;
+                case "FSFSurgeon":
+                    if (pawnSave.mainJob == MainJob.Doctor)
+                    {
+                        mainJob = true;
+                    }
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, PosMax(mainJob));
+                    yield break;
+
 
                 default:
                     if (!IgnoredWorktypeDefs.Contains(worktype.defName))

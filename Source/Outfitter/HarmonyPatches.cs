@@ -25,10 +25,11 @@ internal class HarmonyPatches
     {
         HarmonyInstance harmony = HarmonyInstance.Create("com.outfitter.rimworld.mod");
 
-        // harmony.Patch(
-        // AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
-        // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
-        // null);
+       // harmony.Patch(
+       // AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
+       // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
+       // null);
+
         harmony.Patch(
             AccessTools.Method(typeof(JobGiver_OptimizeApparel), "TryGiveJob"),
             new HarmonyMethod(
@@ -50,7 +51,7 @@ internal class HarmonyPatches
             AccessTools.Method(typeof(ITab_Bills), "FillTab"),
             new HarmonyMethod(typeof(ITab_Bills_Patch), nameof(ITab_Bills_Patch.FillTab_Prefix)),
             null);
-       
+
         harmony.Patch(
             AccessTools.Method(typeof(ITab_Bills), "TabUpdate"),
             new HarmonyMethod(typeof(ITab_Bills_Patch), nameof(ITab_Bills_Patch.TabUpdate_Prefix)),

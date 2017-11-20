@@ -87,26 +87,46 @@
                             //  for (int j = 0; j < recipe.products.Count; j++)
                             //  {
                             //
-                            ThingCountClass rec = recipe.products[0];
-                            int count = selTable.Map.listerThings.AllThings.FindAll(thing => thing.def == rec.thingDef).Count;
-
-                            for (int k = 0; k < rec?.thingDef?.apparel?.bodyPartGroups?.Count; k++)
+                            ThingCountClass recipeProduct = recipe.products.FirstOrDefault();
+                            if (recipeProduct != null)
                             {
-                                BodyPartGroupDef bPart = rec.thingDef.apparel.bodyPartGroups[k];
-                                hasPart = true;
+                                int count = selTable.Map.listerThings.ThingsOfDef(recipeProduct.thingDef).Count;
 
-                                string key = bPart.LabelCap + " ►";
+                                for (int k = 0; k < recipeProduct.thingDef?.apparel?.bodyPartGroups?.Count; k++)
+                                {
+                                    BodyPartGroupDef bPart = recipeProduct.thingDef.apparel.bodyPartGroups[k];
+                                    hasPart = true;
 
-                                if (!list.ContainsKey(key))
-                                {
-                                    list.Add(key, new List<FloatMenuOption>());
+                                    string key = bPart.LabelCap + " ►";
+
+                                    if (!list.ContainsKey(key))
+                                    {
+                                        list.Add(key, new List<FloatMenuOption>());
+                                    }
+                                    if (k == 0)
+                                    {
+                                        floatMenuOption.Label += " (" + count + ")";
+                                    }
+                                    list[key].Add(floatMenuOption);
                                 }
-                                if (k == 0)
-                                {
-                                    floatMenuOption.Label += " (" + count + ")";
-                                }
-                                list[key].Add(floatMenuOption);
                             }
+
+                            // if (hasPart)
+                            // {
+                            //     for (int k = 0; k < recipeProduct?.thingDef?.stuffCategories?.Count; k++)
+                            //     {
+                            //         StuffCategoryDef stuffCategory = recipeProduct.thingDef.stuffCategories[k];
+                            //
+                            //         string key = stuffCategory.LabelCap + " ►";
+                            //
+                            //         if (!list.ContainsKey(key))
+                            //         {
+                            //             list.Add(key, new List<FloatMenuOption>());
+                            //         }
+                            //
+                            //         list[key].Add(floatMenuOption);
+                            //     }
+                            // }
 
                             if (!hasPart)
                             {
@@ -116,20 +136,43 @@
                             }
                         }
                     }
+                        Dictionary<string, List<FloatMenuOption>> list2 = new Dictionary<string, List<FloatMenuOption>>();
 
                     if (!list.Any())
                     {
-                        list.Add("NoneBrackets".Translate(), new List<FloatMenuOption>() { null });
+                        list2.Add("NoneBrackets".Translate(), new List<FloatMenuOption>() { null });
+                    }
+                    else
+                    {
+                        foreach (KeyValuePair<string, List<FloatMenuOption>> pair in list)
+                        {
+                            string label = pair.Key;
+                            if (pair.Value.Count == 1)
+                            {
+                                label = pair.Value.FirstOrDefault().Label;
+                            }
+                            list2.Add(label, pair.Value);
+                        }
                     }
 
-                    return list;
+                    return list2;
                 };
 
             mouseoverBill = DoListing(selTable.BillStack, rect2, labeledSortingActions, ref scrollPosition, ref viewHeight);
 
             return false;
         }
+        public static bool ChangeKey<TKey, TValue>(this IDictionary<TKey, TValue> dict,
+                                                   TKey oldKey, TKey newKey)
+        {
+            TValue value;
+            if (!dict.TryGetValue(oldKey, out value))
+                return false;
 
+            dict.Remove(oldKey);  // do not change order
+            dict[newKey] = value;  // or dict.Add(newKey, value) depending on ur comfort
+            return true;
+        }
         public static bool TabUpdate_Prefix()
         {
             Building_WorkTable selTable = (Building_WorkTable)Find.Selector.SingleSelectedThing;
@@ -155,7 +198,7 @@
             if (__instance.Count < 15)
             {
                 Rect rect2 = new Rect(0f, 0f, 150f, 29f);
-                if (Widgets.ButtonText(rect2, "AddBill".Translate(), true, false, true))
+                if (Widgets.ButtonText(rect2, "AddBill".Translate()))
                 {
                     // Outfitter Code
 
@@ -178,7 +221,7 @@
             GUI.color = Color.white;
             Rect outRect = new Rect(0f, 35f, rect.width, (float)(rect.height - 35.0));
             Rect viewRect = new Rect(0f, 0f, (float)(outRect.width - 16.0), viewHeight);
-            Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect, true);
+            Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect);
             float num = 0f;
             for (int i = 0; i < __instance.Count; i++)
             {
