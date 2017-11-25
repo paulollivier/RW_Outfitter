@@ -515,7 +515,7 @@
 
             ApparelStatCache conf = this.SelPawn.GetApparelStatCache();
             string text = apparel.LabelCap;
-            string text_Score = Math.Round(conf.ApparelScoreRaw(apparel, this.SelPawn), 2).ToString("N2");
+            string text_Score = Math.Round(conf.ApparelScoreRaw(apparel), 2).ToString("N2");
 
             if (apparel is Apparel && this.SelPawn.outfits != null
                 && this.SelPawn.outfits.forcedHandler.IsForced(apparel))

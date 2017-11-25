@@ -17,15 +17,19 @@
     {
         public const int ApparelStatCheck = 3750;
 
-        private const int ApparelOptimizeCheckIntervalMax = 9000;
+      //  private const int ApparelOptimizeCheckIntervalMin = 6000;
+      //  private const int ApparelOptimizeCheckIntervalMax = 9000;
 
-        private const int ApparelOptimizeCheckIntervalMin = 6000;
+        private const int ApparelOptimizeCheckIntervalMin = 9000;
+        private const int ApparelOptimizeCheckIntervalMax = 12000;
 
-        private const float MinScoreGainToCare = 0.09f;
+
+      //  private const float MinScoreGainToCare = 0.09f;
+        private const float MinScoreGainToCare = 0.15f;
 
         private static StringBuilder debugSb;
 
-        private static Apparel lastItem;
+       // private static Apparel lastItem;
 
         public static void SetNextOptimizeTick([NotNull] Pawn pawn)
         {
@@ -78,7 +82,7 @@
                 bool notAllowed = !currentOutfit.filter.Allows(ap)
                                   && pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(ap);
 
-                bool shouldDrop = conf.ApparelScoreRaw(ap, pawn) < 0f
+                bool shouldDrop = conf.ApparelScoreRaw(ap) < 0f
                                   && pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(ap);
 
                 bool someoneWantsIt = pawn.GetApparelStatCache().ToDropList.ContainsKey(ap);

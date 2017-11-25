@@ -47,24 +47,45 @@
             gain = pawn.ApparelScoreGain(apparel);
         }
 
+        private Dictionary<Apparel, float> dict;
+
         public override void DoWindowContents(Rect windowRect)
         {
-            ApparelStatCache apparelStatCache = new ApparelStatCache(this.pawn.GetSaveablePawn());
-            List<Apparel> allApparels = new List<Apparel>(
-                this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
-            foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this.pawn.Map))
+            ApparelStatCache apparelStatCache = this.pawn.GetApparelStatCache();
+
+            if (this.dict == null || Find.TickManager.TicksGame % 60 == 0)
             {
-                foreach (Apparel pawnApparel in pawn.apparel.WornApparel)
+                var ap = new List<Apparel>(
+                    this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
+
+                foreach (Pawn otherPawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this.pawn.Map))
                 {
-                    if (pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(pawnApparel))
+                    foreach (Apparel pawnApparel in otherPawn.apparel.WornApparel)
                     {
-                        allApparels.Add(pawnApparel);
+                        if (otherPawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(pawnApparel))
+                        {
+                            ap.Add(pawnApparel);
+                        }
                     }
                 }
-            }
 
-            allApparels = allApparels.Where(
-                i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def, this.pawn.RaceProps.body)).ToList();
+                ap = ap.Where(
+                    i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def, this.pawn.RaceProps.body)).ToList();
+
+                ap = ap.OrderByDescending(
+                    i =>
+                        {
+                            this.DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
+                            return g;
+                        }).ToList();
+
+                this.dict = new Dictionary<Apparel, float>();
+                foreach (Apparel currentAppel in ap)
+                {
+                    this.DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
+                    this.dict.Add(currentAppel, gain);
+                }
+            }
 
             Rect groupRect = windowRect.ContractedBy(10f);
             groupRect.height -= 100;
@@ -104,7 +125,7 @@
                 groupRect.xMin,
                 groupRect.yMin,
                 groupRect.width - 16f,
-                allApparels.Count * 28f + 16f);
+                this.dict.Count * 28f + 16f);
             if (viewRect.height < groupRect.height)
             {
                 groupRect.height = viewRect.height;
@@ -114,15 +135,12 @@
 
             Widgets.BeginScrollView(groupRect, ref this.scrollPosition, viewRect);
 
-            allApparels = allApparels.OrderByDescending(
-                i =>
-                    {
-                        this.DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
-                        return g;
-                    }).ToList();
 
-            foreach (Apparel currentAppel in allApparels)
+            foreach (KeyValuePair<Apparel, float> kvp in this.dict)
             {
+                var currentAppel = kvp.Key;
+                var gain = kvp.Value;
+
                 itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, 28f);
                 if (Mouse.IsOver(itemRect))
                 {
@@ -130,33 +148,9 @@
                     GUI.color = Color.white;
                 }
 
-                Pawn equiped = null;
+                Pawn equipped = currentAppel.Wearer;
                 Pawn target = null;
 
-                foreach (Pawn pawn in PawnsFinder.AllMaps_FreeColonists)
-                {
-                    foreach (Apparel a in pawn.apparel.WornApparel)
-                    {
-                        if (a == currentAppel)
-                        {
-                            equiped = pawn;
-                            break;
-                        }
-                    }
-
-                    // foreach (Apparel a in mapComponent.GetSaveablePawn(pawn).targetApparel)
-                    // if (a == currentAppel)
-                    // {
-                    // target = pawn;
-                    // break;
-                    // }
-                    if (equiped != null && target != null)
-                    {
-                        break;
-                    }
-                }
-
-                this.DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
                 string gainString = this.pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(currentAppel)
                                         ? gain.ToString("N5")
                                         : "No Allow";
@@ -166,13 +160,13 @@
                     currentAppel,
                     currentAppel.LabelCap,
                     apparelLabelWidth,
-                    equiped,
-                    equiped?.LabelCap,
+                    equipped,
+                    equipped?.LabelCap,
                     apparelEquippedWidth,
                     target,
                     target?.LabelCap,
                     apparelOwnerWidth,
-                    apparelStatCache.ApparelScoreRaw(currentAppel, this.pawn).ToString("N5"),
+                    apparelStatCache.ApparelScoreRaw(currentAppel).ToString("N5"),
                     apparelScoreWidth,
                     gainString,
                     apparelGainWidth);
@@ -197,7 +191,7 @@
             foreach (Apparel apparel in this.pawn.apparel.WornApparel)
             {
                 this._calculatedApparelItems.Add(apparel);
-                this._calculatedApparelScore.Add(conf.ApparelScoreRaw(apparel, this.pawn));
+                this._calculatedApparelScore.Add(conf.ApparelScoreRaw(apparel));
             }
         }
 

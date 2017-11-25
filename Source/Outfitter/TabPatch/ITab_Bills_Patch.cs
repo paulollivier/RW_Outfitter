@@ -14,6 +14,10 @@
 
     public static class ITab_Bills_Patch
     {
+        private const string Separator = "   ";
+
+        private const string newLine = "\n-------------------------------";
+
         private static float viewHeight = 1000f;
 
         private static Vector2 scrollPosition = default(Vector2);
@@ -39,39 +43,42 @@
 
             Func<Dictionary<string, List<FloatMenuOption>>> labeledSortingActions = delegate
                 {
-                    Dictionary<string, List<FloatMenuOption>> list = new Dictionary<string, List<FloatMenuOption>>();
+                    Dictionary<string, List<FloatMenuOption>> dictionary = new Dictionary<string, List<FloatMenuOption>>();
+                //    Dictionary<string, List<FloatMenuOption>> dictionary2 = new Dictionary<string, List<FloatMenuOption>>();
 
-                    for (int i = 0; i < selTable.def.AllRecipes.Count; i++)
+                    var recipesWithoutPart = selTable.def.AllRecipes.Where(bam => bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty() ?? true).ToList();
+                    var recipesWithPart = selTable.def.AllRecipes.Where(bam => !bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty() ?? false).ToList();
+                    recipesWithPart.SortByDescending(blum => blum.label);
+
+                    for (int i = 0; i < recipesWithoutPart.Count; i++)
                     {
-                        if (selTable.def.AllRecipes[i].AvailableNow)
+                        if (recipesWithoutPart[i].AvailableNow)
                         {
-                            RecipeDef recipe = selTable.def.AllRecipes[i];
-                            bool hasPart = false;
+                            RecipeDef recipe = recipesWithoutPart[i];
+
+                            void Action()
+                            {
+                                if (!selTable.Map.mapPawns.FreeColonists.Any(col => recipe.PawnSatisfiesSkillRequirements(col)))
+                                {
+                                    Bill.CreateNoPawnsWithSkillDialog(recipe);
+                                }
+
+                                Bill bill = recipe.MakeNewBill();
+                                selTable.billStack.AddBill(bill);
+                                if (recipe.conceptLearned != null)
+                                {
+                                    PlayerKnowledgeDatabase.KnowledgeDemonstrated(recipe.conceptLearned, KnowledgeAmount.Total);
+                                }
+
+                                if (TutorSystem.TutorialMode)
+                                {
+                                    TutorSystem.Notify_Event("AddBill-" + recipe.LabelCap);
+                                }
+                            }
 
                             FloatMenuOption floatMenuOption = new FloatMenuOption(
                                 recipe.LabelCap,
-                                delegate
-                                    {
-                                        if (!selTable.Map.mapPawns.FreeColonists.Any(
-                                                col => recipe.PawnSatisfiesSkillRequirements(col)))
-                                        {
-                                            Bill.CreateNoPawnsWithSkillDialog(recipe);
-                                        }
-
-                                        Bill bill = recipe.MakeNewBill();
-                                        selTable.billStack.AddBill(bill);
-                                        if (recipe.conceptLearned != null)
-                                        {
-                                            PlayerKnowledgeDatabase.KnowledgeDemonstrated(
-                                                recipe.conceptLearned,
-                                                KnowledgeAmount.Total);
-                                        }
-
-                                        if (TutorSystem.TutorialMode)
-                                        {
-                                            TutorSystem.Notify_Event("AddBill-" + recipe.LabelCap);
-                                        }
-                                    },
+                                Action,
                                 MenuOptionPriority.Default,
                                 null,
                                 null,
@@ -81,98 +88,223 @@
                                     (float)(rect.y + (rect.height - 24.0) / 2.0),
                                     recipe));
 
+                            dictionary.Add(
+                                recipe.LabelCap,
+                                new List<FloatMenuOption>() { floatMenuOption });
+
+                        }
+                    }
+
+                    for (int i = 0; i < recipesWithPart.Count; i++)
+                    {
+                        if (recipesWithPart[i].AvailableNow)
+                        {
+                            RecipeDef recipe = recipesWithPart[i];
+
+                            ThingCountClass recipeProduct = recipe.products.FirstOrDefault();
+
+                            List<Pawn> colonistsWithThing = new List<Pawn>();
+                            if (recipeProduct.thingDef.IsApparel)
+                            {
+                                colonistsWithThing = selTable.Map.mapPawns.FreeColonistsSpawned
+                                    .Where(p => p.apparel.WornApparel.Any(ap => ap.def == recipeProduct.thingDef))
+                                    .ToList();
+                            }
+
+                            void MouseoverGuiAction()
+                            {
+                                string tooltip = string.Empty;
+
+                                for (int index = 0; index < recipe.ingredients.Count; index++)
+                                {
+                                    IngredientCount ingredient = recipe.ingredients[index];
+                                    if (index > 0)
+                                    {
+                                        tooltip += ", ";
+                                    }
+                                    tooltip += ingredient.Summary;
+                                }
+                                tooltip += "\n";
+
+                                ThingDef thingDef = recipeProduct.thingDef;
+                                for (int index = 0; index < thingDef.apparel.bodyPartGroups.Count; index++)
+                                {
+                                    BodyPartGroupDef bpg = thingDef.apparel.bodyPartGroups[index];
+                                    if (index > 0)
+                                    {
+                                        tooltip += ", ";
+                                    }
+                                    tooltip += bpg.LabelCap;
+                                }
+                                tooltip += "\n";
+                                for (int index = 0; index < thingDef.apparel.layers.Count; index++)
+                                {
+                                    ApparelLayer layer = thingDef.apparel.layers[index];
+                                    if (index > 0)
+                                    {
+                                        tooltip += ", ";
+                                    }
+                                    tooltip += layer.ToString();
+                                }
+
+                                List<StatModifier> statBases =
+                                    thingDef.statBases.Where(bing => bing.stat.category == StatCategoryDefOf.Apparel)
+                                        .ToList();
+                                if (!statBases.NullOrEmpty())
+                                {
+                                    // tooltip = StatCategoryDefOf.Apparel.LabelCap;
+                                    // tooltip += "\n-------------------------------";
+                                    tooltip += "\n";
+                                    for (int index = 0; index < statBases.Count; index++)
+                                    {
+                                        StatModifier statOffset = statBases[index];
+                                        //  if (index > 0)
+                                        {
+                                            tooltip += "\n";
+                                        }
+                                        tooltip += statOffset.stat.LabelCap + Separator
+                                                   + statOffset.ValueToStringAsOffset;
+                                    }
+                                }
+
+                                if (!thingDef.equippedStatOffsets.NullOrEmpty())
+                                {
+                                    // if (tooltip == string.Empty)
+                                    // {
+                                    //     tooltip = StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                    // }
+                                    // else
+                                    {
+                                        tooltip += "\n\n" + StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                    }
+                                    tooltip += newLine;
+                                    foreach (StatModifier statOffset in thingDef.equippedStatOffsets)
+                                    {
+                                        tooltip += "\n";
+                                        tooltip += statOffset.stat.LabelCap + Separator
+                                                   + statOffset.ValueToStringAsOffset;
+                                    }
+                                }
+                                if (colonistsWithThing.Count > 0)
+                                {
+                                    tooltip += "\n\nWorn by: ";
+                                    for (int j = 0; j < colonistsWithThing.Count; j++)
+                                    {
+                                        var p = colonistsWithThing[j];
+                                        if (j > 0)
+                                        {
+                                            tooltip += j != colonistsWithThing.Count - 1 ? ", " : " and ";
+                                        }
+                                        tooltip += p.LabelShort;
+                                    }
+                                }
+                                TooltipHandler.TipRegion(
+                                    new Rect(
+                                        Event.current.mousePosition.x - 5f,
+                                        Event.current.mousePosition.y - 5f,
+                                        10f,
+                                        10f),
+                                    tooltip);
+                            }
+
+                            void Action()
+                            {
+                                if (!selTable.Map.mapPawns.FreeColonists.Any(
+                                        col => recipe.PawnSatisfiesSkillRequirements(col)))
+                                {
+                                    Bill.CreateNoPawnsWithSkillDialog(recipe);
+                                }
+
+                                Bill bill = recipe.MakeNewBill();
+                                selTable.billStack.AddBill(bill);
+                                if (recipe.conceptLearned != null)
+                                {
+                                    PlayerKnowledgeDatabase.KnowledgeDemonstrated(
+                                        recipe.conceptLearned,
+                                        KnowledgeAmount.Total);
+                                }
+
+                                if (TutorSystem.TutorialMode)
+                                {
+                                    TutorSystem.Notify_Event("AddBill-" + recipe.LabelCap);
+                                }
+                            }
+
+                            FloatMenuOption floatMenuOption = new FloatMenuOption(
+                                recipe.LabelCap,
+                                Action,
+                                MenuOptionPriority.Default,
+                                MouseoverGuiAction,
+                                null,
+                                29f,
+                                rect => Widgets.InfoCardButton(
+                                    (float)(rect.x + 5.0),
+                                    (float)(rect.y + (rect.height - 24.0) / 2.0),
+                                    recipe));
+                            //  recipe.products?.FirstOrDefault()?.thingDef));
+
                             //  list.Add(new FloatMenuOption("LoL", null));
                             // Outfitter jump in here
 
                             //  for (int j = 0; j < recipe.products.Count; j++)
                             //  {
                             //
-                            ThingCountClass recipeProduct = recipe.products.FirstOrDefault();
-                            if (recipeProduct != null)
-                            {
-                                int count = selTable.Map.listerThings.ThingsOfDef(recipeProduct.thingDef).Count;
 
-                                for (int k = 0; k < recipeProduct.thingDef?.apparel?.bodyPartGroups?.Count; k++)
+                            int count = selTable.Map.listerThings.ThingsOfDef(recipeProduct.thingDef).Count;
+
+                            int wornCount = colonistsWithThing.Count;
+
+                            for (int k = 0; k < recipeProduct.thingDef?.apparel?.bodyPartGroups?.Count; k++)
+                            {
+                                BodyPartGroupDef bPart = recipeProduct.thingDef.apparel.bodyPartGroups[k];
+
+                                string key = bPart.LabelCap + Tools.NestedString;
+
+                                if (!dictionary.ContainsKey(key))
                                 {
-                                    BodyPartGroupDef bPart = recipeProduct.thingDef.apparel.bodyPartGroups[k];
-                                    hasPart = true;
-
-                                    string key = bPart.LabelCap + " ►";
-
-                                    if (!list.ContainsKey(key))
-                                    {
-                                        list.Add(key, new List<FloatMenuOption>());
-                                    }
-                                    if (k == 0)
-                                    {
-                                        floatMenuOption.Label += " (" + count + ")";
-                                    }
-                                    list[key].Add(floatMenuOption);
+                                    dictionary.Add(key, new List<FloatMenuOption>());
                                 }
+                                if (k == 0)
+                                {
+                                    floatMenuOption.Label += " (" + count + "/" + wornCount + ")";
+                                    // + "\n"
+                                    // + recipeProduct.thingDef.equippedStatOffsets.ToStringSafeEnumerable();
+                                }
+
+                                dictionary[key].Add(floatMenuOption);
                             }
 
-                            // if (hasPart)
-                            // {
-                            //     for (int k = 0; k < recipeProduct?.thingDef?.stuffCategories?.Count; k++)
-                            //     {
-                            //         StuffCategoryDef stuffCategory = recipeProduct.thingDef.stuffCategories[k];
-                            //
-                            //         string key = stuffCategory.LabelCap + " ►";
-                            //
-                            //         if (!list.ContainsKey(key))
-                            //         {
-                            //             list.Add(key, new List<FloatMenuOption>());
-                            //         }
-                            //
-                            //         list[key].Add(floatMenuOption);
-                            //     }
-                            // }
-
-                            if (!hasPart)
-                            {
-                                list.Add(
-                                    recipe.LabelCap,
-                                    new List<FloatMenuOption>() { floatMenuOption });
-                            }
                         }
                     }
-                        Dictionary<string, List<FloatMenuOption>> list2 = new Dictionary<string, List<FloatMenuOption>>();
+                    //   Dictionary<string, List<FloatMenuOption>> list2 = new Dictionary<string, List<FloatMenuOption>>();
+                  //  dictionary2 = dictionary2.OrderByDescending(c => c.Key).ToDictionary(KeyValuePair<string, List<FloatMenuOption>>);
 
-                    if (!list.Any())
+                    if (!dictionary.Any())
                     {
-                        list2.Add("NoneBrackets".Translate(), new List<FloatMenuOption>() { null });
-                    }
-                    else
-                    {
-                        foreach (KeyValuePair<string, List<FloatMenuOption>> pair in list)
-                        {
-                            string label = pair.Key;
-                            if (pair.Value.Count == 1)
-                            {
-                                label = pair.Value.FirstOrDefault().Label;
-                            }
-                            list2.Add(label, pair.Value);
-                        }
+                        dictionary.Add("NoneBrackets".Translate(), new List<FloatMenuOption>() { null });
                     }
 
-                    return list2;
+                    // else
+                    // {
+                    //     foreach (KeyValuePair<string, List<FloatMenuOption>> pair in list)
+                    //     {
+                    //         string label = pair.Key;
+                    //         if (pair.Value.Count == 1)
+                    //         {
+                    //             label = pair.Value.FirstOrDefault().Label;
+                    //         }
+                    //         list2.Add(label, pair.Value);
+                    //     }
+                    // }
+
+                    return dictionary;
                 };
 
             mouseoverBill = DoListing(selTable.BillStack, rect2, labeledSortingActions, ref scrollPosition, ref viewHeight);
 
             return false;
         }
-        public static bool ChangeKey<TKey, TValue>(this IDictionary<TKey, TValue> dict,
-                                                   TKey oldKey, TKey newKey)
-        {
-            TValue value;
-            if (!dict.TryGetValue(oldKey, out value))
-                return false;
 
-            dict.Remove(oldKey);  // do not change order
-            dict[newKey] = value;  // or dict.Add(newKey, value) depending on ur comfort
-            return true;
-        }
         public static bool TabUpdate_Prefix()
         {
             Building_WorkTable selTable = (Building_WorkTable)Find.Selector.SingleSelectedThing;

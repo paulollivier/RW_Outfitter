@@ -246,7 +246,7 @@ namespace Outfitter
                     score.ToString("N2"));
             }
 
-            float armor = ApparelStatCache.ApparelScoreRaw_ProtectionBaseStat(this.apparel) * 0.1f;
+            float armor = ApparelStatCache.ApparelScoreRaw_ProtectionBaseStat(this.apparel);
 
             score += armor;
 
@@ -330,7 +330,7 @@ namespace Outfitter
                 labelWidth,
                 string.Empty,
                 "=",
-                conf.ApparelScoreRaw(this.apparel, this.pawn).ToString("N2"));
+                conf.ApparelScoreRaw(this.apparel).ToString("N2"));
 
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;

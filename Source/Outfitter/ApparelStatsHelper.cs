@@ -126,7 +126,7 @@ namespace Outfitter
             ApparelStatCache conf = pawn.GetApparelStatCache();
 
             // get the score of the considered apparel
-            float candidateScore = conf.ApparelScoreRaw(newAp, pawn);
+            float candidateScore = conf.ApparelScoreRaw(newAp);
 
             // float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
 
@@ -146,7 +146,7 @@ namespace Outfitter
                 }
 
                 // if replaces, score is difference of the two pieces of gear + penalty
-                candidateScore -= conf.ApparelScoreRaw(wornAp, pawn);
+                candidateScore -= conf.ApparelScoreRaw(wornAp);
                 willReplace = true;
             }
 
@@ -218,12 +218,44 @@ namespace Outfitter
             // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
             if (pawnSave.AddIndividualStats)
             {
-
+                // PsychicSensitivity -2 = dull => not affected
                 // ReSharper disable once InconsistentNaming
+                if (pawn.Map.listerThings.ThingsOfDef(ThingDefOf.CrashedPsychicEmanatorShipPart).Any())
+                {
+                    switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
+                    {
+                        case -1:
+                            {
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.25f, ref dict);
+                                break;
+                            }
+
+                        case 0:
+                            {
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.5f, ref dict);
+                                break;
+                            }
+
+                        case 1:
+                            {
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.75f, ref dict);
+                                break;
+                            }
+
+                        case 2:
+                            {
+                                AddStatToDict(StatDefOf.PsychicSensitivity, -1f, ref dict);
+                                break;
+                            }
+                    }
+
+                }
+
                 if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicDrone))
                 {
                     GameCondition_PsychicEmanation activeCondition =
                         pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>();
+
                     if (activeCondition.gender == pawn.gender && activeCondition.def.droneLevel > PsychicDroneLevel.None)
                     {
                         switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
@@ -236,7 +268,7 @@ namespace Outfitter
 
                             case 0:
                                 {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, 0.5f, ref dict);
+                                    AddStatToDict(StatDefOf.PsychicSensitivity, -0.5f, ref dict);
                                     break;
                                 }
 
@@ -376,8 +408,14 @@ namespace Outfitter
                 {
                     List<KeyValuePair<StatDef, float>> statsOfWorkType = GetStatsOfWorkType(pawn, workType).ToList();
 
-                    foreach (KeyValuePair<StatDef, float> stat in statsOfWorkType)
+                    for (int k = 0; k < statsOfWorkType.Count; k++)
                     {
+                        KeyValuePair<StatDef, float> stats = statsOfWorkType[k];
+                        StatDef stat = stats.Key;
+                        if (stat == DefDatabase<StatDef>.GetNamed("ManagingSpeed"))
+                        {
+                            continue;
+                        }
                         int priority = Find.PlaySettings.useWorkPriorities ? pawn.GetWorkPriority(workType) : 3;
 
                         float priorityAdjust = 1f / priority / maxPriority;
@@ -404,9 +442,10 @@ namespace Outfitter
                             }
                         }
 
-                        float weight = stat.Value * priorityAdjust;
+                        float value = stats.Value;
+                        float weight = value * priorityAdjust;
 
-                        AddStatToDict(stat.Key, weight, ref dict);
+                        AddStatToDict(stat, weight, ref dict);
 
                         log += "\n" + workType.defName + " - priority " + "-" + priority + " - adjusted "
                                + priorityAdjust;
@@ -553,8 +592,7 @@ namespace Outfitter
             bool mainJob = false;
             if (pawnSave.mainJob == MainJob.Soldier00Close_Combat)
             {
-                mainJob = true;
-
+                // mainJob = true;
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMax(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, NegMax(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMax(mainJob));
@@ -571,7 +609,7 @@ namespace Outfitter
 
             if (pawnSave.mainJob == MainJob.Soldier00Ranged_Combat)
             {
-                mainJob = true;
+                // mainJob = true;
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.ShootingAccuracy, PosMax(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, PosMed(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, PosMed(mainJob));
@@ -771,7 +809,7 @@ namespace Outfitter
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.SculptingSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
                     yield break;
 
                 case "Crafting":
@@ -798,7 +836,7 @@ namespace Outfitter
 
                 case "Cleaning":
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
                 case "Research":
@@ -884,13 +922,13 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningYield, PosMax(mainJob));
                     yield break;
                 case "FSFDrugs":
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
                 case "FSFComponents":
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
                 case "FSFRefining":
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
                 case "FSFLoading":
                     yield break;
