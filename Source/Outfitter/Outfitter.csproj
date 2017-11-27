@@ -58,10 +58,6 @@
       <HintPath>..\..\..\..\RimWorldWin_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DD_WorkTab">
-      <HintPath>..\..\..\..\..\..\workshop\content\294100\1195421846\Assemblies\DD_WorkTab.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="UnityEngine">
@@ -79,7 +75,7 @@
     <Compile Include="GameComponent_Outfitter.cs" />
     <Compile Include="MainJob.cs" />
     <None Include="SpecialThingFilterWorker_ApparelWithoutHitpoints.cs" />
-    <Compile Include="Optional\Harmony_DDWorkTab.cs" />
+    <None Include="Optional\Harmony_DDWorkTab.cs" />
     <Compile Include="StatDefOf2.cs" />
     <None Include="TabsPatch.cs" />
     <Compile Include="HarmonyPatches.cs" />

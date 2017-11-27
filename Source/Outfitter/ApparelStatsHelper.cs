@@ -377,6 +377,14 @@ namespace Outfitter
             // }
             return dict;
         }
+        public static int GetWorkPriority(this Pawn pawn, WorkTypeDef workType)
+        {
+            return pawn.workSettings.GetPriority(workType);
+        }
+
+        private static List<string> ignoreList =
+            new List<string> { "Firefighter", "Patient", "PatientBedRest", "Flicker", "HaulingUrgent", "FinishingOff" };
+
 
         [NotNull]
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
@@ -392,7 +400,7 @@ namespace Outfitter
             {
                 // add weights for all worktypes, multiplied by job priority
                 List<WorkTypeDef> workTypes = DefDatabase<WorkTypeDef>.AllDefsListForReading
-                    .Where(def => pawn.workSettings.WorkIsActive(def)).ToList();
+                    .Where(def => pawn.workSettings.WorkIsActive(def) && !ignoreList.Contains(def.defName)).ToList();
 
                 int maxPriority = workTypes.Aggregate(
                     1,
@@ -404,8 +412,10 @@ namespace Outfitter
 
                 string log = "Outfitter Priorities, Pawn: " + pawn + " - Max: " + minPriority + "/" + maxPriority;
 
-                foreach (WorkTypeDef workType in workTypes)
+                for (int index = 0; index < workTypes.Count; index++)
                 {
+                    WorkTypeDef workType = workTypes[index];
+
                     List<KeyValuePair<StatDef, float>> statsOfWorkType = GetStatsOfWorkType(pawn, workType).ToList();
 
                     for (int k = 0; k < statsOfWorkType.Count; k++)
@@ -447,8 +457,7 @@ namespace Outfitter
 
                         AddStatToDict(stat, weight, ref dict);
 
-                        log += "\n" + workType.defName + " - priority " + "-" + priority + " - adjusted "
-                               + priorityAdjust;
+                        log += "\n" + workType.defName + " - priority " + "-" + priority + " - adjusted " + weight;
                     }
                 }
 

@@ -1,11 +1,8 @@
 ﻿namespace Outfitter.Optional
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-
-    using DD_WorkTab.Draggables;
 
     using Harmony;
 
@@ -18,79 +15,51 @@
         static Harmony_DDWorkTab()
         {
             HarmonyInstance harmony = HarmonyInstance.Create("rimworld.outfitter.ddworktab_patch");
-            try
+            if (ModLister.AllInstalledMods.Any(x => x.Active && x.Identifier.Equals("DD_WorkTab")))
             {
-                ((Action)(() =>
-                    {
-                        if (AccessTools.Method(typeof(PawnSurface), nameof(PawnSurface.EnableWorkType)) != null)
-                        {
-                            harmony.Patch(
-                                AccessTools.Method(typeof(PawnSurface), "UpdatePawnPriorities"),
-                                null,
-                                new HarmonyMethod(typeof(Harmony_DDWorkTab), nameof(UpdatePriorities)));
+                harmony.Patch(
+                    AccessTools.Method(typeof(DD_WorkTab.Draggables.PawnSurface), "UpdatePawnPriorities"),
+                    null,
+                    new HarmonyMethod(typeof(Harmony_DDWorkTab), nameof(UpdatePriorities)));
 
-                            harmony.Patch(
-                                AccessTools.Method(typeof(ApparelStatsHelper), nameof(Extensions.GetWorkPriority)),
-                                new HarmonyMethod(typeof(Harmony_DDWorkTab), nameof(GetWorkPriorityDD)),
-                                null);
-                        }
-
-                        // harmony.Patch(
-                        // AccessTools.Method(typeof(EdB.PrepareCarefully.DialogManageImplants), "InitializeWithPawn"),
-                        // null,
-                        // new HarmonyMethod(
-                        // typeof(DialogManageImplantsPatch),
-                        // nameof(DialogManageImplantsPatch.InitializeWithPawn)));
-                        // harmony.Patch(
-                        // AccessTools.Method(typeof(EdB.PrepareCarefully.DialogManageImplants), "AddImplant"),
-                        // new HarmonyMethod(
-                        // typeof(DialogManageImplantsPatch),
-                        // nameof(DialogManageImplantsPatch.UpdatePawnForImpplants)),
-                        // null);
-                        // harmony.Patch(
-                        // AccessTools.Method(typeof(EdB.PrepareCarefully.DialogManageImplants), "RemoveImplant"),
-                        // new HarmonyMethod(
-                        // typeof(DialogManageImplantsPatch),
-                        // nameof(DialogManageImplantsPatch.UpdatePawnForImpplants)),
-                        // null);
-                    }))();
-            }
-            catch (TypeLoadException)
-            {
+                harmony.Patch(
+                    AccessTools.Method(typeof(ApparelStatsHelper), nameof(ApparelStatsHelper.GetWorkPriority)),
+                    new HarmonyMethod(typeof(Harmony_DDWorkTab), nameof(GetWorkPriorityDD)),
+                    null);
             }
         }
+
+        private static List<string> ignoreList =
+            new List<string> { "Firefighter", "Patient", "PatientBedRest", "Flicker", "HaulingUrgent", "FinishingOff" };
 
         private static bool GetWorkPriorityDD(Pawn pawn, WorkTypeDef workType, ref int __result)
         {
             __result = 20;
 
-            SurfaceManager GetManager = Current.Game.GetComponent<SurfaceManager>();
-            PawnSurface surface = GetManager.GetPawnSurface(pawn);
+            DD_WorkTab.Draggables.SurfaceManager GetManager = Current.Game.GetComponent<DD_WorkTab.Draggables.SurfaceManager>();
+            DD_WorkTab.Draggables.PawnSurface surface = GetManager.GetPawnSurface(pawn);
 
             FieldInfo childrenFieldInfo =
-                typeof(PawnSurface).GetField("children", BindingFlags.NonPublic | BindingFlags.Instance);
-            List<DraggableWork> children = (List<DraggableWork>)childrenFieldInfo?.GetValue(surface);
+                typeof(DD_WorkTab.Draggables.PawnSurface).GetField("children", BindingFlags.NonPublic | BindingFlags.Instance);
+            List<DD_WorkTab.Draggables.DraggableWork> children = (List<DD_WorkTab.Draggables.DraggableWork>)childrenFieldInfo?.GetValue(surface);
 
             if (children.NullOrEmpty())
             {
                 return true;
             }
 
-            List<string> ignoreList = new List<string>
-                                          {
-                                              "Firefighter",
-                                              "Patient",
-                                              "PatientBedRest",
-                                              "Flicker",
-                                              "HaulingUrgent",
-                                              "FinishingOff"
-                                          };
-            List<DraggableWork> filtered = children.Where(x => !x.Disabled && !ignoreList.Contains(x.Def.defName))
+
+            List<DD_WorkTab.Draggables.DraggableWork> filtered = children.Where(x => !x.Disabled && !ignoreList.Contains(x.Def.defName))
                 .ToList();
+
+            if (filtered.NullOrEmpty())
+            {
+                return true;
+            }
 
             for (int i = 0; i < filtered.Count; i++)
             {
-                DraggableWork current = filtered[i];
+                DD_WorkTab.Draggables.DraggableWork current = filtered[i];
 
                 if (current.Def != workType)
                 {
@@ -105,7 +74,7 @@
             return false;
         }
 
-        private static void UpdatePriorities(PawnSurface __instance)
+        private static void UpdatePriorities(DD_WorkTab.Draggables.PawnSurface __instance)
         {
             __instance.pawn.GetSaveablePawn().forceStatUpdate = true;
         }

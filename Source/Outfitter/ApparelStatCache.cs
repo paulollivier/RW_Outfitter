@@ -469,6 +469,9 @@ namespace Outfitter
             return score;
         }
 
+        private static readonly SimpleCurve curve =
+            new SimpleCurve { new CurvePoint(-10f, 0.1f), new CurvePoint(0f, 1f), new CurvePoint(60f, 2f) };
+
         public float ApparelScoreRaw_Temperature([NotNull] Apparel apparel)
         {
             // float minComfyTemperature = pawnSave.RealComfyTemperatures.min;
@@ -555,7 +558,6 @@ namespace Outfitter
 
             // now for the interesting bit.
             FloatRange temperatureScoreOffset = new FloatRange(0f, 0f);
-            FloatRange tempWeight = this.TemperatureWeight;
 
             // isolation_cold is given as negative numbers < 0 means we're underdressed
             float neededInsulation_Cold = targetTemperatures.min - minComfyTemperature;
@@ -566,47 +568,56 @@ namespace Outfitter
             // log += "\nWeight: " + tempWeight + " - NeedInsCold: " + neededInsulation_Cold + " - NeedInsWarmth: "
             // + neededInsulation_Warmth;
 
-            // currently too cold
+
             if (neededInsulation_Cold < 0)
             {
-                temperatureScoreOffset.min += -insulationCold * Math.Abs(tempWeight.min);
+                // currently too cold
+                temperatureScoreOffset.min += -insulationCold;
             }
-
-            // currently warm enough
             else
             {
-                // this gear would make us too cold
+                // currently warm enough
+
                 if (insulationCold > neededInsulation_Cold)
                 {
-                    temperatureScoreOffset.min += (neededInsulation_Cold - insulationCold) * Math.Abs(tempWeight.min);
+                    // this gear would make us too cold
+                    temperatureScoreOffset.min += insulationCold - neededInsulation_Cold;
                 }
             }
 
-            // currently too warm
+
             if (neededInsulation_Warmth > 0)
             {
-                temperatureScoreOffset.max += insulationHeat * Math.Abs(tempWeight.max);
+                // currently too warm
+                temperatureScoreOffset.max += insulationHeat;
             }
-
-            // currently cool enough
             else
             {
-                // this gear would make us too warm
+                // currently cool enough
                 if (insulationHeat < neededInsulation_Warmth)
                 {
-                    temperatureScoreOffset.max += -(neededInsulation_Warmth - insulationHeat)
-                                                  * Math.Abs(tempWeight.max);
+                    // this gear would make us too warm
+                    temperatureScoreOffset.max += neededInsulation_Warmth - insulationHeat;
                 }
             }
 
             // Punish bad apparel
-            temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 2f : 1f;
-            temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 2f : 1f;
+            // temperatureScoreOffset.min *= temperatureScoreOffset.min < 0 ? 2f : 1f;
+            // temperatureScoreOffset.max *= temperatureScoreOffset.max < 0 ? 2f : 1f;
+
+            // New
+            FloatRange tempWeight = this.TemperatureWeight;
+
+            temperatureScoreOffset.min = curve.Evaluate(temperatureScoreOffset.min * tempWeight.min);
+            temperatureScoreOffset.max = curve.Evaluate(temperatureScoreOffset.max * tempWeight.max);
+
 
             // log += "\nScoreOffsetMin: " + temperatureScoreOffset.min + " - ScoreOffsetMax: "
             // + temperatureScoreOffset.max + " => " + 1 + (temperatureScoreOffset.min + temperatureScoreOffset.max) / 25;
             // Log.Message(log);
-            return 1 + (temperatureScoreOffset.min + temperatureScoreOffset.max) / 15;
+
+            return temperatureScoreOffset.min * temperatureScoreOffset.max;
+            //return 1 + (temperatureScoreOffset.min + temperatureScoreOffset.max) / 15;
         }
 
         public ApparelEntry GetAllOffsets([NotNull] Apparel ap)

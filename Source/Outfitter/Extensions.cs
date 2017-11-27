@@ -25,9 +25,6 @@
             // return PawnApparelStatCaches[pawn];
         }
 
-        public static int GetWorkPriority(this Pawn pawn, WorkTypeDef workType)
-        {
-            return pawn.workSettings.GetPriority(workType);
-        }
+
     }
 }

@@ -17,15 +17,15 @@
     {
         public const int ApparelStatCheck = 3750;
 
-      //  private const int ApparelOptimizeCheckIntervalMin = 6000;
-      //  private const int ApparelOptimizeCheckIntervalMax = 9000;
+        private const int ApparelOptimizeCheckIntervalMin = 6000;
+        private const int ApparelOptimizeCheckIntervalMax = 9000;
 
-        private const int ApparelOptimizeCheckIntervalMin = 9000;
-        private const int ApparelOptimizeCheckIntervalMax = 12000;
+      //  private const int ApparelOptimizeCheckIntervalMin = 9000;
+      //  private const int ApparelOptimizeCheckIntervalMax = 12000;
 
 
-      //  private const float MinScoreGainToCare = 0.09f;
-        private const float MinScoreGainToCare = 0.15f;
+        private const float MinScoreGainToCare = 0.09f;
+      //  private const float MinScoreGainToCare = 0.15f;
 
         private static StringBuilder debugSb;
 
