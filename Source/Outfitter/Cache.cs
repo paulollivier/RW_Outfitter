@@ -6,26 +6,43 @@
 
     using RimWorld;
 
+    using Verse;
+
     public static class Cache
     {
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public static Dictionary<Apparel, ApparelEntry> ApparelEntries = new Dictionary<Apparel, ApparelEntry>();
 
-        public static float GetEquippedStatValue([NotNull] this Apparel apparel, StatDef stat)
+        public static float GetEquippedStatValue([NotNull] this Apparel apparel, Pawn pawn, StatDef stat)
         {
-            float currentStat = apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
+            float baseStat = pawn.def.statBases.GetStatValueFromList(stat, stat.defaultBaseValue);
+            float equippedStatValue = apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
 
-            // {
-            // float baseStat = apparel.GetStatValue(stat, true);
-            // float currentStat = baseStat;
-            // currentStat += apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.);
-            // DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Cold, out float infInsulationCold);
-            // DoApparelScoreRaw_PawnStatsHandlers(apparel, StatDefOf.Insulation_Heat, out float infInsulationHeat);
-            // if (baseStat == 0)
-            // return currentStat;
-            // else
-            // return currentStat / baseStat;
-            // }
+            // float currentStat = apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
+
+
+            //  ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(apparel, stat, out float statFloat);
+            //  equippedStatValue += statFloat;
+
+            //  if (pawn == apparel.Wearer)
+            //  {
+            //      baseStat -= equippedStatValue;
+            //  }
+
+           // if (pawn.story != null)
+           // {
+           //     for (int k = 0; k < pawn.story.traits.allTraits.Count; k++)
+           //     {
+           //         baseStat += pawn.story.traits.allTraits[k].OffsetOfStat(stat);
+           //         baseStat *= pawn.story.traits.allTraits[k].MultiplierOfStat(stat);
+           //     }
+           // }
+
+            if (baseStat != 0)
+            {
+                return ((baseStat + equippedStatValue) / baseStat) -1;
+            }
+            return equippedStatValue;
 
             // float pawnStat = p.GetStatValue(stat);
             // var x = pawnStat;
@@ -39,7 +56,7 @@
             // {
             // return apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat.StatDef) - baseStat;
             // }
-            return currentStat;
+            return equippedStatValue;
         }
     }
 }

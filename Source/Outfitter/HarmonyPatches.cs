@@ -19,7 +19,7 @@ using Verse;
 using Verse.AI;
 
 [StaticConstructorOnStartup]
-internal class HarmonyPatches
+internal static class HarmonyPatches
 {
     static HarmonyPatches()
     {

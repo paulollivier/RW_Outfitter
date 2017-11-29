@@ -12,6 +12,8 @@ namespace Outfitter
 
     using JetBrains.Annotations;
 
+    using Outfitter.WorkType;
+
     using RimWorld;
 
     using UnityEngine;
@@ -81,7 +83,30 @@ namespace Outfitter
                                                                                   };
 
         [NotNull]
-        private static readonly List<string> IgnoredWorktypeDefs = new List<string>();
+        private static readonly List<string> IgnoredWorktypeDefs =
+            new List<string>
+                {
+                    "Firefighter",
+                    "Patient",
+                    "PatientBedRest",
+                    "Flicker",
+                    "HaulingUrgent",
+                    "FinishingOff",
+                    "Feeding",
+                    "FSFRearming",
+                    "Rearming", // Splitter
+                    "FSFRefueling",
+                    "Refueling", // Splitter
+                    "FSFLoading",
+                    "Loading", // Splitter
+                    "FSFCremating",
+                    "FSFDeconstruct",
+                    "Demolition", // Splitter
+                    "Nursing", // Splitter
+                    "Mortician", // Splitter
+                    "Preparing", //Splitter
+                    "Therapist"
+                };
 
         private static readonly Dictionary<Pawn, ApparelStatCache> PawnApparelStatCaches =
             new Dictionary<Pawn, ApparelStatCache>();
@@ -331,29 +356,29 @@ namespace Outfitter
                 switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Nerves))
                 {
                     case -1:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.75f, ref dict);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.075f, ref dict);
                         break;
 
                     case -2:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -1.5f, ref dict);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.15f, ref dict);
                         break;
                 }
 
                 switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Neurotic")))
                 {
                     case 1:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.75f, ref dict);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.075f, ref dict);
                         break;
 
                     case 2:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -1.5f, ref dict);
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.15f, ref dict);
 
                         break;
                 }
 
                 if (pawn.story.traits.HasTrait(TraitDefOf.TooSmart))
                 {
-                    AddStatToDict(StatDefOf.MentalBreakThreshold, -1f, ref dict);
+                    AddStatToDict(StatDefOf.MentalBreakThreshold, -0.15f, ref dict);
                 }
 
                 // float v1 = pawn.GetStatValue(StatDefOf.MentalBreakThreshold);
@@ -382,10 +407,6 @@ namespace Outfitter
             return pawn.workSettings.GetPriority(workType);
         }
 
-        private static List<string> ignoreList =
-            new List<string> { "Firefighter", "Patient", "PatientBedRest", "Flicker", "HaulingUrgent", "FinishingOff" };
-
-
         [NotNull]
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
         {
@@ -400,7 +421,7 @@ namespace Outfitter
             {
                 // add weights for all worktypes, multiplied by job priority
                 List<WorkTypeDef> workTypes = DefDatabase<WorkTypeDef>.AllDefsListForReading
-                    .Where(def => pawn.workSettings.WorkIsActive(def) && !ignoreList.Contains(def.defName)).ToList();
+                    .Where(def => pawn.workSettings.WorkIsActive(def) && !IgnoredWorktypeDefs.Contains(def.defName)).ToList();
 
                 int maxPriority = workTypes.Aggregate(
                     1,
@@ -635,16 +656,12 @@ namespace Outfitter
 
             switch (worktype.defName)
             {
-                case "Firefighter": yield break;
-
-                case "Patient": yield break;
-
-                case "Doctor":
+                case Vanilla.Doctor:
                     if (pawnSave.mainJob == MainJob.Doctor)
                     {
                         mainJob = true;
                     }
-                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFSurgeon"))
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == FSF.Surgeon || x.defName == Splitter.Surgeon))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, PosMax(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, PosMax(mainJob));
@@ -654,11 +671,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendSpeed, PosMed(mainJob));
                     yield break;
 
-                case "PatientBedRest": yield break;
-
-                case "Flicker": yield break;
-
-                case "Warden":
+                case Vanilla.Warden:
                     if (pawnSave.mainJob == MainJob.Warden)
                     {
                         mainJob = true;
@@ -666,14 +679,16 @@ namespace Outfitter
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.RecruitPrisonerChance, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, PosMax(mainJob));
                     yield break;
 
-                case "Handling":
+                case Vanilla.Handling:
                     if (pawnSave.mainJob == MainJob.Handler)
                     {
                         mainJob = true;
                     }
-                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFTraining"))
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
+                            x => x.defName == FSF.Training || x.defName == Splitter.Training))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, PosMax(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, PosMax(mainJob));
@@ -684,8 +699,12 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMin(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(
+                            StatDefOf.MeleeWeapon_CooldownMultiplier,
+                            NegMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(
+                            StatDefOf.MeleeWeapon_DamageMultiplier,
+                            PosMin(mainJob));
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherYield, PosMax(mainJob));
@@ -693,7 +712,7 @@ namespace Outfitter
                     yield break;
                 //  yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
 
-                case "Cooking":
+                case Vanilla.Cooking:
                     if (pawnSave.mainJob == MainJob.Cook)
                     {
                         mainJob = true;
@@ -702,14 +721,18 @@ namespace Outfitter
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.05f);
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
 
-                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFBrewing"))
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
+                            x => x.defName == FSF.Brewing || x.defName == Splitter.Brewing))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
                     }
-                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFButcher"))
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
+                            x => x.defName == FSF.Butcher || x.defName == Splitter.Butcher))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, PosMax(mainJob));
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(
+                            StatDefOf2.ButcheryFleshEfficiency,
+                            PosMax(mainJob));
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.CookSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
@@ -717,7 +740,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.FoodPoisonChance, NegMax(mainJob));
                     yield break;
 
-                case "Hunting":
+                case Vanilla.Hunting:
                     if (pawnSave.mainJob == MainJob.Hunter)
                     {
                         mainJob = true;
@@ -737,12 +760,12 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, PosMax(mainJob));
                     yield break;
 
-                case "Construction":
+                case Vanilla.Construction:
                     if (pawnSave.mainJob == MainJob.Constructor)
                     {
                         mainJob = true;
                     }
-                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == "FSFRepair"))
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == FSF.Repair || x.defName == Splitter.Repair))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
                     }
@@ -754,25 +777,32 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
-                case "Repair":
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
-                    yield break;
 
-                case "Growing":
+
+                case Vanilla.Growing:
                     if (pawnSave.mainJob == MainJob.Grower)
                     {
                         mainJob = true;
                     }
-
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == Splitter.Harvesting))
+                    {
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
+                    }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
-                case "Mining":
+                case Splitter.Harvesting:
+                    if (pawnSave.mainJob == MainJob.Grower)
+                    {
+                        mainJob = true;
+                    }
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
+                    yield break;
+
+                case Vanilla.Mining:
                     if (pawnSave.mainJob == MainJob.Miner)
                     {
                         mainJob = true;
@@ -785,13 +815,13 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield break;
 
-                case "PlantCutting":
+                case Vanilla.PlantCutting:
                     //  yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, PosMin(mainJob));
                     //  yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
-                case "Smithing":
+                case Vanilla.Smithing:
                     if (pawnSave.mainJob == MainJob.Smith)
                     {
                         mainJob = true;
@@ -801,7 +831,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
-                case "Tailoring":
+                case Vanilla.Tailoring:
                     if (pawnSave.mainJob == MainJob.Tailor)
                     {
                         mainJob = true;
@@ -811,7 +841,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
-                case "Art":
+                case Vanilla.Art:
                     if (pawnSave.mainJob == MainJob.Artist)
                     {
                         mainJob = true;
@@ -821,19 +851,34 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
                     yield break;
 
-                case "Crafting":
+                case Vanilla.Crafting:
                     if (pawnSave.mainJob == MainJob.Crafter)
                     {
                         mainJob = true;
                     }
-
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == Splitter.Smelting))
+                    {
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, PosMax(mainJob));
+                    }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidSpeed, PosMed(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidEfficiency, PosMed(mainJob));
                     yield break;
 
-                case "Hauling":
+                case Splitter.Stonecutting:
+                    if (pawnSave.mainJob == MainJob.Crafter)
+                    {
+                        mainJob = true;
+                    }
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
+                    yield break;
+
+                case Splitter.Smelting:
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
+                    yield break;
+
+                case Vanilla.Hauling:
                     if (pawnSave.mainJob == MainJob.Hauler)
                     {
                         mainJob = true;
@@ -843,12 +888,12 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
                     yield break;
 
-                case "Cleaning":
+                case Vanilla.Cleaning:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
-                case "Research":
+                case Vanilla.Research:
                     if (pawnSave.mainJob == MainJob.Researcher)
                     {
                         mainJob = true;
@@ -859,27 +904,22 @@ namespace Outfitter
                     yield break;
 
                 // Colony Manager
-                case "Managing":
+                case Other.FluffyManaging:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ManagingSpeed"), PosMed(mainJob));
                     yield break;
 
                 // Hospitality
-                case "Diplomat":
+                case Other.HospitalityDiplomat:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, PosMed(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.DiplomacyPower, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TradePriceImprovement, PosMax(mainJob));
                     yield break;
 
                 // Else
-                case "HaulingUrgent": yield break;
 
-                case "FinishingOff": yield break;
 
-                case "Feeding": yield break;
-
-                // FSF Complex Jobs
-                case "FSFTraining":
+                // Job Mods
+                case FSF.Training:
                     if (pawnSave.mainJob == MainJob.Handler)
                     {
                         mainJob = true;
@@ -898,7 +938,37 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
 
                     yield break;
-                case "FSFButcher":
+
+                case Splitter.Training:
+                    if (pawnSave.mainJob == MainJob.Handler)
+                    {
+                        mainJob = true;
+                    }
+
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, PosMax(mainJob));
+                    yield break;
+
+                case Splitter.Taming:
+                    if (pawnSave.mainJob == MainJob.Handler)
+                    {
+                        mainJob = true;
+                    }
+
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
+
+                    yield break;
+
+                case Splitter.Butcher:
+                case FSF.Butcher:
                     if (pawnSave.mainJob == MainJob.Cook)
                     {
                         mainJob = true;
@@ -906,23 +976,27 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, PosMax(mainJob));
                     yield break;
-                case "FSFBrewing":
+
+                case Splitter.Brewing:
+                case FSF.Brewing:
                     if (pawnSave.mainJob == MainJob.Cook)
                     {
                         mainJob = true;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
                     yield break;
-                case "FSFRepair":
+
+                case Splitter.Repair:
+                case FSF.Repair:
                     if (pawnSave.mainJob == MainJob.Constructor)
                     {
                         mainJob = true;
                     }
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
                     yield break;
-                case "FSFRearming": yield break;
-                case "FSFRefueling": yield break;
-                case "FSFDrilling":
+
+                case Splitter.Drilling:
+                case FSF.Drilling:
                     if (pawnSave.mainJob == MainJob.Miner)
                     {
                         mainJob = true;
@@ -930,22 +1004,24 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningYield, PosMax(mainJob));
                     yield break;
-                case "FSFDrugs":
+
+                case Splitter.Drugs:
+                case FSF.Drugs:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
-                case "FSFComponents":
+
+                case Splitter.Components:
+                case FSF.Components:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
-                case "FSFRefining":
+
+                case Splitter.Refining:
+                case FSF.Refining:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
-                case "FSFLoading":
-                    yield break;
-                case "FSFCremating":
-                    yield break;
-                case "FSFDeconstruct":
-                    yield break;
-                case "FSFSurgeon":
+
+                case Splitter.Surgeon:
+                case FSF.Surgeon:
                     if (pawnSave.mainJob == MainJob.Doctor)
                     {
                         mainJob = true;

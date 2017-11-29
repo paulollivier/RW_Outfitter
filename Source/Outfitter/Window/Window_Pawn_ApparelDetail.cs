@@ -24,24 +24,24 @@ namespace Outfitter
 
         private readonly GUIStyle fontBold =
             new GUIStyle
-                {
-                    fontStyle = FontStyle.Bold,
-                    normal = {
+            {
+                fontStyle = FontStyle.Bold,
+                normal = {
                                 textColor = Color.white
                              },
-                    padding = new RectOffset(0, 0, 12, 6)
-                };
+                padding = new RectOffset(0, 0, 12, 6)
+            };
 
         private readonly GUIStyle headline =
             new GUIStyle
-                {
-                    fontStyle = FontStyle.Bold,
-                    fontSize = 16,
-                    normal = {
+            {
+                fontStyle = FontStyle.Bold,
+                fontSize = 16,
+                normal = {
                                 textColor = Color.white
                              },
-                    padding = new RectOffset(0, 0, 12, 6)
-                };
+                padding = new RectOffset(0, 0, 12, 6)
+            };
 
         private readonly GUIStyle hoverBox = new GUIStyle { hover = { background = OutfitterTextures.BgColor } };
 
@@ -129,7 +129,7 @@ namespace Outfitter
             // GUI.BeginGroup(contentRect);
             float labelWidth = conRect.width - baseValue - baseValue - baseValue - 48f;
 
-            this.DrawLine("Status", labelWidth, "Base", "Strength", "Score", this.fontBold);
+            this.DrawLine("Status", labelWidth, "BaseMod", "Strength", "Score", this.fontBold);
 
             Space(6f);
             Label(string.Empty, this.whiteLine, Height(1));
@@ -168,14 +168,14 @@ namespace Outfitter
                     this.DrawLine(
                         statLabel,
                         labelWidth,
-                        statValue.ToString("N2"),
+                        statValue.ToStringPercent("N1"),
                         statPriority.Weight.ToString("N2"),
                         statScore.ToString("N2"));
                 }
 
                 if (equippedOffsets.Contains(statPriority.Stat))
                 {
-                    float statValue = this.apparel.GetEquippedStatValue(statPriority.Stat);
+                    float statValue = this.apparel.GetEquippedStatValue(this.pawn, statPriority.Stat);
 
                     // statValue += StatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
                     float statScore = statValue * statPriority.Weight;
@@ -184,7 +184,7 @@ namespace Outfitter
                     this.DrawLine(
                         statLabel,
                         labelWidth,
-                        statValue.ToString("N2"),
+                        statValue.ToStringPercent("N1"),
                         statPriority.Weight.ToString("N2"),
                         statScore.ToString("N2"));
                 }
@@ -206,20 +206,35 @@ namespace Outfitter
                             statPriority.Stat,
                             out float statValue);
 
+                        bool flag = true;
+                        // Bug with Infused and "Ancient", it completely kills the pawn's armor
+                        if (statValue < 0 && (statPriority.Stat == StatDefOf.ArmorRating_Blunt
+                                              || statPriority.Stat == StatDefOf.ArmorRating_Sharp))
+                        {
+                            score = -2f;
+                            flag = false;
+                        }
+
                         float statScore = statValue * statPriority.Weight;
 
                         this.DrawLine(
                             statLabel,
                             labelWidth,
-                            statValue.ToString("N2"),
+                            statValue.ToStringPercent("N1"),
                             statPriority.Weight.ToString("N2"),
                             statScore.ToString("N2"));
-                        score += statScore;
+                        if (flag)
+                        {
+                            score += statScore;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
-
-                GUI.color = Color.white;
             }
+            GUI.color = Color.white;
 
             // end upper group
             EndScrollView();
