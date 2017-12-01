@@ -1,4 +1,4 @@
-namespace Outfitter
+namespace Outfitter.Enums
 {
     public enum StatAssignment
     {

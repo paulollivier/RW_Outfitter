@@ -1,6 +1,7 @@
 ﻿namespace Outfitter
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     using JetBrains.Annotations;
 
@@ -12,6 +13,8 @@
     {
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
         public static Dictionary<Apparel, ApparelEntry> ApparelEntries = new Dictionary<Apparel, ApparelEntry>();
+
+        public static Dictionary<Apparel, FloatRange> InsulationDict = new Dictionary<Apparel, FloatRange>();
 
         public static float GetEquippedStatValue([NotNull] this Apparel apparel, Pawn pawn, StatDef stat)
         {
@@ -58,5 +61,25 @@
             // }
             return equippedStatValue;
         }
+
+        public static SaveablePawn GetSaveablePawn(this Pawn pawn)
+        {
+            GameComponent_Outfitter outfitter = Current.Game.GetComponent<GameComponent_Outfitter>();
+            foreach (SaveablePawn c in outfitter.PawnCache.Where(c => c.Pawn == pawn))
+            {
+                return c;
+            }
+
+            SaveablePawn n = new SaveablePawn { Pawn = pawn };
+            outfitter.PawnCache.Add(n);
+            return n;
+
+            // if (!PawnApparelStatCaches.ContainsKey(pawn))
+            // {
+            // PawnApparelStatCaches.Add(pawn, new StatCache(pawn));
+            // }
+            // return PawnApparelStatCaches[pawn];
+        }
+
     }
 }

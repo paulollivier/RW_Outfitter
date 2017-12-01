@@ -6,6 +6,7 @@
 
     using JetBrains.Annotations;
 
+    using Outfitter.Enums;
     using Outfitter.Textures;
     using Outfitter.Window;
 

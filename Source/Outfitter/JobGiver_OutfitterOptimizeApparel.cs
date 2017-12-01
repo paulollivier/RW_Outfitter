@@ -114,11 +114,14 @@
             foreach (Thing t in list)
             {
                 Apparel apparel = (Apparel)t;
+
+                // Not allowed
                 if (!currentOutfit.filter.Allows(apparel))
                 {
                     continue;
                 }
 
+                // Not in store
                 if (apparel.Map.slotGroupManager.SlotGroupAt(apparel.Position) == null)
                 {
                     continue;

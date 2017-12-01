@@ -1,4 +1,4 @@
-﻿namespace Outfitter
+﻿namespace Outfitter.Window
 {
     using Outfitter.Textures;
 

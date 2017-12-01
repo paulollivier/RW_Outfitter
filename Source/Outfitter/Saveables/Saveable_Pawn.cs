@@ -2,6 +2,8 @@
 {
     using System.Collections.Generic;
 
+    using Outfitter.Enums;
+
     using Verse;
 
     public class SaveablePawn : IExposable

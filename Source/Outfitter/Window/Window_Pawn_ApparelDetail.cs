@@ -207,6 +207,7 @@ namespace Outfitter
                             out float statValue);
 
                         bool flag = true;
+
                         // Bug with Infused and "Ancient", it completely kills the pawn's armor
                         if (statValue < 0 && (statPriority.Stat == StatDefOf.ArmorRating_Blunt
                                               || statPriority.Stat == StatDefOf.ArmorRating_Sharp))
@@ -263,15 +264,18 @@ namespace Outfitter
 
             float armor = ApparelStatCache.ApparelScoreRaw_ProtectionBaseStat(this.apparel);
 
-            score += armor;
+            if (Math.Abs(armor) > 0.01f)
+            {
+                score += armor;
 
-            this.DrawLine("OutfitterArmor".Translate(), labelWidth, armor.ToString("N2"), "+", score.ToString("N2"));
+                this.DrawLine("OutfitterArmor".Translate(), labelWidth, armor.ToString("N2"), "+", score.ToString("N2"));
+            }
 
             if (this.apparel.def.useHitPoints)
             {
                 // durability on 0-1 scale
                 float x = this.apparel.HitPoints / (float)this.apparel.MaxHitPoints;
-                score = score * 0.25f + score * 0.75f * ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
+                score *= ApparelStatsHelper.HitPointsPercentScoreFactorCurve.Evaluate(x);
 
                 this.DrawLine(
                     "OutfitterHitPoints".Translate(),
@@ -283,8 +287,7 @@ namespace Outfitter
                 GUI.color = Color.white;
             }
 
-            if (this.apparel.WornByCorpse && (this.pawn == null
-                                              || ThoughtUtility.CanGetThought(this.pawn, ThoughtDefOf.DeadMansApparel)))
+            if (this.apparel.WornByCorpse && ThoughtUtility.CanGetThought(this.pawn, ThoughtDefOf.DeadMansApparel))
             {
                 score -= 0.5f;
                 if (score > 0f)

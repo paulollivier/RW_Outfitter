@@ -12,6 +12,7 @@ namespace Outfitter
 
     using JetBrains.Annotations;
 
+    using Outfitter.Enums;
     using Outfitter.WorkType;
 
     using RimWorld;
@@ -22,37 +23,7 @@ namespace Outfitter
 
     public static class ApparelStatsHelper
     {
-        private const float ScoreFactorIfNotReplacing = 10f;
-
-        private static float NegMax(bool mainJob = false)
-        {
-            return mainJob ? -9f : -3f;
-        }
-
-        private static float PosMax(bool mainJob = false)
-        {
-            return mainJob ? 9f : 3f;
-        }
-
-        private static float NegMed(bool mainJob = false)
-        {
-            return mainJob ? -6f : -2f;
-        }
-
-        private static float PosMed(bool mainJob = false)
-        {
-            return mainJob ? 6f : 2f;
-        }
-
-        private static float PosMin(bool mainJob = false)
-        {
-            return mainJob ? 3f : 1f;
-        }
-
-        private static float NegMin(bool mainJob = false)
-        {
-            return mainJob ? -3f : -1f;
-        }
+        #region Public Fields
 
         // New curve
         public static readonly SimpleCurve HitPointsPercentScoreFactorCurve = new SimpleCurve
@@ -81,6 +52,12 @@ namespace Outfitter
                                                                                       // new CurvePoint( 0.5f, 0.7f ),
                                                                                       // new CurvePoint( 1f, 1f )
                                                                                   };
+
+        #endregion Public Fields
+
+        #region Private Fields
+
+        private const float ScoreFactorIfNotReplacing = 10f;
 
         [NotNull]
         private static readonly List<string> IgnoredWorktypeDefs =
@@ -113,7 +90,15 @@ namespace Outfitter
 
         private static List<StatDef> allApparelStats;
 
+        #endregion Private Fields
+
+        #region Public Properties
+
         public static FloatRange MinMaxTemperatureRange => new FloatRange(-100, 100);
+
+        #endregion Public Properties
+
+        #region Private Properties
 
         private static List<StatDef> AllStatDefsModifiedByAnyApparel
         {
@@ -144,6 +129,10 @@ namespace Outfitter
                 return allApparelStats;
             }
         }
+
+        #endregion Private Properties
+
+        #region Public Methods
 
         // ReSharper disable once UnusedMember.Global
         public static float ApparelScoreGain([NotNull] this Pawn pawn, [NotNull] Apparel newAp)
@@ -244,7 +233,6 @@ namespace Outfitter
             if (pawnSave.AddIndividualStats)
             {
                 // PsychicSensitivity -2 = dull => not affected
-                // ReSharper disable once InconsistentNaming
                 if (pawn.Map.listerThings.ThingsOfDef(ThingDefOf.CrashedPsychicEmanatorShipPart).Any())
                 {
                     switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
@@ -312,7 +300,6 @@ namespace Outfitter
                     }
                 }
 
-
                 if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicSoothe))
                 {
                     if (pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>().gender
@@ -353,6 +340,30 @@ namespace Outfitter
                     AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
                 }
 
+                // Immunity gain
+                if (pawn.health.hediffSet.hediffs.Any(
+                    x =>
+                        {
+                            if (!x.Visible)
+                            {
+                                return false;
+                            }
+                            if (!(x is HediffWithComps hediffWithComps))
+                            {
+                                return false;
+                            }
+                            HediffComp_Immunizable immunizable = hediffWithComps.TryGetComp<HediffComp_Immunizable>();
+                            if (immunizable != null)
+                            {
+                                return !immunizable.FullyImmune;
+                            }
+                            return false;
+                        }))
+                {
+                    AddStatToDict(StatDefOf.ImmunityGainSpeed, 1.5f, ref dict);
+                }
+
+                // Mental breaks
                 switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Nerves))
                 {
                     case -1:
@@ -402,10 +413,6 @@ namespace Outfitter
             // }
             return dict;
         }
-        public static int GetWorkPriority(this Pawn pawn, WorkTypeDef workType)
-        {
-            return pawn.workSettings.GetPriority(workType);
-        }
 
         [NotNull]
         public static Dictionary<StatDef, float> GetWeightedApparelStats(this Pawn pawn)
@@ -443,10 +450,7 @@ namespace Outfitter
                     {
                         KeyValuePair<StatDef, float> stats = statsOfWorkType[k];
                         StatDef stat = stats.Key;
-                        if (stat == DefDatabase<StatDef>.GetNamed("ManagingSpeed"))
-                        {
-                            continue;
-                        }
+
                         int priority = Find.PlaySettings.useWorkPriorities ? pawn.GetWorkPriority(workType) : 3;
 
                         float priorityAdjust = 1f / priority / maxPriority;
@@ -503,12 +507,21 @@ namespace Outfitter
             return dict;
         }
 
+        public static int GetWorkPriority(this Pawn pawn, WorkTypeDef workType)
+        {
+            return pawn.workSettings.GetPriority(workType);
+        }
+
         [NotNull]
         public static List<StatDef> NotYetAssignedStatDefs([NotNull] this Pawn pawn)
         {
             return AllStatDefsModifiedByAnyApparel
                 .Except(pawn.GetApparelStatCache().StatCache.Select(prio => prio.Stat)).ToList();
         }
+
+        #endregion Public Methods
+
+        #region Private Methods
 
         private static void AddStatToDict(
             [NotNull] StatDef stat,
@@ -570,8 +583,12 @@ namespace Outfitter
                 }
             }
         }
-
-        // RimWorld.ThoughtWorker_PsychicDrone
+        private static List<StatDef> statsWithGoalsNotAffectedBySkills = new List<StatDef>
+                                                          {
+                                                              StatDefOf.MentalBreakThreshold,
+                                                              StatDefOf.PsychicSensitivity,
+                                                              StatDefOf.ToxicSensitivity
+                                                          };
 
         private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorMelee()
         {
@@ -592,6 +609,7 @@ namespace Outfitter
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyShort, 0f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, 0f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, 0f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, PosMax());
         }
 
         private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorRanged()
@@ -613,6 +631,7 @@ namespace Outfitter
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, 2.5f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Heat, 1.5f);
             yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Electric, 1.5f);
+            yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, PosMax());
         }
 
         private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfWorkType([NotNull] this Pawn pawn,
@@ -705,6 +724,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(
                             StatDefOf.MeleeWeapon_DamageMultiplier,
                             PosMin(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, PosMax(mainJob));
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherYield, PosMax(mainJob));
@@ -936,6 +956,7 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, PosMax(mainJob));
 
                     yield break;
 
@@ -1041,5 +1062,36 @@ namespace Outfitter
                     yield break;
             }
         }
+
+        private static float NegMax(bool mainJob = false)
+        {
+            return mainJob ? -9f : -3f;
+        }
+
+        private static float NegMed(bool mainJob = false)
+        {
+            return mainJob ? -6f : -2f;
+        }
+
+        private static float NegMin(bool mainJob = false)
+        {
+            return mainJob ? -3f : -1f;
+        }
+
+        private static float PosMax(bool mainJob = false)
+        {
+            return mainJob ? 9f : 3f;
+        }
+        private static float PosMed(bool mainJob = false)
+        {
+            return mainJob ? 6f : 2f;
+        }
+
+        private static float PosMin(bool mainJob = false)
+        {
+            return mainJob ? 3f : 1f;
+        }
+
+        #endregion Private Methods
     }
 }

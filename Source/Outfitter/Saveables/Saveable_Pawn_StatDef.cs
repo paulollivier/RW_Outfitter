@@ -1,5 +1,7 @@
 ﻿namespace Outfitter
 {
+    using Outfitter.Enums;
+
     using RimWorld;
 
     using Verse;

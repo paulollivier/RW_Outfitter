@@ -52,11 +52,13 @@
         public override void DoWindowContents(Rect windowRect)
         {
             ApparelStatCache apparelStatCache = this.pawn.GetApparelStatCache();
+            Outfit currentOutfit = pawn.outfits.CurrentOutfit;
 
             if (this.dict == null || Find.TickManager.TicksGame % 60 == 0)
             {
-                var ap = new List<Apparel>(
-                    this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>());
+                List<Apparel> ap = new List<Apparel>(
+                    this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>().Where(
+                        x => x.Map.slotGroupManager.SlotGroupAt(x.Position) != null));
 
                 foreach (Pawn otherPawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this.pawn.Map))
                 {
@@ -70,7 +72,8 @@
                 }
 
                 ap = ap.Where(
-                    i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def, this.pawn.RaceProps.body)).ToList();
+                    i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def, this.pawn.RaceProps.body)
+                         && currentOutfit.filter.Allows(i)).ToList();
 
                 ap = ap.OrderByDescending(
                     i =>

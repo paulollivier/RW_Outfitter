@@ -10,6 +10,8 @@ namespace Outfitter
 
     using JetBrains.Annotations;
 
+    using Outfitter.Enums;
+
     using RimWorld;
 
     using Verse;

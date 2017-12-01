@@ -6,7 +6,7 @@
 		<parentCategory>Apparel</parentCategory>
 		<allowedByDefault>true</allowedByDefault>
 		<saveKey>allowDeadmansApparel</saveKey>
-		<workerClass>Outfitter.SpecialThingFilterWorker_DeadmansApparel</workerClass>
+		<workerClass>Outfitter.Filter.SpecialThingFilterWorker_DeadmansApparel</workerClass>
 	</SpecialThingFilterDef>
 <!--
   <SpecialThingFilterDef>

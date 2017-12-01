@@ -13,7 +13,7 @@
         public static bool updated;
 
         [NotNull]
-        public List<SaveablePawn> _pawnCache = new List<SaveablePawn>();
+        public List<SaveablePawn> PawnCache = new List<SaveablePawn>();
 
         public GameComponent_Outfitter()
         {
@@ -25,12 +25,14 @@
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(
                 td => td.category == ThingCategory.Pawn && td.race.Humanlike))
             {
-                if (def.inspectorTabs == null || def.inspectorTabs.Count == 0)
+                if (def.inspectorTabs == null)
                 {
                     def.inspectorTabs = new List<Type>();
+                }
+                if (def.inspectorTabsResolved == null)
+                {
                     def.inspectorTabsResolved = new List<InspectTabBase>();
                 }
-
                 if (def.inspectorTabs.Contains(typeof(ITab_Pawn_Outfitter)))
                 {
                     return;
@@ -45,7 +47,7 @@
         {
             base.ExposeData();
 
-            Scribe_Collections.Look(ref this._pawnCache, "Pawns", LookMode.Deep);
+            Scribe_Collections.Look(ref this.PawnCache, "Pawns", LookMode.Deep);
         }
     }
 }
