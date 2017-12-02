@@ -18,25 +18,25 @@
         public const int ApparelStatCheck = 3750;
 
         private const int ApparelOptimizeCheckIntervalMin = 6000;
+
         private const int ApparelOptimizeCheckIntervalMax = 9000;
 
-      //  private const int ApparelOptimizeCheckIntervalMin = 9000;
-      //  private const int ApparelOptimizeCheckIntervalMax = 12000;
+        // private const int ApparelOptimizeCheckIntervalMin = 9000;
+        // private const int ApparelOptimizeCheckIntervalMax = 12000;
+        public const float MinScoreGainToCare = 0.09f;
 
-
-        private const float MinScoreGainToCare = 0.09f;
-      //  private const float MinScoreGainToCare = 0.15f;
-
+        // private const float MinScoreGainToCare = 0.15f;
         private static StringBuilder debugSb;
 
-       // private static Apparel lastItem;
-
+        // private static Apparel lastItem;
         public static void SetNextOptimizeTick([NotNull] Pawn pawn)
         {
             pawn.mindState.nextApparelOptimizeTick = Find.TickManager.TicksGame
                                                      + Random.Range(
                                                          ApparelOptimizeCheckIntervalMin,
                                                          ApparelOptimizeCheckIntervalMax);
+
+            pawn.GetApparelStatCache().RawScoreDict.Clear();
 
             // pawn.GetApparelStatCache().recentApparel.Clear();
         }
@@ -144,6 +144,28 @@
                 {
                     debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
                 }
+              //  float otherGain = 0f;
+              //  Pawn otherPawn = null;
+              //  foreach (Pawn otherP in pawn.Map.mapPawns.FreeColonistsSpawned.ToList())
+              //  {
+              //      if (otherP == pawn)
+              //      {
+              //          continue;
+              //      }
+              //      if (otherP.ApparelScoreGain(apparel) >= MinScoreGainToCare)
+              //      {
+              //          if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
+              //          {
+              //              if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
+              //              {
+              //                  thing = apparel;
+              //                  score = gain;
+              //              }
+              //          }
+              //          otherPawn = otherP;
+              //          otherGain = Mathf.Max(otherGain, otherP.ApparelScoreGain(apparel));
+              //      }
+              //  }
 
                 if (gain >= MinScoreGainToCare && gain >= score)
                 {
@@ -168,7 +190,8 @@
             // New stuff
             if (false)
             {
-                IEnumerable<Pawn> list2 = pawn.Map.mapPawns.FreeColonistsSpawned.Where(x => x.IsColonistPlayerControlled);
+                IEnumerable<Pawn> list2 =
+                    pawn.Map.mapPawns.FreeColonistsSpawned.Where(x => x.IsColonistPlayerControlled);
                 foreach (Apparel ap in wornApparel)
                 {
                     foreach (Pawn otherPawn in list2)

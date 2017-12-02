@@ -29,7 +29,6 @@ internal static class HarmonyPatches
        // AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
        // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
        // null);
-
         harmony.Patch(
             AccessTools.Method(typeof(JobGiver_OptimizeApparel), "TryGiveJob"),
             new HarmonyMethod(
@@ -89,6 +88,6 @@ internal static class HarmonyPatches
         FieldInfo fieldInfo =
             typeof(Pawn_WorkSettings).GetField("pawn", BindingFlags.NonPublic | BindingFlags.Instance);
         Pawn pawn = (Pawn)fieldInfo?.GetValue(__instance);
-        pawn.GetSaveablePawn().forceStatUpdate = true;
+        pawn.GetSaveablePawn().ForceStatUpdate = true;
     }
 }

@@ -81,7 +81,7 @@ namespace Outfitter
                     "Demolition", // Splitter
                     "Nursing", // Splitter
                     "Mortician", // Splitter
-                    "Preparing", //Splitter
+                    "Preparing", // Splitter
                     "Therapist"
                 };
 
@@ -135,7 +135,7 @@ namespace Outfitter
         #region Public Methods
 
         // ReSharper disable once UnusedMember.Global
-        public static float ApparelScoreGain([NotNull] this Pawn pawn, [NotNull] Apparel newAp)
+        public static float ApparelScoreGain([NotNull] this Pawn pawn, [NotNull] Apparel newAp, List<Apparel> wornApparel = null)
         {
             ApparelStatCache conf = pawn.GetApparelStatCache();
 
@@ -145,7 +145,10 @@ namespace Outfitter
             // float candidateScore = StatCache.WeaponScoreRaw(ap, pawn);
 
             // get the current list of worn apparel
-            List<Apparel> wornApparel = pawn.apparel.WornApparel;
+            if (wornApparel.NullOrEmpty())
+            {
+                wornApparel = pawn.apparel.WornApparel;
+            }
 
             bool willReplace = false;
 
@@ -232,112 +235,68 @@ namespace Outfitter
             // dict.Add(StatDefOf.ArmorRating_Sharp, 0.25f);
             if (pawnSave.AddIndividualStats)
             {
-                // PsychicSensitivity -2 = dull => not affected
                 if (pawn.Map.listerThings.ThingsOfDef(ThingDefOf.CrashedPsychicEmanatorShipPart).Any())
                 {
                     switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
                     {
-                        case -1:
+                        // PsychicSensitivity -2 = dull => not affected
+                        case -2: break;
+                        default:
                             {
-                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.25f, ref dict);
-                                break;
-                            }
-
-                        case 0:
-                            {
-                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.5f, ref dict);
-                                break;
-                            }
-
-                        case 1:
-                            {
-                                AddStatToDict(StatDefOf.PsychicSensitivity, -0.75f, ref dict);
-                                break;
-                            }
-
-                        case 2:
-                            {
-                                AddStatToDict(StatDefOf.PsychicSensitivity, -1f, ref dict);
+                                AddStatToDict(StatDefOf.PsychicSensitivity, 0.1f, ref dict);
                                 break;
                             }
                     }
 
                 }
 
-                if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicDrone))
+                foreach (GameCondition activeCondition in pawn.Map.GameConditionManager.ActiveConditions)
                 {
-                    GameCondition_PsychicEmanation activeCondition =
-                        pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>();
-
-                    if (activeCondition.gender == pawn.gender && activeCondition.def.droneLevel > PsychicDroneLevel.None)
+                    if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicSoothe))
                     {
-                        switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
+                        if (activeCondition.def == GameConditionDefOf.PsychicSoothe)
                         {
-                            case -1:
+                            if (activeCondition is GameCondition_PsychicEmanation
+                                && (activeCondition as GameCondition_PsychicEmanation).gender == pawn.gender)
+                            {
+                                switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
                                 {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, -0.25f, ref dict);
-                                    break;
+                                    case -2: break;
+                                    default:
+                                        {
+                                            AddStatToDict(StatDefOf.PsychicSensitivity, 2f, ref dict);
+                                            break;
+                                        }
                                 }
-
-                            case 0:
-                                {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, -0.5f, ref dict);
-                                    break;
-                                }
-
-                            case 1:
-                                {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, -0.75f, ref dict);
-                                    break;
-                                }
-
-                            case 2:
-                                {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, -1f, ref dict);
-                                    break;
-                                }
+                            }
                         }
                     }
-                }
 
-                if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicSoothe))
-                {
-                    if (pawn.Map.gameConditionManager.GetActiveCondition<GameCondition_PsychicEmanation>().gender
-                        == pawn.gender)
+                    if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.PsychicDrone))
                     {
-                        switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
+                        if (activeCondition.def == GameConditionDefOf.PsychicDrone)
                         {
-                            case -1:
+                            if (activeCondition is GameCondition_PsychicEmanation
+                                && (activeCondition as GameCondition_PsychicEmanation).gender == pawn.gender
+                                && activeCondition.def.droneLevel > PsychicDroneLevel.None)
+                            {
+                                switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.PsychicSensitivity))
                                 {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, 1f, ref dict);
-                                    break;
+                                    case -2: break;
+                                    default:
+                                        {
+                                            AddStatToDict(StatDefOf.PsychicSensitivity, 0.1f, ref dict);
+                                            break;
+                                        }
                                 }
-
-                            case 0:
-                                {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, 0.75f, ref dict);
-                                    break;
-                                }
-
-                            case 1:
-                                {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, 0.5f, ref dict);
-                                    break;
-                                }
-
-                            case 2:
-                                {
-                                    AddStatToDict(StatDefOf.PsychicSensitivity, 0.25f, ref dict);
-                                    break;
-                                }
+                            }
                         }
                     }
                 }
 
                 if (pawn.Map.gameConditionManager.ConditionIsActive(GameConditionDefOf.ToxicFallout))
                 {
-                    AddStatToDict(StatDefOf.ToxicSensitivity, -1.5f, ref dict);
-                    AddStatToDict(StatDefOf.ImmunityGainSpeed, 1f, ref dict);
+                    AddStatToDict(StatDefOf.ToxicSensitivity, 0.1f, ref dict);
                 }
 
                 // Immunity gain
@@ -348,48 +307,43 @@ namespace Outfitter
                             {
                                 return false;
                             }
+
                             if (!(x is HediffWithComps hediffWithComps))
                             {
                                 return false;
                             }
+
                             HediffComp_Immunizable immunizable = hediffWithComps.TryGetComp<HediffComp_Immunizable>();
                             if (immunizable != null)
                             {
                                 return !immunizable.FullyImmune;
                             }
+
                             return false;
                         }))
                 {
                     AddStatToDict(StatDefOf.ImmunityGainSpeed, 1.5f, ref dict);
                 }
-
-                // Mental breaks
-                switch (pawn.story.traits.DegreeOfTrait(TraitDefOf.Nerves))
                 {
-                    case -1:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.075f, ref dict);
-                        break;
+                    float defaultStat = pawn.def.GetStatValueAbstract(StatDefOf.MentalBreakThreshold);
+                    float pawnStat = defaultStat;
+                    if (pawn.story != null)
+                    {
+                        for (int k = 0; k < pawn.story.traits.allTraits.Count; k++)
+                        {
+                            pawnStat += pawn.story.traits.allTraits[k].OffsetOfStat(StatDefOf.MentalBreakThreshold);
+                        }
 
-                    case -2:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.15f, ref dict);
-                        break;
-                }
+                        for (int n = 0; n < pawn.story.traits.allTraits.Count; n++)
+                        {
+                            pawnStat *= pawn.story.traits.allTraits[n].MultiplierOfStat(StatDefOf.MentalBreakThreshold);
+                        }
+                    }
 
-                switch (pawn.story.traits.DegreeOfTrait(TraitDef.Named("Neurotic")))
-                {
-                    case 1:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.075f, ref dict);
-                        break;
-
-                    case 2:
-                        AddStatToDict(StatDefOf.MentalBreakThreshold, -0.15f, ref dict);
-
-                        break;
-                }
-
-                if (pawn.story.traits.HasTrait(TraitDefOf.TooSmart))
-                {
-                    AddStatToDict(StatDefOf.MentalBreakThreshold, -0.15f, ref dict);
+                    if (pawnStat > defaultStat)
+                    {
+                        AddStatToDict(StatDefOf.MentalBreakThreshold, defaultStat, ref dict);
+                    }
                 }
 
                 // float v1 = pawn.GetStatValue(StatDefOf.MentalBreakThreshold);
@@ -583,12 +537,6 @@ namespace Outfitter
                 }
             }
         }
-        private static List<StatDef> statsWithGoalsNotAffectedBySkills = new List<StatDef>
-                                                          {
-                                                              StatDefOf.MentalBreakThreshold,
-                                                              StatDefOf.PsychicSensitivity,
-                                                              StatDefOf.ToxicSensitivity
-                                                          };
 
         private static IEnumerable<KeyValuePair<StatDef, float>> GetStatsOfArmorMelee()
         {
@@ -648,7 +596,7 @@ namespace Outfitter
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, PosMax(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMax(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMed(mainJob));
-                yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMed());
+                yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMax());
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMax(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMed(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMax(mainJob));
@@ -664,7 +612,7 @@ namespace Outfitter
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyMedium, PosMed(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyLong, PosMed(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMed(mainJob));
-                yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMed(mainJob));
+                yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMin(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMed(mainJob));
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMin());
                 yield return new KeyValuePair<StatDef, float>(StatDefOf.AimingDelayFactor, NegMax(mainJob));
@@ -680,10 +628,16 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
-                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == FSF.Surgeon || x.defName == Splitter.Surgeon))
+
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
+                            x => x.defName == FSF.Surgeon || x.defName == Splitter.Surgeon))
                     {
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, PosMax(mainJob));
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(
+                            StatDefOf.MedicalSurgerySuccessChance,
+                            PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(
+                            StatDefOf2.MedicalOperationSpeed,
+                            PosMax(mainJob));
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalTendQuality, PosMax(mainJob));
@@ -706,12 +660,12 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+
                     if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
                             x => x.defName == FSF.Training || x.defName == Splitter.Training))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, PosMax(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, PosMax(mainJob));
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMin(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMin(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMed(mainJob));
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, PosMin(mainJob));
@@ -730,8 +684,8 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AnimalGatherSpeed, PosMax(mainJob));
                     yield break;
-                //  yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
 
+                // yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
                 case Vanilla.Cooking:
                     if (pawnSave.mainJob == MainJob.Cook)
                     {
@@ -740,12 +694,12 @@ namespace Outfitter
 
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, 0.05f);
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, 0.2f);
-
                     if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
                             x => x.defName == FSF.Brewing || x.defName == Splitter.Brewing))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
                     }
+
                     if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
                             x => x.defName == FSF.Butcher || x.defName == Splitter.Butcher))
                     {
@@ -754,6 +708,7 @@ namespace Outfitter
                             StatDefOf2.ButcheryFleshEfficiency,
                             PosMax(mainJob));
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.CookSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
@@ -785,29 +740,35 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
-                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == FSF.Repair || x.defName == Splitter.Repair))
+
+                    if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
+                            x => x.defName == FSF.Repair || x.defName == Splitter.Repair))
                     {
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(
+                            StatDefOf.FixBrokenDownBuildingSuccessChance,
+                            PosMax(mainJob));
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructionSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ConstructSuccessChance, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SmoothingSpeed, PosMax(mainJob));
+
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
-
-
 
                 case Vanilla.Growing:
                     if (pawnSave.mainJob == MainJob.Grower)
                     {
                         mainJob = true;
                     }
+
                     if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == Splitter.Harvesting))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
@@ -818,6 +779,7 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
@@ -830,14 +792,15 @@ namespace Outfitter
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningSpeed, PosMax(mainJob));
+
                     // yield return new KeyValuePair<StatDef, float>(StatDefOf.CarryingCapacity, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield break;
 
                 case Vanilla.PlantCutting:
-                    //  yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, PosMin(mainJob));
-                    //  yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
+                    // yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantWorkSpeed, PosMin(mainJob));
+                    // yield return new KeyValuePair<StatDef, float>(StatDefOf.PlantHarvestYield, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
@@ -876,13 +839,17 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+
                     if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(x => x.defName == Splitter.Smelting))
                     {
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, PosMax(mainJob));
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidSpeed, PosMed(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidEfficiency, PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(
+                        StatDefOf2.ButcheryMechanoidEfficiency,
+                        PosMed(mainJob));
                     yield break;
 
                 case Splitter.Stonecutting:
@@ -890,6 +857,7 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
                     yield break;
 
@@ -926,7 +894,9 @@ namespace Outfitter
                 // Colony Manager
                 case Other.FluffyManaging:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(DefDatabase<StatDef>.GetNamed("ManagingSpeed"), PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(
+                        DefDatabase<StatDef>.GetNamed("ManagingSpeed"),
+                        PosMed(mainJob));
                     yield break;
 
                 // Hospitality
@@ -937,7 +907,6 @@ namespace Outfitter
 
                 // Else
 
-
                 // Job Mods
                 case FSF.Training:
                     if (pawnSave.mainJob == MainJob.Handler)
@@ -947,15 +916,18 @@ namespace Outfitter
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TrainAnimalChance, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.TameAnimalChance, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Blunt, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.ArmorRating_Sharp, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDodgeChance, PosMed(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeHitChance, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(
+                        StatDefOf.MeleeWeapon_CooldownMultiplier,
+                        NegMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(
+                        StatDefOf.MeleeWeapon_DamageMultiplier,
+                        PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.PainShockThreshold, PosMax(mainJob));
 
                     yield break;
@@ -983,8 +955,12 @@ namespace Outfitter
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MoveSpeed, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeDPS, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.AccuracyTouch, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_CooldownMultiplier, NegMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MeleeWeapon_DamageMultiplier, PosMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(
+                        StatDefOf.MeleeWeapon_CooldownMultiplier,
+                        NegMin(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(
+                        StatDefOf.MeleeWeapon_DamageMultiplier,
+                        PosMin(mainJob));
 
                     yield break;
 
@@ -994,6 +970,7 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryFleshEfficiency, PosMax(mainJob));
                     yield break;
@@ -1004,6 +981,7 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
                     yield break;
 
@@ -1013,7 +991,10 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.FixBrokenDownBuildingSuccessChance, PosMax(mainJob));
+
+                    yield return new KeyValuePair<StatDef, float>(
+                        StatDefOf.FixBrokenDownBuildingSuccessChance,
+                        PosMax(mainJob));
                     yield break;
 
                 case Splitter.Drilling:
@@ -1022,6 +1003,7 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
+
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningSpeed, PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.MiningYield, PosMax(mainJob));
                     yield break;
@@ -1047,15 +1029,19 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.MedicalSurgerySuccessChance, PosMax(mainJob));
+
+                    yield return new KeyValuePair<StatDef, float>(
+                        StatDefOf.MedicalSurgerySuccessChance,
+                        PosMax(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.MedicalOperationSpeed, PosMax(mainJob));
                     yield break;
-
 
                 default:
                     if (!IgnoredWorktypeDefs.Contains(worktype.defName))
                     {
-                        Log.Warning("Outfitter: WorkTypeDef " + worktype.defName + " not handled. \nThis is not a bug, just a notice for the mod author.");
+                        Log.Warning(
+                            "Outfitter: WorkTypeDef " + worktype.defName
+                            + " not handled. \nThis is not a bug, just a notice for the mod author.");
                         IgnoredWorktypeDefs.Add(worktype.defName);
                     }
 
@@ -1082,6 +1068,7 @@ namespace Outfitter
         {
             return mainJob ? 9f : 3f;
         }
+
         private static float PosMed(bool mainJob = false)
         {
             return mainJob ? 6f : 2f;

@@ -157,7 +157,7 @@
                             delegate
                                 {
                                     pawnSave.mainJob = mainJob;
-                                    pawnSave.forceStatUpdate = true;
+                                    pawnSave.ForceStatUpdate = true;
 
                                     this.SelPawnForGear.mindState.Notify_OutfitChanged();
                                     if (this.SelPawnForGear.jobs.curJob != null
@@ -193,6 +193,8 @@
                 pawnSave.AddIndividualStats = pawnSaveAddIndividualStats;
 
                 pawnSave.AddPersonalStats = pawnSaveAddPersonalStats;
+
+                pawnSave.ForceStatUpdate = true;
             }
 
             // main canvas
@@ -355,10 +357,13 @@
                 // stat weight sliders
                 foreach (StatPriority stat in this.SelPawnForGear.GetApparelStatCache().StatCache)
                 {
-                    ApparelStatCache.DrawStatRow(ref cur, viewRect.width, stat, this.SelPawnForGear, out bool stop_UI);
+                    DrawStatRow(ref cur, viewRect.width, stat, this.SelPawnForGear, out bool stop_UI);
                     if (stop_UI)
                     {
-                        // DrawWApparelStatRow can change the StatCache, invalidating the loop. So if it does that, stop looping - we'll redraw on the next tick.
+                        // DrawWApparelStatRow can change the StatCache, invalidating the loop.
+                        // So if it does that, stop looping - we'll redraw on the next tick.
+                        // + force a stat update
+                        this.SelPawnForGear.GetApparelStatCache().RawScoreDict.Clear();
                         break;
                     }
                 }
@@ -547,6 +552,140 @@
             }
 
             y += ThingRowHeight;
+        }
+
+        private void DrawStatRow(
+            ref Vector2 cur,
+            float width,
+            [NotNull] StatPriority stat,
+            Pawn pawn,
+            out bool stopUI)
+        {
+            // sent a signal if the statlist has changed
+            stopUI = false;
+
+            // set up rects
+            Rect labelRect = new Rect(cur.x, cur.y, (width - 24) / 2f, 30f);
+            Rect sliderRect = new Rect(labelRect.xMax + 4f, cur.y + 5f, labelRect.width, 25f);
+            Rect buttonRect = new Rect(sliderRect.xMax + 4f, cur.y + 3f, 16f, 16f);
+
+            // draw label
+            Text.Font = Text.CalcHeight(stat.Stat.LabelCap, labelRect.width) > labelRect.height
+                            ? GameFont.Tiny
+                            : GameFont.Small;
+            switch (stat.Assignment)
+            {
+                case StatAssignment.Automatic:
+                    GUI.color = Color.grey;
+                    break;
+
+                case StatAssignment.Individual:
+                    GUI.color = Color.cyan;
+                    break;
+
+                case StatAssignment.Manual:
+                    GUI.color = Color.white;
+                    break;
+
+                case StatAssignment.Override:
+                    GUI.color = new Color(0.75f, 0.69f, 0.33f);
+                    break;
+
+                default:
+                    GUI.color = Color.white;
+                    break;
+            }
+            Widgets.Label(labelRect, stat.Stat.LabelCap);
+            Text.Font = GameFont.Small;
+
+            // draw button
+            // if manually added, delete the priority
+            string buttonTooltip = string.Empty;
+            if (stat.Assignment == StatAssignment.Manual)
+            {
+                buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
+                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.DeleteButton))
+                {
+                    stat.Delete(pawn);
+                    stopUI = true;
+                }
+            }
+
+            // if overridden auto assignment, reset to auto
+            if (stat.Assignment == StatAssignment.Override)
+            {
+                buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
+                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.ResetButton))
+                {
+                    stat.Reset(pawn);
+                    stopUI = true;
+                }
+            }
+
+            // draw line behind slider
+            GUI.color = new Color(.3f, .3f, .3f);
+            for (int y = (int)cur.y; y < cur.y + 30; y += 5)
+            {
+                Widgets.DrawLineVertical((sliderRect.xMin + sliderRect.xMax) / 2f, y, 3f);
+            }
+
+            // draw slider
+            switch (stat.Assignment)
+            {
+                case StatAssignment.Automatic:
+                    GUI.color = Color.grey;
+                    break;
+
+                case StatAssignment.Individual:
+                    GUI.color = Color.cyan;
+                    break;
+
+                case StatAssignment.Manual:
+                    GUI.color = Color.white;
+                    break;
+
+                case StatAssignment.Override:
+                    GUI.color = new Color(0.75f, 0.69f, 0.33f);
+                    break;
+
+                default:
+                    GUI.color = Color.white;
+                    break;
+            }
+
+            float weight = GUI.HorizontalSlider(
+                sliderRect,
+                stat.Weight,
+                ApparelStatCache.specialStats.Contains(stat.Stat) ? 0.01f : -ApparelStatCache.MaxValue,
+                ApparelStatCache.MaxValue);
+
+            if (Mathf.Abs(weight - stat.Weight) > 1e-4)
+            {
+                stat.Weight = weight;
+                if (stat.Assignment == StatAssignment.Automatic || stat.Assignment == StatAssignment.Individual)
+                {
+                    stat.Assignment = StatAssignment.Override;
+                }
+            }
+
+            if (GUI.changed)
+            {
+                pawn.GetApparelStatCache().RawScoreDict.Clear();
+            }
+
+            GUI.color = Color.white;
+
+            // tooltips
+            TooltipHandler.TipRegion(labelRect, stat.Stat.LabelCap + "\n\n" + stat.Stat.description);
+            if (buttonTooltip != string.Empty)
+            {
+                TooltipHandler.TipRegion(buttonRect, buttonTooltip);
+            }
+
+            TooltipHandler.TipRegion(sliderRect, stat.Weight.ToStringByStyle(ToStringStyle.FloatTwo));
+
+            // advance row
+            cur.y += 30f;
         }
 
         private void DrawThingRowVanilla(ref float y, float width, Thing thing)

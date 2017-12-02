@@ -110,11 +110,11 @@ namespace Outfitter
 
         private Pawn SelPawn => Find.Selector.SingleSelectedThing as Pawn;
 
-        public override void DoWindowContents(Rect windowRect)
+        public override void DoWindowContents(Rect inRect)
         {
             ApparelStatCache conf = this.pawn.GetApparelStatCache();
 
-            Rect conRect = new Rect(windowRect);
+            Rect conRect = new Rect(inRect);
 
             conRect.height -= 50f;
 
@@ -152,17 +152,26 @@ namespace Outfitter
             foreach (StatPriority statPriority in this.pawn.GetApparelStatCache().StatCache
                 .OrderBy(i => i.Stat.LabelCap))
             {
-                string statLabel = statPriority.Stat.LabelCap;
+                StatDef stat = statPriority.Stat;
+                string statLabel = stat.LabelCap;
 
                 // statbases, e.g. armor
 
                 // StatCache.DoApparelScoreRaw_PawnStatsHandlers(_pawn, _apparel, statPriority.Stat, ref currentStat);
-                if (statBases.Contains(statPriority.Stat))
+                if (statBases.Contains(stat))
                 {
-                    float statValue = this.apparel.GetStatValue(statPriority.Stat);
+                    float statValue = this.apparel.GetStatValue(stat);
+                    float statScore = 0f;
+                    if (ApparelStatCache.specialStats.Contains(stat))
+                    {
+                        ApparelStatCache.CalculateScoreForSpecialStats(this.apparel, statPriority, this.pawn, statValue, ref statScore);
+                    }
+                    else
+                    {
+                        // statValue += StatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
+                        statScore = statValue * statPriority.Weight;
+                    }
 
-                    // statValue += StatCache.StatInfused(infusionSet, statPriority, ref baseInfused);
-                    float statScore = statValue * statPriority.Weight;
                     score += statScore;
 
                     this.DrawLine(
@@ -173,12 +182,21 @@ namespace Outfitter
                         statScore.ToString("N2"));
                 }
 
-                if (equippedOffsets.Contains(statPriority.Stat))
+                if (equippedOffsets.Contains(stat))
                 {
-                    float statValue = this.apparel.GetEquippedStatValue(this.pawn, statPriority.Stat);
+                    float statValue = this.apparel.GetEquippedStatValue(this.pawn, stat);
 
                     // statValue += StatCache.StatInfused(infusionSet, statPriority, ref equippedInfused);
-                    float statScore = statValue * statPriority.Weight;
+                    float statScore = 0f;
+                    if (ApparelStatCache.specialStats.Contains(stat))
+                    {
+                        ApparelStatCache.CalculateScoreForSpecialStats(this.apparel, statPriority, this.pawn, statValue, ref statScore);
+                    }
+                    else
+                    {
+                        statScore = statValue * statPriority.Weight;
+                    }
+
                     score += statScore;
 
                     this.DrawLine(
@@ -189,52 +207,58 @@ namespace Outfitter
                         statScore.ToString("N2"));
                 }
 
-                GUI.color = Color.white;
-            }
-
-            foreach (StatPriority statPriority in this.pawn.GetApparelStatCache().StatCache
-                .OrderBy(i => i.Stat.LabelCap))
-            {
-                GUI.color = Color.green; // new Color(0.5f, 1f, 1f, 1f);
-                string statLabel = statPriority.Stat.LabelCap;
+                if (infusedOffsets.Contains(stat))
                 {
-                    if (infusedOffsets.Contains(statPriority.Stat))
+                    GUI.color = Color.green; // new Color(0.5f, 1f, 1f, 1f);
+
+                    // float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
+                    ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(this.apparel, stat, out float statValue);
+
+                    bool flag = true;
+
+                    float statScore = 0f;
+                    if (ApparelStatCache.specialStats.Contains(stat))
                     {
-                        // float statInfused = StatCache.StatInfused(infusionSet, statPriority, ref dontcare);
-                        ApparelStatCache.DoApparelScoreRaw_PawnStatsHandlers(
+                        ApparelStatCache.CalculateScoreForSpecialStats(
                             this.apparel,
-                            statPriority.Stat,
-                            out float statValue);
-
-                        bool flag = true;
-
+                            statPriority,
+                            this.pawn,
+                            statValue,
+                            ref statScore);
+                    }
+                    else
+                    {
                         // Bug with Infused and "Ancient", it completely kills the pawn's armor
-                        if (statValue < 0 && (statPriority.Stat == StatDefOf.ArmorRating_Blunt
-                                              || statPriority.Stat == StatDefOf.ArmorRating_Sharp))
+                        if (statValue < 0
+                            && (stat == StatDefOf.ArmorRating_Blunt || stat == StatDefOf.ArmorRating_Sharp))
                         {
                             score = -2f;
                             flag = false;
                         }
 
-                        float statScore = statValue * statPriority.Weight;
+                        statScore = statValue * statPriority.Weight;
+                    }
 
-                        this.DrawLine(
-                            statLabel,
-                            labelWidth,
-                            statValue.ToStringPercent("N1"),
-                            statPriority.Weight.ToString("N2"),
-                            statScore.ToString("N2"));
-                        if (flag)
-                        {
-                            score += statScore;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                    this.DrawLine(
+                        statLabel,
+                        labelWidth,
+                        statValue.ToStringPercent("N1"),
+                        statPriority.Weight.ToString("N2"),
+                        statScore.ToString("N2"));
+
+                    GUI.color = Color.white;
+
+                    if (flag)
+                    {
+                        score += statScore;
+                    }
+                    else
+                    {
+                        break;
                     }
                 }
             }
+
             GUI.color = Color.white;
 
             // end upper group
@@ -250,7 +274,7 @@ namespace Outfitter
             this.DrawLine("BasicStatusOfApparel".Translate(), labelWidth, "1.00", "+", score.ToString("N2"));
 
             float special = this.apparel.GetSpecialApparelScoreOffset();
-            if (special != 0f)
+            if (Math.Abs(special) > 0f)
             {
                 score += special;
 

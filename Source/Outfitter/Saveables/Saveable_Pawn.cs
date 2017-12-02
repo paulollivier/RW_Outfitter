@@ -4,18 +4,39 @@
 
     using Outfitter.Enums;
 
+    using RimWorld;
+
     using Verse;
 
     public class SaveablePawn : IExposable
     {
         public List<Saveable_Pawn_StatDef> ApparelStats = new List<Saveable_Pawn_StatDef>();
 
-        public bool armorOnly = false;
+        public List<Apparel> toWear = new List<Apparel>();
+
+        public List<Apparel> toDrop = new List<Apparel>();
+
+        public bool armorOnly;
 
         public bool AutoEquipWeapon;
 
         // public FloatRange RealComfyTemperatures;
-        public bool forceStatUpdate;
+        private bool forceStatUpdate;
+
+        public bool ForceStatUpdate
+        {
+            get
+            {
+                return this.forceStatUpdate;
+            }
+
+            set
+            {
+                this.forceStatUpdate = value;
+
+            }
+        }
+
         public MainJob mainJob;
 
         // Exposed members
@@ -40,7 +61,6 @@
             set
             {
                 this.addIndividualStats = value;
-                this.forceStatUpdate = true;
             }
         }
         public bool AddPersonalStats
@@ -49,7 +69,6 @@
             set
             {
                 this.addPersonalStats = value;
-                this.forceStatUpdate = true;
             }
         }
 
@@ -60,7 +79,6 @@
             set
             {
                 this.addWorkStats = value;
-                this.forceStatUpdate = true;
             }
         }
 

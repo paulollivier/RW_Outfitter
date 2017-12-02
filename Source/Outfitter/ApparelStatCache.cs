@@ -78,7 +78,7 @@ namespace Outfitter
             {
                 // update auto stat priorities roughly between every vanilla gear check cycle
                 if (Find.TickManager.TicksGame - this.lastStatUpdate
-                    > JobGiver_OutfitterOptimizeApparel.ApparelStatCheck || this.pawnSave.forceStatUpdate)
+                    > JobGiver_OutfitterOptimizeApparel.ApparelStatCheck || this.pawnSave.ForceStatUpdate)
                 {
                     // list of auto stats
                     if (this.Cache.Count < 1 && this.pawnSave.Stats.Count > 0)
@@ -89,6 +89,7 @@ namespace Outfitter
                         }
                     }
 
+                    this.RawScoreDict.Clear();
                     this.pawnSave.Stats.Clear();
 
                     // clear auto priorities
@@ -170,7 +171,7 @@ namespace Outfitter
 
                     // update our time check.
                     this.lastStatUpdate = Find.TickManager.TicksGame;
-                    this.pawnSave.forceStatUpdate = false;
+                    this.pawnSave.ForceStatUpdate = false;
 
                     foreach (StatPriority statPriority in this.Cache.Where(
                         statPriority => statPriority.Assignment != StatAssignment.Automatic
@@ -229,11 +230,19 @@ namespace Outfitter
             }
         }
 
+        public static List<StatDef> specialStats =
+            new List<StatDef>
+                {
+                    StatDefOf.MentalBreakThreshold,
+                    StatDefOf.PsychicSensitivity,
+                    StatDefOf.ToxicSensitivity,
+                };
+
         public static float ApparelScoreRaw_ProtectionBaseStat(Apparel ap)
         {
             float num = ap.GetStatValue(StatDefOf.ArmorRating_Sharp)
-                         + ap.GetStatValue(StatDefOf.ArmorRating_Blunt);
-            return num * 0.1f;
+                         + ap.GetStatValue(StatDefOf.ArmorRating_Blunt) * 0.5f;
+            return num * 0.15f;
         }
 
         public static void DoApparelScoreRaw_PawnStatsHandlers(
@@ -245,128 +254,7 @@ namespace Outfitter
             ApparelScoreRaw_PawnStatsHandlers?.Invoke(apparel, statDef, out num);
         }
 
-        public static void DrawStatRow(
-            ref Vector2 cur,
-            float width,
-            [NotNull] StatPriority stat,
-            Pawn pawn,
-            out bool stopUI)
-        {
-            // sent a signal if the statlist has changed
-            stopUI = false;
 
-            // set up rects
-            Rect labelRect = new Rect(cur.x, cur.y, (width - 24) / 2f, 30f);
-            Rect sliderRect = new Rect(labelRect.xMax + 4f, cur.y + 5f, labelRect.width, 25f);
-            Rect buttonRect = new Rect(sliderRect.xMax + 4f, cur.y + 3f, 16f, 16f);
-
-            // draw label
-            Text.Font = Text.CalcHeight(stat.Stat.LabelCap, labelRect.width) > labelRect.height
-                            ? GameFont.Tiny
-                            : GameFont.Small;
-            switch (stat.Assignment)
-            {
-                case StatAssignment.Automatic:
-                    GUI.color = Color.grey;
-                    break;
-
-                case StatAssignment.Individual:
-                    GUI.color = Color.cyan;
-                    break;
-
-                case StatAssignment.Manual:
-                    GUI.color = Color.white;
-                    break;
-
-                case StatAssignment.Override:
-                    GUI.color = new Color(0.75f, 0.69f, 0.33f);
-                    break;
-
-                default:
-                    GUI.color = Color.white;
-                    break;
-            }
-            Widgets.Label(labelRect, stat.Stat.LabelCap);
-            Text.Font = GameFont.Small;
-
-            // draw button
-            // if manually added, delete the priority
-            string buttonTooltip = string.Empty;
-            if (stat.Assignment == StatAssignment.Manual)
-            {
-                buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.DeleteButton))
-                {
-                    stat.Delete(pawn);
-                    stopUI = true;
-                }
-            }
-
-            // if overridden auto assignment, reset to auto
-            if (stat.Assignment == StatAssignment.Override)
-            {
-                buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
-                if (Widgets.ButtonImage(buttonRect, OutfitterTextures.ResetButton))
-                {
-                    stat.Reset(pawn);
-                    stopUI = true;
-                }
-            }
-
-            // draw line behind slider
-            GUI.color = new Color(.3f, .3f, .3f);
-            for (int y = (int)cur.y; y < cur.y + 30; y += 5)
-            {
-                Widgets.DrawLineVertical((sliderRect.xMin + sliderRect.xMax) / 2f, y, 3f);
-            }
-
-            // draw slider
-            switch (stat.Assignment)
-            {
-                case StatAssignment.Automatic:
-                    GUI.color = Color.grey;
-                    break;
-
-                case StatAssignment.Individual:
-                    GUI.color = Color.cyan;
-                    break;
-
-                case StatAssignment.Manual:
-                    GUI.color = Color.white;
-                    break;
-
-                case StatAssignment.Override:
-                    GUI.color = new Color(0.75f, 0.69f, 0.33f);
-                    break;
-
-                default:
-                    GUI.color = Color.white;
-                    break;
-            }
-            float weight = GUI.HorizontalSlider(sliderRect, stat.Weight, -MaxValue, MaxValue);
-            if (Mathf.Abs(weight - stat.Weight) > 1e-4)
-            {
-                stat.Weight = weight;
-                if (stat.Assignment == StatAssignment.Automatic || stat.Assignment == StatAssignment.Individual)
-                {
-                    stat.Assignment = StatAssignment.Override;
-                }
-            }
-
-            GUI.color = Color.white;
-
-            // tooltips
-            TooltipHandler.TipRegion(labelRect, stat.Stat.LabelCap + "\n\n" + stat.Stat.description);
-            if (buttonTooltip != string.Empty)
-            {
-                TooltipHandler.TipRegion(buttonRect, buttonTooltip);
-            }
-
-            TooltipHandler.TipRegion(sliderRect, stat.Weight.ToStringByStyle(ToStringStyle.FloatTwo));
-
-            // advance row
-            cur.y += 30f;
-        }
 
         public static void FillIgnoredInfused_PawnStatsHandlers(ref List<StatDef> allApparelStats)
         {
@@ -375,8 +263,14 @@ namespace Outfitter
 
         public float ApparelScoreRaw([NotNull] Apparel ap)
         {
+            if (this.RawScoreDict.ContainsKey(ap))
+            {
+                return this.RawScoreDict[ap];
+            }
+
             // only allow shields to be considered if a primary weapon is equipped and is melee
             Pawn thisPawn = this.pawn;
+
             if (ap.def.thingClass == typeof(ShieldBelt) && thisPawn.equipment.Primary?.def.IsRangedWeapon == true)
             {
                 return -1f;
@@ -384,17 +278,17 @@ namespace Outfitter
 
             // Fail safe to prevent pawns get out of the regular temperature.
             // Might help making pawn drop equipped apparel if it's too cold/warm.
-          //  this.GetInsulationStats(ap, out float insulationCold, out float insulationHeat);
-          //  FloatRange temperatureRange = this.pawn.ComfortableTemperatureRange();
-          //  if (ap.Wearer != thisPawn)
-          //  {
-          //      temperatureRange.min += insulationCold;
-          //      temperatureRange.max += insulationHeat;
-          //  }
-          //  if (temperatureRange.min > 12 && insulationCold > 0 || temperatureRange.max < 32 && insulationHeat < 0)
-          //  {
-          //      return -3f;
-          //  }
+            // this.GetInsulationStats(ap, out float insulationCold, out float insulationHeat);
+            // FloatRange temperatureRange = this.pawn.ComfortableTemperatureRange();
+            // if (ap.Wearer != thisPawn)
+            // {
+            // temperatureRange.min += insulationCold;
+            // temperatureRange.max += insulationHeat;
+            // }
+            // if (temperatureRange.min > 12 && insulationCold > 0 || temperatureRange.max < 32 && insulationHeat < 0)
+            // {
+            // return -3f;
+            // }
 
             // relevant apparel stats
             ApparelEntry entry = this.GetAllOffsets(ap);
@@ -411,20 +305,38 @@ namespace Outfitter
 
             foreach (StatPriority statPriority in stats.Where(statPriority => statPriority != null))
             {
-                if (statBases.Contains(statPriority.Stat))
-                {
-                    float statValue = ap.GetStatValue(statPriority.Stat);
+                StatDef stat = statPriority.Stat;
 
-                    // add stat to base score before offsets are handled ( the pawn's apparel stat cache always has armors first as it is initialized with it).
-                    score += statValue * statPriority.Weight;
+                if (statBases.Contains(stat))
+                {
+                    float apStat = ap.GetStatValue(stat);
+
+                    if (specialStats.Contains(stat))
+                    {
+                        CalculateScoreForSpecialStats(ap, statPriority, thisPawn, apStat, ref score);
+                    }
+                    else
+                    {
+                        // add stat to base score before offsets are handled 
+                        // (the pawn's apparel stat cache always has armors first as it is initialized with it).
+                        score += apStat * statPriority.Weight;
+                    }
+
                 }
 
                 // equipped offsets, e.g. movement speeds
-                if (equippedOffsets.Contains(statPriority.Stat))
+                if (equippedOffsets.Contains(stat))
                 {
-                    float statValue = ap.GetEquippedStatValue(this.pawn, statPriority.Stat);
+                    float apStat = ap.GetEquippedStatValue(this.pawn, stat);
 
-                    score += statValue * statPriority.Weight;
+                    if (specialStats.Contains(stat))
+                    {
+                        CalculateScoreForSpecialStats(ap, statPriority, thisPawn, apStat, ref score);
+                    }
+                    else
+                    {
+                        score += apStat * statPriority.Weight;
+                    }
 
                     // multiply score to favour items with multiple offsets
                     // score *= adjusted;
@@ -433,19 +345,28 @@ namespace Outfitter
                 }
 
                 // infusions
-                if (infusedOffsets.Contains(statPriority.Stat))
+                if (infusedOffsets.Contains(stat))
                 {
                     // float statInfused = StatInfused(infusionSet, statPriority, ref dontcare);
-                    DoApparelScoreRaw_PawnStatsHandlers(ap, statPriority.Stat, out float statInfused);
+                    DoApparelScoreRaw_PawnStatsHandlers(ap, stat, out float statInfused);
 
-                    // Bug with Infused and "Ancient", it completely kills the pawn's armor
-                    if (statInfused < 0 && (statPriority.Stat == StatDefOf.ArmorRating_Blunt
-                        || statPriority.Stat == StatDefOf.ArmorRating_Sharp))
+                    if (specialStats.Contains(stat))
                     {
-                        score = -2f;
-                        return score;
+                        CalculateScoreForSpecialStats(ap, statPriority, thisPawn, statInfused, ref score);
+
                     }
-                    score += statInfused * statPriority.Weight;
+                    else
+                    {
+                        // Bug with Infused and "Ancient", it completely kills the pawn's armor
+                        if (statInfused < 0 && (stat == StatDefOf.ArmorRating_Blunt
+                            || stat == StatDefOf.ArmorRating_Sharp))
+                        {
+                            score = -2f;
+                            return score;
+                        }
+
+                        score += statInfused * statPriority.Weight;
+                    }
                 }
             }
 
@@ -488,11 +409,59 @@ namespace Outfitter
 
             score *= this.ApparelScoreRaw_Temperature(ap);
 
+            RawScoreDict.Add(ap, score);
+
             return score;
+        }
+
+        public static void CalculateScoreForSpecialStats(Apparel ap, StatPriority statPriority, Pawn thisPawn, float apStat, ref float score)
+        {
+            float current = thisPawn.GetStatValue(statPriority.Stat);
+            float goal = statPriority.Weight;
+            float defaultStat = thisPawn.def.GetStatValueAbstract(statPriority.Stat);
+
+            if (thisPawn.story != null)
+            {
+                for (int k = 0; k < thisPawn.story.traits.allTraits.Count; k++)
+                {
+                    defaultStat += thisPawn.story.traits.allTraits[k].OffsetOfStat(statPriority.Stat);
+                }
+
+                for (int n = 0; n < thisPawn.story.traits.allTraits.Count; n++)
+                {
+                    defaultStat *= thisPawn.story.traits.allTraits[n].MultiplierOfStat(statPriority.Stat);
+                }
+            }
+
+            if (ap.Wearer == thisPawn)
+            {
+                current -= apStat;
+            }
+            else
+            {
+                foreach (Apparel worn in thisPawn.apparel.WornApparel)
+                {
+                    if (!ApparelUtility.CanWearTogether(worn.def, ap.def, thisPawn.RaceProps.body))
+                    {
+                        float stat1 = worn.GetStatValue(statPriority.Stat);
+                        float stat2 = worn.GetEquippedStatValue(thisPawn, statPriority.Stat);
+                        DoApparelScoreRaw_PawnStatsHandlers(worn, statPriority.Stat, out float stat3);
+                        current -= stat1 + stat2 + stat3;
+                    }
+                }
+            }
+
+            if (Math.Abs(current - goal) > 0.01f)
+            {
+                float need = 1f - Mathf.InverseLerp(defaultStat, goal, current);
+                score += Mathf.InverseLerp(current, goal, current + apStat) * need;
+            }
         }
 
         private static readonly SimpleCurve curve =
             new SimpleCurve { new CurvePoint(-5f, 0.1f), new CurvePoint(0f, 1f), new CurvePoint(100f, 2.5f) };
+
+        public Dictionary<Apparel, float> RawScoreDict = new Dictionary<Apparel, float>();
 
         public float ApparelScoreRaw_Temperature([NotNull] Apparel apparel)
         {
@@ -541,6 +510,7 @@ namespace Outfitter
             }
 
             log += "\nBasic stat not worn - MinComfy: " + minComfyTemperature + " - MaxComfy: " + maxComfyTemperature;
+
             // now for the interesting bit.
             FloatRange temperatureScoreOffset = new FloatRange(0f, 0f);
 
@@ -570,7 +540,6 @@ namespace Outfitter
             else
             {
                 // currently warm enough
-
                 if (insulationCold > neededInsulation_Cold)
                 {
                     // this gear would make us too cold
@@ -616,12 +585,12 @@ namespace Outfitter
 
             log += "\nScoreOffsetMin: " + temperatureScoreOffset.min + " - ScoreOffsetMax: "
                    + temperatureScoreOffset.max + " *= " + (temperatureScoreOffset.min * temperatureScoreOffset.max);
-            //  Log.Message(log);
 
+            // Log.Message(log);
             return temperatureScoreOffset.min * temperatureScoreOffset.max;
-            //return 1 + (temperatureScoreOffset.min + temperatureScoreOffset.max) / 15;
-        }
 
+            // return 1 + (temperatureScoreOffset.min + temperatureScoreOffset.max) / 15;
+        }
 
         public void GetInsulationStats(Apparel apparel, out float insulationCold, out float insulationHeat)
         {
@@ -674,12 +643,11 @@ namespace Outfitter
                 if (!this.pawnSave.TargetTemperaturesOverride)
                 {
 
-                    //     float temp = GenTemperature.GetTemperatureAtTile(thisPawn.Map.Tile);
+                    // float temp = GenTemperature.GetTemperatureAtTile(thisPawn.Map.Tile);
                     float lowest = this.LowestTemperatureComing(thisPawn.Map);
                     float highest = this.HighestTemperatureComing(thisPawn.Map);
 
-                    //    float minTemp = Mathf.Min(lowest - 5f, temp - 15f);
-
+                    // float minTemp = Mathf.Min(lowest - 5f, temp - 15f);
                     this.pawnSave.TargetTemperatures = new FloatRange(Mathf.Min(12, lowest - 10f), Mathf.Max(32, highest + 10f));
 
                     WorkTypeDef cooking = DefDatabase<WorkTypeDef>.GetNamed("Cooking");
@@ -693,7 +661,6 @@ namespace Outfitter
             }
 
             // FloatRange RealComfyTemperatures = thisPawn.ComfortableTemperatureRange();
-
             float min = thisPawn.def.statBases.GetStatValueFromList(StatDefOf.ComfyTemperatureMin, StatDefOf.ComfyTemperatureMin.defaultBaseValue);
             float max = thisPawn.def.statBases.GetStatValueFromList(StatDefOf.ComfyTemperatureMax, StatDefOf.ComfyTemperatureMax.defaultBaseValue);
 

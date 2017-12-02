@@ -20,14 +20,13 @@
 
         private static float viewHeight = 1000f;
 
-        private static Vector2 scrollPosition = default(Vector2);
+        private static Vector2 scrollPosition;
 
         private static readonly Vector2 WinSize = new Vector2(420f, 480f);
 
         private static Bill mouseoverBill;
 
         // RimWorld.ITab_Bills
-
         public static bool FillTab_Prefix()
         {
             Building_WorkTable selTable = (Building_WorkTable)Find.Selector.SingleSelectedThing;
@@ -36,6 +35,7 @@
             {
                 return true;
             }
+
             PlayerKnowledgeDatabase.KnowledgeDemonstrated(ConceptDefOf.BillsTab, KnowledgeAmount.FrameDisplayed);
             float x = WinSize.x;
             Vector2 winSize2 = WinSize;
@@ -43,11 +43,18 @@
 
             Func<Dictionary<string, List<FloatMenuOption>>> labeledSortingActions = delegate
                 {
-                    Dictionary<string, List<FloatMenuOption>> dictionary = new Dictionary<string, List<FloatMenuOption>>();
-                //    Dictionary<string, List<FloatMenuOption>> dictionary2 = new Dictionary<string, List<FloatMenuOption>>();
+                    Dictionary<string, List<FloatMenuOption>> dictionary =
+                        new Dictionary<string, List<FloatMenuOption>>();
 
-                    var recipesWithoutPart = selTable.def.AllRecipes.Where(bam => bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty() ?? true).ToList();
-                    var recipesWithPart = selTable.def.AllRecipes.Where(bam => !bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty() ?? false).ToList();
+                    // Dictionary<string, List<FloatMenuOption>> dictionary2 = new Dictionary<string, List<FloatMenuOption>>();
+                    List<RecipeDef> recipesWithoutPart = selTable.def.AllRecipes
+                        .Where(
+                            bam => bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty()
+                                   ?? true).ToList();
+                    List<RecipeDef> recipesWithPart = selTable.def.AllRecipes
+                        .Where(
+                            bam => !bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty()
+                                   ?? false).ToList();
                     recipesWithPart.SortByDescending(blum => blum.label);
 
                     for (int i = 0; i < recipesWithoutPart.Count; i++)
@@ -58,7 +65,16 @@
 
                             void Action()
                             {
-                                if (!selTable.Map.mapPawns.FreeColonists.Any(col => recipe.PawnSatisfiesSkillRequirements(col)))
+                                bool any = false;
+                                foreach (Pawn col in selTable.Map.mapPawns.FreeColonists)
+                                {
+                                    if (recipe.PawnSatisfiesSkillRequirements(col))
+                                    {
+                                        any = true;
+                                        break;
+                                    }
+                                }
+                                if (!any)
                                 {
                                     Bill.CreateNoPawnsWithSkillDialog(recipe);
                                 }
@@ -67,7 +83,9 @@
                                 selTable.billStack.AddBill(bill);
                                 if (recipe.conceptLearned != null)
                                 {
-                                    PlayerKnowledgeDatabase.KnowledgeDemonstrated(recipe.conceptLearned, KnowledgeAmount.Total);
+                                    PlayerKnowledgeDatabase.KnowledgeDemonstrated(
+                                        recipe.conceptLearned,
+                                        KnowledgeAmount.Total);
                                 }
 
                                 if (TutorSystem.TutorialMode)
@@ -88,10 +106,7 @@
                                     (float)(rect.y + (rect.height - 24.0) / 2.0),
                                     recipe));
 
-                            dictionary.Add(
-                                recipe.LabelCap,
-                                new List<FloatMenuOption>() { floatMenuOption });
-
+                            dictionary.Add(recipe.LabelCap, new List<FloatMenuOption>() { floatMenuOption });
                         }
                     }
 
@@ -122,8 +137,10 @@
                                     {
                                         tooltip += ", ";
                                     }
+
                                     tooltip += ingredient.Summary;
                                 }
+
                                 tooltip += "\n";
 
                                 ThingDef thingDef = recipeProduct.thingDef;
@@ -134,8 +151,10 @@
                                     {
                                         tooltip += ", ";
                                     }
+
                                     tooltip += bpg.LabelCap;
                                 }
+
                                 tooltip += "\n";
                                 for (int index = 0; index < thingDef.apparel.layers.Count; index++)
                                 {
@@ -144,6 +163,7 @@
                                     {
                                         tooltip += ", ";
                                     }
+
                                     tooltip += layer.ToString();
                                 }
 
@@ -158,10 +178,11 @@
                                     for (int index = 0; index < statBases.Count; index++)
                                     {
                                         StatModifier statOffset = statBases[index];
-                                        //  if (index > 0)
                                         {
+                                            // if (index > 0)
                                             tooltip += "\n";
                                         }
+
                                         tooltip += statOffset.stat.LabelCap + Separator
                                                    + statOffset.ValueToStringAsOffset;
                                     }
@@ -171,12 +192,13 @@
                                 {
                                     // if (tooltip == string.Empty)
                                     // {
-                                    //     tooltip = StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                    // tooltip = StatCategoryDefOf.EquippedStatOffsets.LabelCap;
                                     // }
-                                    // else
                                     {
+                                        // else
                                         tooltip += "\n\n" + StatCategoryDefOf.EquippedStatOffsets.LabelCap;
                                     }
+
                                     tooltip += newLine;
                                     foreach (StatModifier statOffset in thingDef.equippedStatOffsets)
                                     {
@@ -185,19 +207,22 @@
                                                    + statOffset.ValueToStringAsOffset;
                                     }
                                 }
+
                                 if (colonistsWithThing.Count > 0)
                                 {
                                     tooltip += "\n\nWorn by: ";
                                     for (int j = 0; j < colonistsWithThing.Count; j++)
                                     {
-                                        var p = colonistsWithThing[j];
+                                        Pawn p = colonistsWithThing[j];
                                         if (j > 0)
                                         {
                                             tooltip += j != colonistsWithThing.Count - 1 ? ", " : " and ";
                                         }
+
                                         tooltip += p.LabelShort;
                                     }
                                 }
+
                                 TooltipHandler.TipRegion(
                                     new Rect(
                                         Event.current.mousePosition.x - 5f,
@@ -209,8 +234,16 @@
 
                             void Action()
                             {
-                                if (!selTable.Map.mapPawns.FreeColonists.Any(
-                                        col => recipe.PawnSatisfiesSkillRequirements(col)))
+                                bool any = false;
+                                foreach (Pawn col in selTable.Map.mapPawns.FreeColonists)
+                                {
+                                    if (recipe.PawnSatisfiesSkillRequirements(col))
+                                    {
+                                        any = true;
+                                        break;
+                                    }
+                                }
+                                if (!any)
                                 {
                                     Bill.CreateNoPawnsWithSkillDialog(recipe);
                                 }
@@ -241,15 +274,14 @@
                                     (float)(rect.x + 5.0),
                                     (float)(rect.y + (rect.height - 24.0) / 2.0),
                                     recipe));
-                            //  recipe.products?.FirstOrDefault()?.thingDef));
 
-                            //  list.Add(new FloatMenuOption("LoL", null));
+                            // recipe.products?.FirstOrDefault()?.thingDef));
+
+                            // list.Add(new FloatMenuOption("LoL", null));
                             // Outfitter jump in here
 
-                            //  for (int j = 0; j < recipe.products.Count; j++)
-                            //  {
-                            //
-
+                            // for (int j = 0; j < recipe.products.Count; j++)
+                            // {
                             int count = selTable.Map.listerThings.ThingsOfDef(recipeProduct.thingDef).Count;
 
                             int wornCount = colonistsWithThing.Count;
@@ -264,21 +296,22 @@
                                 {
                                     dictionary.Add(key, new List<FloatMenuOption>());
                                 }
+
                                 if (k == 0)
                                 {
                                     floatMenuOption.Label += " (" + count + "/" + wornCount + ")";
+
                                     // + "\n"
                                     // + recipeProduct.thingDef.equippedStatOffsets.ToStringSafeEnumerable();
                                 }
 
                                 dictionary[key].Add(floatMenuOption);
                             }
-
                         }
                     }
-                    //   Dictionary<string, List<FloatMenuOption>> list2 = new Dictionary<string, List<FloatMenuOption>>();
-                  //  dictionary2 = dictionary2.OrderByDescending(c => c.Key).ToDictionary(KeyValuePair<string, List<FloatMenuOption>>);
 
+                    // Dictionary<string, List<FloatMenuOption>> list2 = new Dictionary<string, List<FloatMenuOption>>();
+                    // dictionary2 = dictionary2.OrderByDescending(c => c.Key).ToDictionary(KeyValuePair<string, List<FloatMenuOption>>);
                     if (!dictionary.Any())
                     {
                         dictionary.Add("NoneBrackets".Translate(), new List<FloatMenuOption>() { null });
@@ -286,17 +319,16 @@
 
                     // else
                     // {
-                    //     foreach (KeyValuePair<string, List<FloatMenuOption>> pair in list)
-                    //     {
-                    //         string label = pair.Key;
-                    //         if (pair.Value.Count == 1)
-                    //         {
-                    //             label = pair.Value.FirstOrDefault().Label;
-                    //         }
-                    //         list2.Add(label, pair.Value);
-                    //     }
+                    // foreach (KeyValuePair<string, List<FloatMenuOption>> pair in list)
+                    // {
+                    // string label = pair.Key;
+                    // if (pair.Value.Count == 1)
+                    // {
+                    // label = pair.Value.FirstOrDefault().Label;
                     // }
-
+                    // list2.Add(label, pair.Value);
+                    // }
+                    // }
                     return dictionary;
                 };
 
@@ -319,6 +351,7 @@
                 mouseoverBill.TryDrawIngredientSearchRadiusOnMap(Find.Selector.SingleSelectedThing.Position);
                 mouseoverBill = null;
             }
+
             return false;
         }
 
@@ -333,7 +366,6 @@
                 if (Widgets.ButtonText(rect2, "AddBill".Translate()))
                 {
                     // Outfitter Code
-
                     List<FloatMenuOption> items = labeledSortingActions.Invoke().Keys.Select(
                         label =>
                             {
@@ -345,10 +377,12 @@
                     Find.WindowStack.Add(Tools.LabelMenu);
 
                     // Vanilla
-                    //   Find.WindowStack.Add(new FloatMenu(recipeOptionsMaker()));
+                    // Find.WindowStack.Add(new FloatMenu(recipeOptionsMaker()));
                 }
+
                 UIHighlighter.HighlightOpportunity(rect2, "AddBill");
             }
+
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
             Rect outRect = new Rect(0f, 35f, rect.width, (float)(rect.height - 35.0));
@@ -364,12 +398,15 @@
                 {
                     result = bill;
                 }
+
                 num = (float)(num + (rect3.height + 6.0));
             }
+
             if (Event.current.type == EventType.Layout)
             {
                 viewHeight = (float)(num + 60.0);
             }
+
             Widgets.EndScrollView();
             GUI.EndGroup();
             return result;

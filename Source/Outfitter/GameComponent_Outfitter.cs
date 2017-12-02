@@ -29,10 +29,12 @@
                 {
                     def.inspectorTabs = new List<Type>();
                 }
+
                 if (def.inspectorTabsResolved == null)
                 {
                     def.inspectorTabsResolved = new List<InspectTabBase>();
                 }
+
                 if (def.inspectorTabs.Contains(typeof(ITab_Pawn_Outfitter)))
                 {
                     return;

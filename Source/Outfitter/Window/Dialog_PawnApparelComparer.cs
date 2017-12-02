@@ -19,10 +19,6 @@
         [NotNull]
         private readonly Pawn pawn;
 
-        private List<Apparel> _calculatedApparelItems;
-
-        private List<float> _calculatedApparelScore;
-
         private Vector2 scrollPosition;
 
         public Dialog_PawnApparelComparer(Pawn p, Apparel apparel)
@@ -37,16 +33,6 @@
 
         public override Vector2 InitialSize => new Vector2(500f, 700f);
 
-        public void DIALOG_CalculateApparelScoreGain(Pawn pawn, Apparel apparel, out float gain)
-        {
-            if (this._calculatedApparelItems == null)
-            {
-                this.DIALOG_InitializeCalculatedApparelScoresFromWornApparel();
-            }
-
-            gain = pawn.ApparelScoreGain(apparel);
-        }
-
         private Dictionary<Apparel, float> dict;
 
         public override void DoWindowContents(Rect windowRect)
@@ -54,7 +40,7 @@
             ApparelStatCache apparelStatCache = this.pawn.GetApparelStatCache();
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
 
-            if (this.dict == null || Find.TickManager.TicksGame % 60 == 0)
+            if (this.dict == null || Find.TickManager.TicksGame % 60 == 0 || GUI.changed)
             {
                 List<Apparel> ap = new List<Apparel>(
                     this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>().Where(
@@ -75,17 +61,18 @@
                     i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def, this.pawn.RaceProps.body)
                          && currentOutfit.filter.Allows(i)).ToList();
 
+
                 ap = ap.OrderByDescending(
                     i =>
                         {
-                            this.DIALOG_CalculateApparelScoreGain(this.pawn, i, out float g);
+                            float g = this.pawn.ApparelScoreGain(i);
                             return g;
                         }).ToList();
 
                 this.dict = new Dictionary<Apparel, float>();
                 foreach (Apparel currentAppel in ap)
                 {
-                    this.DIALOG_CalculateApparelScoreGain(this.pawn, currentAppel, out float gain);
+                    float gain = this.pawn.ApparelScoreGain(currentAppel);
                     this.dict.Add(currentAppel, gain);
                 }
             }
@@ -141,8 +128,8 @@
 
             foreach (KeyValuePair<Apparel, float> kvp in this.dict)
             {
-                var currentAppel = kvp.Key;
-                var gain = kvp.Value;
+                Apparel currentAppel = kvp.Key;
+                float gain = kvp.Value;
 
                 itemRect = new Rect(listRect.xMin, listRect.yMin, listRect.width, 28f);
                 if (Mouse.IsOver(itemRect))
@@ -184,18 +171,6 @@
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.EndGroup();
-        }
-
-        private void DIALOG_InitializeCalculatedApparelScoresFromWornApparel()
-        {
-            ApparelStatCache conf = this.pawn.GetApparelStatCache();
-            this._calculatedApparelItems = new List<Apparel>();
-            this._calculatedApparelScore = new List<float>();
-            foreach (Apparel apparel in this.pawn.apparel.WornApparel)
-            {
-                this._calculatedApparelItems.Add(apparel);
-                this._calculatedApparelScore.Add(conf.ApparelScoreRaw(apparel));
-            }
         }
 
         private void DrawLine(
