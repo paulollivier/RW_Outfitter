@@ -6,6 +6,8 @@
 
     using JetBrains.Annotations;
 
+    using RimWorld;
+
     using Verse;
 
     public class GameComponent_Outfitter : GameComponent
@@ -22,6 +24,33 @@
         // ReSharper disable once UnusedMember.Global
         public GameComponent_Outfitter(Game game)
         {
+            if (false)
+                foreach (BodyDef bodyDef in DefDatabase<BodyDef>.AllDefsListForReading)
+                {
+                    if (bodyDef.defName != "Human")
+                    {
+                        continue;
+                    }
+
+                    BodyPartRecord neck = bodyDef.corePart.parts.FirstOrDefault(x => x.def == BodyPartDefOf.Neck);
+                    BodyPartRecord head = neck?.parts.FirstOrDefault(x => x.def == BodyPartDefOf.Head);
+                    if (head == null)
+                    {
+                        continue;
+                    }
+                    //    if (!head.groups.Contains(BodyPartGroupDefOf.Eyes))
+                    {
+                        //     head.groups.Add(BodyPartGroupDefOf.Eyes);
+                        BodyPartRecord leftEye = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.LeftEye);
+                        BodyPartRecord rightEye = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.RightEye);
+                        leftEye?.groups.Remove(BodyPartGroupDefOf.FullHead);
+                        rightEye?.groups.Remove(BodyPartGroupDefOf.FullHead);
+                        Log.Message("Outfitter patched Human eyes.");
+                        break;
+                    }
+
+                }
+
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(
                 td => td.category == ThingCategory.Pawn && td.race.Humanlike))
             {
@@ -44,7 +73,6 @@
                 def.inspectorTabsResolved.Add(InspectTabManager.GetSharedInstance(typeof(ITab_Pawn_Outfitter)));
             }
         }
-
         public override void ExposeData()
         {
             base.ExposeData();

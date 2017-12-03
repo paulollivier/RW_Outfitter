@@ -25,10 +25,15 @@ internal static class HarmonyPatches
     {
         HarmonyInstance harmony = HarmonyInstance.Create("com.outfitter.rimworld.mod");
 
-       // harmony.Patch(
-       // AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
-       // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
-       // null);
+        harmony.Patch(
+            AccessTools.Method(typeof(Pawn_ApparelTracker), nameof(Pawn_ApparelTracker.Wear)),
+            null,
+            new HarmonyMethod(typeof(HarmonyPatches), nameof(SortApparel)));
+
+        // harmony.Patch(
+        // AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
+        // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
+        // null);
         harmony.Patch(
             AccessTools.Method(typeof(JobGiver_OptimizeApparel), "TryGiveJob"),
             new HarmonyMethod(
