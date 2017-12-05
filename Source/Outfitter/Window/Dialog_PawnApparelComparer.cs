@@ -35,6 +35,8 @@
 
         private Dictionary<Apparel, float> dict;
 
+        private const float ScoreWidth = 100f;
+
         public override void DoWindowContents(Rect windowRect)
         {
             ApparelStatCache apparelStatCache = this.pawn.GetApparelStatCache();
@@ -81,9 +83,8 @@
             groupRect.height -= 100;
             GUI.BeginGroup(groupRect);
 
-            float apparelScoreWidth = 100f;
-            float apparelGainWidth = 100f;
-            float apparelLabelWidth = (groupRect.width - apparelScoreWidth - apparelGainWidth) / 3 - 8f - 8f;
+
+            float apparelLabelWidth = (groupRect.width - 2 * ScoreWidth) / 3 - 8f - 8f;
             float apparelEquippedWidth = apparelLabelWidth;
             float apparelOwnerWidth = apparelLabelWidth;
 
@@ -101,9 +102,7 @@
                 "Target",
                 apparelOwnerWidth,
                 "Score",
-                apparelScoreWidth,
-                "Gain",
-                apparelGainWidth);
+                "Gain");
 
             groupRect.yMin += itemRect.height;
             Widgets.DrawLineHorizontal(groupRect.xMin, groupRect.yMin, groupRect.width);
@@ -142,7 +141,7 @@
                 Pawn target = null;
 
                 string gainString = this.pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(currentAppel)
-                                        ? gain.ToString("N5")
+                                        ? gain.ToString("N3")
                                         : "No Allow";
 
                 this.DrawLine(
@@ -156,10 +155,9 @@
                     target,
                     target?.LabelCap,
                     apparelOwnerWidth,
-                    apparelStatCache.ApparelScoreRaw(currentAppel).ToString("N5"),
-                    apparelScoreWidth,
-                    gainString,
-                    apparelGainWidth);
+                    apparelStatCache.ApparelScoreRaw(currentAppel).ToString("N3"),
+                    gainString
+                    );
 
                 listRect.yMin = itemRect.yMax;
             }
@@ -178,22 +176,22 @@
             [CanBeNull] Apparel apparelThing,
             string apparelText,
             float textureWidth,
-            Pawn apparelEquippedThing,
-            string apparelEquipedText,
+            [CanBeNull] Pawn equippedPawn,
+            string apparelEquippedText,
             float apparelEquippedWidth,
-            Pawn apparelOwnerThing,
+            [CanBeNull] Pawn apparelOwnerThing,
             string apparelOwnerText,
             float apparelOwnerWidth,
             string apparelScoreText,
-            float apparelScoreWidth,
-            string apparelGainText,
-            float apparelGainWidth)
+            string apparelGainText)
         {
             Rect fieldRect;
+            bool isCurrentlyWorn = equippedPawn != null;
+
             if (apparelThing != null)
             {
                 fieldRect = new Rect(itemRect.xMin, itemRect.yMin, itemRect.height, itemRect.height);
-                if (!string.IsNullOrEmpty(apparelText))
+                if (!apparelText.NullOrEmpty())
                 {
                     TooltipHandler.TipRegion(fieldRect, apparelText);
                 }
@@ -207,13 +205,13 @@
                 {
                     this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
-                    if (apparelEquippedThing != null)
+                    if (isCurrentlyWorn)
                     {
-                        Find.CameraDriver.JumpToVisibleMapLoc(apparelEquippedThing.PositionHeld);
+                        Find.CameraDriver.JumpToVisibleMapLoc(equippedPawn.PositionHeld);
                         Find.Selector.ClearSelection();
-                        if (apparelEquippedThing.Spawned)
+                        if (equippedPawn.Spawned)
                         {
-                            Find.Selector.Select(apparelEquippedThing);
+                            Find.Selector.Select(equippedPawn);
                         }
                     }
                     else
@@ -241,29 +239,29 @@
 
             itemRect.xMin += textureWidth;
 
-            if (apparelEquippedThing != null)
+            if (isCurrentlyWorn)
             {
                 fieldRect = new Rect(itemRect.xMin, itemRect.yMin, itemRect.height, itemRect.height);
-                if (!string.IsNullOrEmpty(apparelEquipedText))
+                if (!apparelEquippedText.NullOrEmpty())
                 {
-                    TooltipHandler.TipRegion(fieldRect, apparelEquipedText);
+                    TooltipHandler.TipRegion(fieldRect, apparelEquippedText);
                 }
 
-                if (apparelEquippedThing.def.DrawMatSingle != null
-                    && apparelEquippedThing.def.DrawMatSingle.mainTexture != null)
+                if (equippedPawn.def.DrawMatSingle != null
+                    && equippedPawn.def.DrawMatSingle.mainTexture != null)
                 {
-                    Widgets.ThingIcon(fieldRect, apparelEquippedThing);
+                    Widgets.ThingIcon(fieldRect, equippedPawn);
                 }
 
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
                     this.Close();
                     Find.MainTabsRoot.EscapeCurrentTab();
-                    Find.CameraDriver.JumpToVisibleMapLoc(apparelEquippedThing.PositionHeld);
+                    Find.CameraDriver.JumpToVisibleMapLoc(equippedPawn.PositionHeld);
                     Find.Selector.ClearSelection();
-                    if (apparelEquippedThing.Spawned)
+                    if (equippedPawn.Spawned)
                     {
-                        Find.Selector.Select(apparelEquippedThing);
+                        Find.Selector.Select(equippedPawn);
                     }
 
                     return;
@@ -271,7 +269,7 @@
             }
             else
             {
-                if (!string.IsNullOrEmpty(apparelEquipedText))
+                if (!apparelEquippedText.NullOrEmpty())
                 {
                     fieldRect = new Rect(itemRect.xMin, itemRect.yMin, apparelEquippedWidth, itemRect.height);
                     Text.Anchor = TextAnchor.UpperLeft;
@@ -297,7 +295,7 @@
             }
             else
             {
-                if (!string.IsNullOrEmpty(apparelOwnerText))
+                if (!apparelOwnerText.NullOrEmpty())
                 {
                     fieldRect = new Rect(itemRect.xMin, itemRect.yMin, apparelOwnerWidth, itemRect.height);
                     Text.Anchor = TextAnchor.UpperLeft;
@@ -307,9 +305,19 @@
 
             itemRect.xMin += apparelOwnerWidth;
 
-            fieldRect = new Rect(itemRect.xMin, itemRect.yMin, apparelScoreWidth, itemRect.height);
+            fieldRect = new Rect(itemRect.xMin, itemRect.yMin, ScoreWidth, itemRect.height);
+            if (isCurrentlyWorn)
+            {
+                GUI.color = new Color(0.6f, 0.6f, 0.6f);
+            }
             Text.Anchor = TextAnchor.UpperRight;
             Widgets.Label(fieldRect, apparelScoreText);
+
+            itemRect.xMin += ScoreWidth;
+
+            Text.Anchor = TextAnchor.UpperRight;
+            Widgets.Label(new Rect(itemRect.xMin, itemRect.yMin, ScoreWidth, itemRect.height), apparelGainText);
+            GUI.color = Color.white;
             if (apparelThing != null)
             {
                 Text.Anchor = TextAnchor.UpperLeft;
@@ -319,12 +327,6 @@
                     return;
                 }
             }
-
-            itemRect.xMin += apparelScoreWidth;
-
-            Text.Anchor = TextAnchor.UpperRight;
-            Widgets.Label(new Rect(itemRect.xMin, itemRect.yMin, apparelGainWidth, itemRect.height), apparelGainText);
-            itemRect.xMin += apparelGainWidth;
         }
     }
 }

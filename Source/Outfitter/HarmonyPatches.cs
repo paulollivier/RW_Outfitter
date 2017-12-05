@@ -5,6 +5,7 @@
 //        public override string ModIdentifier { get { return "Outfitter"; } }
 //    }
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -21,25 +22,30 @@ using Verse.AI;
 [StaticConstructorOnStartup]
 internal static class HarmonyPatches
 {
+
     static HarmonyPatches()
     {
         HarmonyInstance harmony = HarmonyInstance.Create("com.outfitter.rimworld.mod");
 
         harmony.Patch(
-            AccessTools.Method(typeof(Pawn_ApparelTracker), nameof(Pawn_ApparelTracker.Wear)),
+            AccessTools.Method(typeof(PawnGraphicSet), nameof(PawnGraphicSet.ResolveApparelGraphics)),
             null,
-            new HarmonyMethod(typeof(HarmonyPatches), nameof(SortApparel)));
+            new HarmonyMethod(typeof(HarmonyPatches), nameof(ResolveApparelGraphics_Postfix)),
+            null);
 
         // harmony.Patch(
         // AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
         // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
         // null);
-        harmony.Patch(
+        if (Controller.settings.useEyes)
+        {
+            harmony.Patch(
             AccessTools.Method(typeof(JobGiver_OptimizeApparel), "TryGiveJob"),
             new HarmonyMethod(
                 typeof(JobGiver_OutfitterOptimizeApparel),
                 nameof(JobGiver_OutfitterOptimizeApparel.TryGiveJob_Prefix)),
             null);
+        }
 
         harmony.Patch(
             AccessTools.Method(typeof(Pawn_WorkSettings), nameof(Pawn_WorkSettings.SetPriority)),
@@ -86,6 +92,12 @@ internal static class HarmonyPatches
         // {
         // __result.Job.
         // }
+    }
+
+    private static void ResolveApparelGraphics_Postfix(PawnGraphicSet __instance)
+    {
+        __instance.apparelGraphics = __instance.apparelGraphics
+            .OrderBy(x => x.sourceApparel.def.apparel.bodyPartGroups[0].listOrder).ToList();
     }
 
     private static void UpdatePriorities(Pawn_WorkSettings __instance)

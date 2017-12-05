@@ -69,6 +69,8 @@
     <Compile Include="ApparelEntry.cs" />
     <Compile Include="ApparelStatCache.cs" />
     <Compile Include="Cache.cs" />
+    <Compile Include="Controller.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="WorkType\Splitter.cs" />
     <Compile Include="WorkType\FSF.cs" />
     <Compile Include="WorkType\Other.cs" />

@@ -242,7 +242,8 @@ namespace Outfitter
         {
             float num = ap.GetStatValue(StatDefOf.ArmorRating_Sharp)
                          + ap.GetStatValue(StatDefOf.ArmorRating_Blunt) * 0.5f;
-            return num * 0.15f;
+
+            return num * 0.1f;
         }
 
         public static void DoApparelScoreRaw_PawnStatsHandlers(

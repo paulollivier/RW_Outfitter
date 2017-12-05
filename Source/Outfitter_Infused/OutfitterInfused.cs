@@ -15,6 +15,11 @@ namespace OutfitterInfused
 
     public class GameComponent_OutfitterInfused : GameComponent
     {
+        public GameComponent_OutfitterInfused()
+        {
+            //
+        }
+
         public GameComponent_OutfitterInfused(Game game)
         {
             Log.Message("Outfitter with Infused Initialized");

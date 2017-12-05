@@ -354,7 +354,7 @@
                 GUI.color = Color.white;
                 cur.y += 15f;
 
-                // stat weight sliders
+                // statPriority weight sliders
                 foreach (StatPriority stat in this.SelPawnForGear.GetApparelStatCache().StatCache)
                 {
                     DrawStatRow(ref cur, viewRect.width, stat, this.SelPawnForGear, out bool stop_UI);
@@ -362,7 +362,7 @@
                     {
                         // DrawWApparelStatRow can change the StatCache, invalidating the loop.
                         // So if it does that, stop looping - we'll redraw on the next tick.
-                        // + force a stat update
+                        // + force a statPriority update
                         this.SelPawnForGear.GetApparelStatCache().RawScoreDict.Clear();
                         break;
                     }
@@ -557,7 +557,7 @@
         private void DrawStatRow(
             ref Vector2 cur,
             float width,
-            [NotNull] StatPriority stat,
+            [NotNull] StatPriority statPriority,
             Pawn pawn,
             out bool stopUI)
         {
@@ -570,10 +570,10 @@
             Rect buttonRect = new Rect(sliderRect.xMax + 4f, cur.y + 3f, 16f, 16f);
 
             // draw label
-            Text.Font = Text.CalcHeight(stat.Stat.LabelCap, labelRect.width) > labelRect.height
+            Text.Font = Text.CalcHeight(statPriority.Stat.LabelCap, labelRect.width) > labelRect.height
                             ? GameFont.Tiny
                             : GameFont.Small;
-            switch (stat.Assignment)
+            switch (statPriority.Assignment)
             {
                 case StatAssignment.Automatic:
                     GUI.color = Color.grey;
@@ -595,29 +595,34 @@
                     GUI.color = Color.white;
                     break;
             }
-            Widgets.Label(labelRect, stat.Stat.LabelCap);
+           // if (!ApparelStatsHelper.AllStatDefsModifiedByAnyApparel.Contains(statPriority.Stat))
+           // {
+           //     GUI.color *= new Color(0.8f, 0.8f, 0.8f);
+           // }
+
+            Widgets.Label(labelRect, statPriority.Stat.LabelCap);
             Text.Font = GameFont.Small;
 
             // draw button
             // if manually added, delete the priority
             string buttonTooltip = string.Empty;
-            if (stat.Assignment == StatAssignment.Manual)
+            if (statPriority.Assignment == StatAssignment.Manual)
             {
-                buttonTooltip = "StatPriorityDelete".Translate(stat.Stat.LabelCap);
+                buttonTooltip = "StatPriorityDelete".Translate(statPriority.Stat.LabelCap);
                 if (Widgets.ButtonImage(buttonRect, OutfitterTextures.DeleteButton))
                 {
-                    stat.Delete(pawn);
+                    statPriority.Delete(pawn);
                     stopUI = true;
                 }
             }
 
             // if overridden auto assignment, reset to auto
-            if (stat.Assignment == StatAssignment.Override)
+            if (statPriority.Assignment == StatAssignment.Override)
             {
-                buttonTooltip = "StatPriorityReset".Translate(stat.Stat.LabelCap);
+                buttonTooltip = "StatPriorityReset".Translate(statPriority.Stat.LabelCap);
                 if (Widgets.ButtonImage(buttonRect, OutfitterTextures.ResetButton))
                 {
-                    stat.Reset(pawn);
+                    statPriority.Reset(pawn);
                     stopUI = true;
                 }
             }
@@ -630,7 +635,7 @@
             }
 
             // draw slider
-            switch (stat.Assignment)
+            switch (statPriority.Assignment)
             {
                 case StatAssignment.Automatic:
                     GUI.color = Color.grey;
@@ -655,16 +660,16 @@
 
             float weight = GUI.HorizontalSlider(
                 sliderRect,
-                stat.Weight,
-                ApparelStatCache.specialStats.Contains(stat.Stat) ? 0.01f : -ApparelStatCache.MaxValue,
+                statPriority.Weight,
+                ApparelStatCache.specialStats.Contains(statPriority.Stat) ? 0.01f : -ApparelStatCache.MaxValue,
                 ApparelStatCache.MaxValue);
 
-            if (Mathf.Abs(weight - stat.Weight) > 1e-4)
+            if (Mathf.Abs(weight - statPriority.Weight) > 1e-4)
             {
-                stat.Weight = weight;
-                if (stat.Assignment == StatAssignment.Automatic || stat.Assignment == StatAssignment.Individual)
+                statPriority.Weight = weight;
+                if (statPriority.Assignment == StatAssignment.Automatic || statPriority.Assignment == StatAssignment.Individual)
                 {
-                    stat.Assignment = StatAssignment.Override;
+                    statPriority.Assignment = StatAssignment.Override;
                 }
             }
 
@@ -676,13 +681,13 @@
             GUI.color = Color.white;
 
             // tooltips
-            TooltipHandler.TipRegion(labelRect, stat.Stat.LabelCap + "\n\n" + stat.Stat.description);
+            TooltipHandler.TipRegion(labelRect, statPriority.Stat.LabelCap + "\n\n" + statPriority.Stat.description);
             if (buttonTooltip != string.Empty)
             {
                 TooltipHandler.TipRegion(buttonRect, buttonTooltip);
             }
 
-            TooltipHandler.TipRegion(sliderRect, stat.Weight.ToStringByStyle(ToStringStyle.FloatTwo));
+            TooltipHandler.TipRegion(sliderRect, statPriority.Weight.ToStringByStyle(ToStringStyle.FloatTwo));
 
             // advance row
             cur.y += 30f;

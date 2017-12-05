@@ -12,8 +12,6 @@
 
     public class GameComponent_Outfitter : GameComponent
     {
-        public static bool updated;
-
         [NotNull]
         public List<SaveablePawn> PawnCache = new List<SaveablePawn>();
 
@@ -24,7 +22,8 @@
         // ReSharper disable once UnusedMember.Global
         public GameComponent_Outfitter(Game game)
         {
-            if (false)
+            if (Controller.settings.useEyes)
+            {
                 foreach (BodyDef bodyDef in DefDatabase<BodyDef>.AllDefsListForReading)
                 {
                     if (bodyDef.defName != "Human")
@@ -50,6 +49,7 @@
                     }
 
                 }
+            }
 
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(
                 td => td.category == ThingCategory.Pawn && td.race.Humanlike))
@@ -73,6 +73,7 @@
                 def.inspectorTabsResolved.Add(InspectTabManager.GetSharedInstance(typeof(ITab_Pawn_Outfitter)));
             }
         }
+
         public override void ExposeData()
         {
             base.ExposeData();

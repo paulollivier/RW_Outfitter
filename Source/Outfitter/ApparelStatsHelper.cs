@@ -90,6 +90,23 @@ namespace Outfitter
 
         private static List<StatDef> allApparelStats;
 
+        private static List<StatDef> IgnoredStatsList = new List<StatDef>
+                                                           {
+                                                               StatDefOf.ComfyTemperatureMin,
+                                                               StatDefOf.ComfyTemperatureMax,
+                                                               StatDefOf.MarketValue,
+                                                               StatDefOf.MaxHitPoints,
+                                                               StatDefOf.SellPriceFactor,
+                                                               StatDefOf.Beauty,
+                                                               StatDefOf.DeteriorationRate,
+                                                               StatDefOf.Flammability,
+                                                               StatDefOf.Insulation_Cold,
+                                                               StatDefOf.Insulation_Heat,
+                                                               StatDefOf.Mass,
+                                                               StatDefOf.WorkToMake,
+                                                               StatDefOf.MedicalPotency,
+                                                           };
+
         #endregion Private Fields
 
         #region Public Properties
@@ -100,7 +117,7 @@ namespace Outfitter
 
         #region Private Properties
 
-        private static List<StatDef> AllStatDefsModifiedByAnyApparel
+        public static List<StatDef> AllStatDefsModifiedByAnyApparel
         {
             get
             {
@@ -114,6 +131,12 @@ namespace Outfitter
                         if (apparel.equippedStatOffsets.NullOrEmpty())
                         {
                             continue;
+                        }
+
+                        foreach (StatModifier modifier in apparel.statBases.Where(
+                            modifier => !allApparelStats.Contains(modifier.stat)))
+                        {
+                            allApparelStats.Add(modifier.stat);
                         }
 
                         foreach (StatModifier modifier in apparel.equippedStatOffsets.Where(
@@ -153,9 +176,13 @@ namespace Outfitter
             bool willReplace = false;
 
             // check if the candidate will replace existing gear
-            foreach (Apparel wornAp in wornApparel.Where(
-                apparel => !ApparelUtility.CanWearTogether(apparel.def, newAp.def, pawn.RaceProps.body)))
+            for (int index = 0; index < wornApparel.Count; index++)
             {
+                Apparel wornAp = wornApparel[index];
+                if (ApparelUtility.CanWearTogether(wornAp.def, newAp.def, pawn.RaceProps.body))
+                {
+                    continue;
+                }
                 // can't drop forced gear
                 if (!pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(wornAp))
                 {
@@ -405,6 +432,14 @@ namespace Outfitter
                         KeyValuePair<StatDef, float> stats = statsOfWorkType[k];
                         StatDef stat = stats.Key;
 
+                        if (!AllStatDefsModifiedByAnyApparel.Contains(stat))
+                        {
+                            continue;
+                        }
+                        if (IgnoredStatsList.Contains(stat))
+                        {
+                            continue;
+                        }
                         int priority = Find.PlaySettings.useWorkPriorities ? pawn.GetWorkPriority(workType) : 3;
 
                         float priorityAdjust = 1f / priority / maxPriority;
@@ -446,15 +481,20 @@ namespace Outfitter
                 AdjustStatsForTraits(pawn, ref dict);
             }
 
-            float num = ApparelStatCache.MaxValue / 8 * 5;
+            float num = ApparelStatCache.MaxValue / 8 * 5; // =>1.56
             if (dict.Count > 0)
             {
+                Dictionary<StatDef, float> filter = dict.Where(x => x.Key != StatDefOf.WorkSpeedGlobal).ToDictionary(x => x.Key, y => y.Value);
                 // normalize weights
-                float max = dict.Values.Select(Math.Abs).Max();
+                float max = filter.Values.Select(Math.Abs).Max();
                 foreach (StatDef key in new List<StatDef>(dict.Keys))
                 {
                     // normalize max of absolute weigths to be 1.5
                     dict[key] /= max / num;
+                    if (key == StatDefOf.WorkSpeedGlobal && dict[key] > num)
+                    {
+                        dict[key] = num;
+                    }
                 }
             }
 
@@ -831,7 +871,7 @@ namespace Outfitter
                     }
 
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.SculptingSpeed, PosMax(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
                 case Vanilla.Crafting:
@@ -845,7 +885,7 @@ namespace Outfitter
                         yield return new KeyValuePair<StatDef, float>(StatDefOf2.SmeltingSpeed, PosMax(mainJob));
                     }
 
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield return new KeyValuePair<StatDef, float>(StatDefOf2.ButcheryMechanoidSpeed, PosMed(mainJob));
                     yield return new KeyValuePair<StatDef, float>(
                         StatDefOf2.ButcheryMechanoidEfficiency,
@@ -858,7 +898,7 @@ namespace Outfitter
                         mainJob = true;
                     }
 
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMed(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf.WorkSpeedGlobal, PosMin(mainJob));
                     yield break;
 
                 case Splitter.Smelting:
@@ -894,9 +934,9 @@ namespace Outfitter
                 // Colony Manager
                 case Other.FluffyManaging:
                     yield return new KeyValuePair<StatDef, float>(StatDefOf.SocialImpact, PosMin(mainJob));
-                    yield return new KeyValuePair<StatDef, float>(
-                        DefDatabase<StatDef>.GetNamed("ManagingSpeed"),
-                        PosMed(mainJob));
+                    //   yield return new KeyValuePair<StatDef, float>(
+                    //       DefDatabase<StatDef>.GetNamed("ManagingSpeed"),
+                    //       PosMin(mainJob));
                     yield break;
 
                 // Hospitality

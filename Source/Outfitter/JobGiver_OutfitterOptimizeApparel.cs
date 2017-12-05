@@ -69,14 +69,15 @@
             else
             {
                 debugSb = new StringBuilder();
-                debugSb.AppendLine(string.Concat("Scanning for ", pawn, " at ", pawn.Position));
+                debugSb.AppendLine(string.Concat("Outfiter scanning for ", pawn, " at ", pawn.Position));
             }
 
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
             List<Apparel> wornApparel = pawn.apparel.WornApparel;
 
-            foreach (Apparel ap in wornApparel)
+            for (int i = 0; i < wornApparel.Count; i++)
             {
+                Apparel ap = wornApparel[i];
                 ApparelStatCache conf = pawn.GetApparelStatCache();
 
                 bool notAllowed = !currentOutfit.filter.Allows(ap)
@@ -111,8 +112,9 @@
                 return false;
             }
 
-            foreach (Thing t in list)
+            for (int i = 0; i < list.Count; i++)
             {
+                Thing t = list[i];
                 Apparel apparel = (Apparel)t;
 
                 // Not allowed
@@ -127,6 +129,7 @@
                     continue;
                 }
 
+                // Forbidden
                 if (apparel.IsForbidden(pawn))
                 {
                     continue;
@@ -144,28 +147,28 @@
                 {
                     debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
                 }
-              //  float otherGain = 0f;
-              //  Pawn otherPawn = null;
-              //  foreach (Pawn otherP in pawn.Map.mapPawns.FreeColonistsSpawned.ToList())
-              //  {
-              //      if (otherP == pawn)
-              //      {
-              //          continue;
-              //      }
-              //      if (otherP.ApparelScoreGain(apparel) >= MinScoreGainToCare)
-              //      {
-              //          if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
-              //          {
-              //              if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
-              //              {
-              //                  thing = apparel;
-              //                  score = gain;
-              //              }
-              //          }
-              //          otherPawn = otherP;
-              //          otherGain = Mathf.Max(otherGain, otherP.ApparelScoreGain(apparel));
-              //      }
-              //  }
+                //  float otherGain = 0f;
+                //  Pawn otherPawn = null;
+                //  foreach (Pawn otherP in pawn.Map.mapPawns.FreeColonistsSpawned.ToList())
+                //  {
+                //      if (otherP == pawn)
+                //      {
+                //          continue;
+                //      }
+                //      if (otherP.ApparelScoreGain(apparel) >= MinScoreGainToCare)
+                //      {
+                //          if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
+                //          {
+                //              if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
+                //              {
+                //                  thing = apparel;
+                //                  score = gain;
+                //              }
+                //          }
+                //          otherPawn = otherP;
+                //          otherGain = Mathf.Max(otherGain, otherP.ApparelScoreGain(apparel));
+                //      }
+                //  }
 
                 if (gain >= MinScoreGainToCare && gain >= score)
                 {
@@ -231,6 +234,7 @@
             // pawn.GetApparelStatCache().recentApparel.Add(apparel);
             // }
             __result = new Job(JobDefOf.Wear, thing);
+            pawn.Reserve(thing, __result, 1, 1);
             return false;
         }
     }
