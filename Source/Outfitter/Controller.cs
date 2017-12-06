@@ -59,11 +59,13 @@ namespace Outfitter
                         //     head.groups.Add(BodyPartGroupDefOf.Eyes);
                         BodyPartRecord leftEye = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.LeftEye);
                         BodyPartRecord rightEye = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.RightEye);
+                        BodyPartRecord jaw = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.Jaw);
 
-                        if (settings.useEyes)
+                        if (settings.UseEyes)
                         {
                             leftEye?.groups.Remove(BodyPartGroupDefOf.FullHead);
                             rightEye?.groups.Remove(BodyPartGroupDefOf.FullHead);
+                            jaw?.groups.Remove(BodyPartGroupDefOf.FullHead);
                             Log.Message("Outfitter removed FullHead from Human eyes.");
                         }
                         else
@@ -75,6 +77,10 @@ namespace Outfitter
                             if (rightEye != null && !rightEye.groups.Contains(BodyPartGroupDefOf.FullHead))
                             {
                                 rightEye?.groups.Add(BodyPartGroupDefOf.FullHead);
+                            }
+                            if (jaw != null && !jaw.groups.Contains(BodyPartGroupDefOf.FullHead))
+                            {
+                                jaw?.groups.Add(BodyPartGroupDefOf.FullHead);
                             }
                             Log.Message("Outfitter re-added FullHead to Human eyes.");
                         }

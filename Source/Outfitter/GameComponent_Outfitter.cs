@@ -22,7 +22,7 @@
         // ReSharper disable once UnusedMember.Global
         public GameComponent_Outfitter(Game game)
         {
-            if (Controller.settings.useEyes)
+            if (Controller.settings.UseEyes)
             {
                 foreach (BodyDef bodyDef in DefDatabase<BodyDef>.AllDefsListForReading)
                 {
@@ -42,9 +42,11 @@
                         //     head.groups.Add(BodyPartGroupDefOf.Eyes);
                         BodyPartRecord leftEye = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.LeftEye);
                         BodyPartRecord rightEye = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.RightEye);
+                        BodyPartRecord jaw = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.Jaw);
                         leftEye?.groups.Remove(BodyPartGroupDefOf.FullHead);
                         rightEye?.groups.Remove(BodyPartGroupDefOf.FullHead);
-                        Log.Message("Outfitter patched Human eyes.");
+                        jaw?.groups.Remove(BodyPartGroupDefOf.FullHead);
+                        Log.Message("Outfitter patched Human eyes and jaw.");
                         break;
                     }
 

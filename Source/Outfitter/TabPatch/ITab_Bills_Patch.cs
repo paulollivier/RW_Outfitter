@@ -409,8 +409,13 @@
 
             Widgets.EndScrollView();
             GUI.EndGroup();
+            DoBWMPostfix?.Invoke(ref __instance, ref rect);
             return result;
         }
+
+        public delegate void Postfix(ref BillStack __instance, ref Rect rect);
+
+        public static event Postfix DoBWMPostfix;
 
     }
 }

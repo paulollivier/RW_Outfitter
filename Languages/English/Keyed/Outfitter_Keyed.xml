@@ -36,4 +36,6 @@
   <OutfitterWornByCorpse>Worn by corpse</OutfitterWornByCorpse>
   <OutfitterQuality>Quality modifier</OutfitterQuality>
   <OutfitterHumanLeather>Human leather</OutfitterHumanLeather>
+  <Settings.UseEyes>Patch eyes and teeth to enable multiple head gear</Settings.UseEyes>
+  <Settings.UseEyesTooltip>Enabling this removes the FullHead body part group from both eyes and the jaw. Use at your own risk.</Settings.UseEyesTooltip>
 </LanguageData>

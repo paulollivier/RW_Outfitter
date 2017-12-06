@@ -172,6 +172,7 @@ namespace Outfitter
                     // update our time check.
                     this.lastStatUpdate = Find.TickManager.TicksGame;
                     this.pawnSave.ForceStatUpdate = false;
+                        this.pawnSave.armorOnly = false;
 
                     foreach (StatPriority statPriority in this.Cache.Where(
                         statPriority => statPriority.Assignment != StatAssignment.Automatic
@@ -193,11 +194,11 @@ namespace Outfitter
 
                         Saveable_Pawn_StatDef stats =
                             new Saveable_Pawn_StatDef
-                            {
-                                Stat = statPriority.Stat,
-                                Assignment = statPriority.Assignment,
-                                Weight = statPriority.Weight
-                            };
+                                {
+                                    Stat = statPriority.Stat,
+                                    Assignment = statPriority.Assignment,
+                                    Weight = statPriority.Weight
+                                };
                         this.pawnSave.Stats.Add(stats);
                     }
                 }

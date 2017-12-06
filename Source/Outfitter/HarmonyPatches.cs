@@ -37,15 +37,13 @@ internal static class HarmonyPatches
         // AccessTools.Method(typeof(InspectPaneUtility), "DoTabs"),
         // new HarmonyMethod(typeof(TabsPatch), nameof(TabsPatch.DoTabs_Prefix)),
         // null);
-        if (Controller.settings.useEyes)
-        {
-            harmony.Patch(
+
+        harmony.Patch(
             AccessTools.Method(typeof(JobGiver_OptimizeApparel), "TryGiveJob"),
             new HarmonyMethod(
                 typeof(JobGiver_OutfitterOptimizeApparel),
                 nameof(JobGiver_OutfitterOptimizeApparel.TryGiveJob_Prefix)),
             null);
-        }
 
         harmony.Patch(
             AccessTools.Method(typeof(Pawn_WorkSettings), nameof(Pawn_WorkSettings.SetPriority)),

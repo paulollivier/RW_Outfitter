@@ -10,7 +10,8 @@ namespace Outfitter
     using Verse;
     public class Settings : ModSettings
     {
-    public  bool useEyes;
+        public bool UseEyes => this.useEyes;
+        private bool useEyes;
         public void DoWindowContents(Rect inRect)
         {
             Listing_Standard list = new Listing_Standard { ColumnWidth = inRect.width / 2 };
