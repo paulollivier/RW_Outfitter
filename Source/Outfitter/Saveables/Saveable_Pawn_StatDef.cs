@@ -1,35 +1,33 @@
-﻿namespace Outfitter
+﻿using Outfitter.Enums;
+using RimWorld;
+using Verse;
+
+namespace Outfitter
 {
-    using Outfitter.Enums;
-
-    using RimWorld;
-
-    using Verse;
-
     public class Saveable_Pawn_StatDef : IExposable
     {
-        private StatAssignment assignment;
+        private StatAssignment _assignment;
 
-        private StatDef stat;
+        private StatDef _stat;
 
-        private float weight;
+        private float _weight;
 
         public StatAssignment Assignment
         {
-            get => this.assignment;
-            set => this.assignment = value;
+            get => this._assignment;
+            set => this._assignment = value;
         }
 
         public StatDef Stat
         {
-            get => this.stat;
-            set => this.stat = value;
+            get => this._stat;
+            set => this._stat = value;
         }
 
         public float Weight
         {
-            get => this.weight;
-            set => this.weight = value;
+            get => this._weight;
+            set => this._weight = value;
         }
 
         /*
@@ -49,9 +47,9 @@ Assignment = assignment;
 */
         public void ExposeData()
         {
-            Scribe_Defs.Look(ref this.stat, "Stat");
-            Scribe_Values.Look(ref this.assignment, "Assignment");
-            Scribe_Values.Look(ref this.weight, "Weight");
+            Scribe_Defs.Look(ref this._stat, "Stat");
+            Scribe_Values.Look(ref this._assignment, "Assignment");
+            Scribe_Values.Look(ref this._weight, "Weight");
         }
     }
 }

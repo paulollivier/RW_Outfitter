@@ -1,15 +1,12 @@
-﻿namespace Outfitter
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
+using RimWorld;
+using Verse;
+
+namespace Outfitter
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using JetBrains.Annotations;
-
-    using RimWorld;
-
-    using Verse;
-
     public static class Cache
     {
         // ReSharper disable once FieldCanBeMadeReadOnly.Global
@@ -22,7 +19,7 @@
             float baseStat = pawn.def.statBases.GetStatValueFromList(stat, stat.defaultBaseValue);
             float equippedStatValue = apparel.def.equippedStatOffsets.GetStatOffsetFromList(stat);
 
-            if (!ApparelStatCache.specialStats.Contains(stat) && Math.Abs(baseStat) > 0f)
+            if (!ApparelStatCache.SpecialStats.Contains(stat) && Math.Abs(baseStat) > 0f)
             {
                 return ((baseStat + equippedStatValue) / baseStat) - 1;
             }

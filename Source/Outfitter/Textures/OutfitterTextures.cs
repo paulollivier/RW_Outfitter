@@ -1,11 +1,10 @@
-﻿namespace Outfitter.Textures
+﻿using UnityEngine;
+using Verse;
+
+namespace Outfitter.Textures
 {
-    using UnityEngine;
-
-    using Verse;
-
     [StaticConstructorOnStartup]
-    internal class OutfitterTextures
+    internal static class OutfitterTextures
     {
         public static readonly Texture2D AddButton = ContentFinder<Texture2D>.Get("add");
 

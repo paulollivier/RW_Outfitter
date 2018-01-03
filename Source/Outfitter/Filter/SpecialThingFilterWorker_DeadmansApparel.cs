@@ -1,9 +1,8 @@
-﻿namespace Outfitter.Filter
+﻿using RimWorld;
+using Verse;
+
+namespace Outfitter.Filter
 {
-    using RimWorld;
-
-    using Verse;
-
     public class SpecialThingFilterWorker_DeadmansApparel : SpecialThingFilterWorker
     {
         public override bool CanEverMatch(ThingDef def)

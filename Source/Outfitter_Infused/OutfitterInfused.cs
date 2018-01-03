@@ -2,19 +2,16 @@ namespace OutfitterInfused
 {
     using System.Collections.Generic;
     using System.Linq;
-
     using Infused;
-
     using Outfitter;
-
     using RimWorld;
-
     using Verse;
-
     using Def = Infused.Def;
 
     public class GameComponent_OutfitterInfused : GameComponent
     {
+        private readonly Game _game;
+
         public GameComponent_OutfitterInfused()
         {
             //
@@ -22,30 +19,29 @@ namespace OutfitterInfused
 
         public GameComponent_OutfitterInfused(Game game)
         {
+            _game = game;
             Log.Message("Outfitter with Infused Initialized");
-            ApparelStatCache.ApparelScoreRaw_PawnStatsHandlers += ApparelScoreRaw_PawnStatsHandlers;
-            ApparelStatCache.ApparelScoreRaw_FillInfusedStat += ApparelScoreRaw_FillInfusedStat;
-            ApparelStatCache.Ignored_WTHandlers += Ignored_WTHandlers;
+            ApparelStatCache.ApparelScoreRawPawnStatsHandlers += ApparelScoreRaw_PawnStatsHandlers;
+            ApparelStatCache.ApparelScoreRawFillInfusedStat   += ApparelScoreRaw_FillInfusedStat;
+            ApparelStatCache.IgnoredWtHandlers                += Ignored_WTHandlers;
         }
 
         private static void ApparelScoreRaw_FillInfusedStat(
-            Apparel apparel,
-            StatDef parentStat,
+            Apparel              apparel,
+            StatDef              parentStat,
             ref HashSet<StatDef> infusedOffsets)
         {
             if (apparel.TryGetInfusions(out InfusionSet inf))
             {
-                StatMod mod;
-
                 Def prefix = inf.prefix;
                 Def suffix = inf.suffix;
 
-                if (prefix != null && prefix.TryGetStatValue(parentStat, out mod))
+                if (prefix != null && prefix.TryGetStatValue(parentStat, out _))
                 {
                     infusedOffsets.Add(parentStat);
                 }
 
-                if (suffix != null && suffix.TryGetStatValue(parentStat, out mod))
+                if (suffix != null && suffix.TryGetStatValue(parentStat, out _))
                 {
                     infusedOffsets.Add(parentStat);
                 }
@@ -90,7 +86,10 @@ namespace OutfitterInfused
         {
             // add all stat modifiers from all infusions
             foreach (KeyValuePair<StatDef, StatMod> mod in DefDatabase<Def>.AllDefsListForReading.SelectMany(
-                infusion => infusion.stats))
+                                                                                                             infusion =>
+                                                                                                                 infusion
+                                                                                                                    .stats)
+            )
             {
                 if (!allApparelStats.Contains(mod.Key))
                 {

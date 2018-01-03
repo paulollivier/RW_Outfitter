@@ -1,17 +1,15 @@
-﻿namespace Outfitter
+﻿using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
+using RimWorld;
+using Verse;
+
+namespace Outfitter
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using JetBrains.Annotations;
-
-    using RimWorld;
-
-    using Verse;
-
     public class GameComponent_Outfitter : GameComponent
     {
+        private readonly Game _game;
+
         [NotNull]
         public List<SaveablePawn> PawnCache = new List<SaveablePawn>();
 
@@ -22,7 +20,8 @@
         // ReSharper disable once UnusedMember.Global
         public GameComponent_Outfitter(Game game)
         {
-            if (Controller.settings.UseEyes)
+            this._game = game;
+            if (Controller.Settings.UseEyes)
             {
                 foreach (BodyDef bodyDef in DefDatabase<BodyDef>.AllDefsListForReading)
                 {
@@ -56,23 +55,27 @@
             foreach (ThingDef def in DefDatabase<ThingDef>.AllDefsListForReading.Where(
                 td => td.category == ThingCategory.Pawn && td.race.Humanlike))
             {
-                if (def.inspectorTabs == null)
-                {
-                    def.inspectorTabs = new List<Type>();
-                }
-
-                if (def.inspectorTabsResolved == null)
-                {
-                    def.inspectorTabsResolved = new List<InspectTabBase>();
-                }
-
-                if (def.inspectorTabs.Contains(typeof(ITab_Pawn_Outfitter)))
+                // if (def.inspectorTabs == null)
+                // {
+                //     def.inspectorTabs = new List<Type>();
+                // }
+                //
+                // if (def.inspectorTabsResolved == null)
+                // {
+                //     def.inspectorTabsResolved = new List<InspectTabBase>();
+                // }
+                if (def.inspectorTabs == null || def.inspectorTabsResolved == null)
                 {
                     return;
                 }
 
-                def.inspectorTabs.Add(typeof(ITab_Pawn_Outfitter));
-                def.inspectorTabsResolved.Add(InspectTabManager.GetSharedInstance(typeof(ITab_Pawn_Outfitter)));
+                if (def.inspectorTabs.Contains(typeof(Tab_Pawn_Outfitter)))
+                {
+                    return;
+                }
+
+                def.inspectorTabs.Add(typeof(Tab_Pawn_Outfitter));
+                def.inspectorTabsResolved.Add(InspectTabManager.GetSharedInstance(typeof(Tab_Pawn_Outfitter)));
             }
         }
 

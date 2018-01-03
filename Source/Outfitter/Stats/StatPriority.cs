@@ -4,18 +4,14 @@
 //
 // Created 2016-01-02 13:58
 
+using System.Collections.Generic;
+using JetBrains.Annotations;
+using Outfitter.Enums;
+using RimWorld;
+using Verse;
+
 namespace Outfitter
 {
-    using System.Collections.Generic;
-
-    using JetBrains.Annotations;
-
-    using Outfitter.Enums;
-
-    using RimWorld;
-
-    using Verse;
-
     public class StatPriority
     {
         public StatPriority(StatDef stat, float priority, StatAssignment assignment = StatAssignment.Automatic)

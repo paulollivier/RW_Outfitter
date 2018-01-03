@@ -4,9 +4,9 @@
     {
         Anything,
 
-        Soldier00Close_Combat,
+        Soldier00CloseCombat,
 
-        Soldier00Ranged_Combat,
+        Soldier00RangedCombat,
 
         Artist,
 

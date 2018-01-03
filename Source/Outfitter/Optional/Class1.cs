@@ -1,29 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Harmony;
+using ImprovedWorkbenches;
+using Outfitter.TabPatch;
+using Verse;
 
 namespace Outfitter.Optional
 {
-    using Harmony;
-
-    using Outfitter.TabPatch;
-
-    using Verse;
-
-    public class PatchBW : GameComponent
+    public class PatchBw : GameComponent
     {
-        public PatchBW(Game game)
+        private readonly Game _game;
+
+        public PatchBw(Game game)
         {
+            this._game = game;
             try
             {
                 ((Action)(() =>
                     {
                         if (AccessTools.Method(
-                                typeof(ImprovedWorkbenches.BillStack_DoListing_Detour),
-                                nameof(ImprovedWorkbenches.BillStack_DoListing_Detour.Postfix)) != null)
+                                typeof(BillStack_DoListing_Detour),
+                                nameof(BillStack_DoListing_Detour.Postfix)) != null)
                         {
-                            ITab_Bills_Patch.DoBWMPostfix += ImprovedWorkbenches.BillStack_DoListing_Detour.Postfix;
+                            Tab_Bills_Patch.DoBwmPostfix += BillStack_DoListing_Detour.Postfix;
                         }
                     }))();
             }

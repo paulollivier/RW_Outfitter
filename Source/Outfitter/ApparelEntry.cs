@@ -1,24 +1,21 @@
 // ReSharper disable StyleCop.SA1307
 
+using System.Collections.Generic;
+using RimWorld;
+
 namespace Outfitter
 {
-    using System.Collections.Generic;
-
-    using RimWorld;
-
     public class ApparelEntry
     {
-        public HashSet<StatDef> equippedOffsets;
-
-        public HashSet<StatDef> infusedOffsets;
-
-        public HashSet<StatDef> statBases;
+        public HashSet<StatDef> EquippedOffsets;
+        public HashSet<StatDef> InfusedOffsets;
+        public HashSet<StatDef> StatBases;
 
         public ApparelEntry()
         {
-            this.equippedOffsets = new HashSet<StatDef>();
-            this.infusedOffsets = new HashSet<StatDef>();
-            this.statBases = new HashSet<StatDef>();
+            this.EquippedOffsets = new HashSet<StatDef>();
+            this.InfusedOffsets  = new HashSet<StatDef>();
+            this.StatBases       = new HashSet<StatDef>();
         }
     }
 }

@@ -1,43 +1,40 @@
-﻿namespace Outfitter
+﻿using System.Collections.Generic;
+using Outfitter.Enums;
+using RimWorld;
+using Verse;
+
+namespace Outfitter
 {
-    using System.Collections.Generic;
-
-    using Outfitter.Enums;
-
-    using RimWorld;
-
-    using Verse;
-
     public class SaveablePawn : IExposable
     {
         public List<Saveable_Pawn_StatDef> ApparelStats = new List<Saveable_Pawn_StatDef>();
 
-        public List<Apparel> toWear = new List<Apparel>();
+        public List<Apparel> ToWear = new List<Apparel>();
 
-        public List<Apparel> toDrop = new List<Apparel>();
+        public List<Apparel> ToDrop = new List<Apparel>();
 
-        public bool armorOnly;
+        public bool ArmorOnly;
 
         public bool AutoEquipWeapon;
 
         // public FloatRange RealComfyTemperatures;
-        private bool forceStatUpdate;
+        private bool _forceStatUpdate;
 
         public bool ForceStatUpdate
         {
             get
             {
-                return this.forceStatUpdate;
+                return this._forceStatUpdate;
             }
 
             set
             {
-                this.forceStatUpdate = value;
+                this._forceStatUpdate = value;
 
             }
         }
 
-        public MainJob mainJob;
+        public MainJob MainJob;
 
         // Exposed members
         public Pawn Pawn;
@@ -50,35 +47,35 @@
 
         public FloatRange Temperatureweight;
 
-        private bool addIndividualStats = true;
-        private bool addPersonalStats = true;
+        private bool _addIndividualStats = true;
+        private bool _addPersonalStats = true;
 
-        private bool addWorkStats = true;
+        private bool _addWorkStats = true;
 
         public bool AddIndividualStats
         {
-            get => this.addIndividualStats;
+            get => this._addIndividualStats;
             set
             {
-                this.addIndividualStats = value;
+                this._addIndividualStats = value;
             }
         }
         public bool AddPersonalStats
         {
-            get => this.addPersonalStats;
+            get => this._addPersonalStats;
             set
             {
-                this.addPersonalStats = value;
+                this._addPersonalStats = value;
             }
         }
 
         public bool AddWorkStats
         {
-            get => this.addWorkStats;
+            get => this._addWorkStats;
 
             set
             {
-                this.addWorkStats = value;
+                this._addWorkStats = value;
             }
         }
 
@@ -100,10 +97,10 @@
 
             // todo: rename with next big version
             Scribe_Collections.Look(ref this.ApparelStats, "WeaponStats", LookMode.Deep);
-            Scribe_Values.Look(ref this.addWorkStats, "AddWorkStats", true);
-            Scribe_Values.Look(ref this.addIndividualStats, "AddIndividualStats", true);
-            Scribe_Values.Look(ref this.addPersonalStats, "addPersonalStats", true);
-            Scribe_Values.Look(ref this.mainJob, "mainJob");
+            Scribe_Values.Look(ref this._addWorkStats, "AddWorkStats", true);
+            Scribe_Values.Look(ref this._addIndividualStats, "AddIndividualStats", true);
+            Scribe_Values.Look(ref this._addPersonalStats, "addPersonalStats", true);
+            Scribe_Values.Look(ref this.MainJob, "mainJob");
         }
     }
 }

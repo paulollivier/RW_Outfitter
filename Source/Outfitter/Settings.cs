@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using UnityEngine;
+using Verse;
 
 namespace Outfitter
 {
-    using UnityEngine;
-
-    using Verse;
     public class Settings : ModSettings
     {
-        public bool UseEyes => this.useEyes;
-        private bool useEyes;
+        public bool UseEyes => this._useEyes;
+        private bool _useEyes;
         public void DoWindowContents(Rect inRect)
         {
             Listing_Standard list = new Listing_Standard { ColumnWidth = inRect.width / 2 };
@@ -21,7 +16,7 @@ namespace Outfitter
 
             list.CheckboxLabeled(
                 "Settings.UseEyes".Translate(),
-                ref this.useEyes,
+                ref this._useEyes,
                 "Settings.UseEyesTooltip".Translate());
 
             list.End();
@@ -56,7 +51,7 @@ namespace Outfitter
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref this.useEyes, "useEyes", false, true);
+            Scribe_Values.Look(ref this._useEyes, "useEyes", false, true);
         }
     }
 }

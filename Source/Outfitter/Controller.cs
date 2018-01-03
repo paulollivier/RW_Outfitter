@@ -1,31 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
+using JetBrains.Annotations;
+using RimWorld;
+using UnityEngine;
+using Verse;
 
 namespace Outfitter
 {
-    using JetBrains.Annotations;
-
-    using RimWorld;
-
-    using UnityEngine;
-
-    using Verse;
-
     class Controller : Mod
     {
         public Controller(ModContentPack content)
             : base(content)
         {
-            settings = this.GetSettings<Settings>();
+            Settings = this.GetSettings<Settings>();
 
         }
-        public static Settings settings;
+        public static Settings Settings;
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
-            settings.DoWindowContents(inRect);
+            Settings.DoWindowContents(inRect);
         }
 
         [NotNull]
@@ -37,7 +30,7 @@ namespace Outfitter
         public override void WriteSettings()
         {
             base.WriteSettings();
-            settings.Write();
+            Settings.Write();
 
             if (Current.ProgramState == ProgramState.Playing)
             {
@@ -61,7 +54,7 @@ namespace Outfitter
                         BodyPartRecord rightEye = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.RightEye);
                         BodyPartRecord jaw = head.parts.FirstOrDefault(x => x.def == BodyPartDefOf.Jaw);
 
-                        if (settings.UseEyes)
+                        if (Settings.UseEyes)
                         {
                             leftEye?.groups.Remove(BodyPartGroupDefOf.FullHead);
                             rightEye?.groups.Remove(BodyPartGroupDefOf.FullHead);

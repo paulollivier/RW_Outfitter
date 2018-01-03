@@ -1,25 +1,21 @@
-﻿namespace Outfitter.Window
+﻿using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
+using RimWorld;
+using UnityEngine;
+using Verse;
+
+namespace Outfitter.Window
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using JetBrains.Annotations;
-
-    using RimWorld;
-
-    using UnityEngine;
-
-    using Verse;
-
-    public class Dialog_PawnApparelComparer : Window
+    public class Dialog_PawnApparelComparer : Verse.Window
     {
         [NotNull]
-        private readonly Apparel apparel;
+        private readonly Apparel _apparel;
 
         [NotNull]
-        private readonly Pawn pawn;
+        private readonly Pawn _pawn;
 
-        private Vector2 scrollPosition;
+        private Vector2 _scrollPosition;
 
         public Dialog_PawnApparelComparer(Pawn p, Apparel apparel)
         {
@@ -27,28 +23,27 @@
             this.closeOnEscapeKey = true;
             this.doCloseButton = true;
 
-            this.pawn = p;
-            this.apparel = apparel;
+            this._pawn = p;
+            this._apparel = apparel;
         }
 
         public override Vector2 InitialSize => new Vector2(500f, 700f);
 
-        private Dictionary<Apparel, float> dict;
+        private Dictionary<Apparel, float> _dict;
 
         private const float ScoreWidth = 100f;
 
-        public override void DoWindowContents(Rect windowRect)
+        public override void DoWindowContents(Rect inRect)
         {
-            ApparelStatCache apparelStatCache = this.pawn.GetApparelStatCache();
-            Outfit currentOutfit = pawn.outfits.CurrentOutfit;
+            ApparelStatCache apparelStatCache = this._pawn.GetApparelStatCache();
+            Outfit currentOutfit = this._pawn.outfits.CurrentOutfit;
 
-            if (this.dict == null || Find.TickManager.TicksGame % 60 == 0 || GUI.changed)
+            if (this._dict == null || Find.TickManager.TicksGame % 60 == 0 || GUI.changed)
             {
-                List<Apparel> ap = new List<Apparel>(
-                    this.pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>().Where(
+                List<Apparel> ap = new List<Apparel>(this._pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.Apparel).OfType<Apparel>().Where(
                         x => x.Map.slotGroupManager.SlotGroupAt(x.Position) != null));
 
-                foreach (Pawn otherPawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this.pawn.Map))
+                foreach (Pawn otherPawn in PawnsFinder.AllMaps_FreeColonists.Where(x => x.Map == this._pawn.Map))
                 {
                     foreach (Apparel pawnApparel in otherPawn.apparel.WornApparel)
                     {
@@ -60,26 +55,26 @@
                 }
 
                 ap = ap.Where(
-                    i => !ApparelUtility.CanWearTogether(this.apparel.def, i.def, this.pawn.RaceProps.body)
+                    i => !ApparelUtility.CanWearTogether(this._apparel.def, i.def, this._pawn.RaceProps.body)
                          && currentOutfit.filter.Allows(i)).ToList();
 
 
                 ap = ap.OrderByDescending(
                     i =>
                         {
-                            float g = this.pawn.ApparelScoreGain(i);
+                            float g = this._pawn.ApparelScoreGain(i);
                             return g;
                         }).ToList();
 
-                this.dict = new Dictionary<Apparel, float>();
+                this._dict = new Dictionary<Apparel, float>();
                 foreach (Apparel currentAppel in ap)
                 {
-                    float gain = this.pawn.ApparelScoreGain(currentAppel);
-                    this.dict.Add(currentAppel, gain);
+                    float gain = this._pawn.ApparelScoreGain(currentAppel);
+                    this._dict.Add(currentAppel, gain);
                 }
             }
 
-            Rect groupRect = windowRect.ContractedBy(10f);
+            Rect groupRect = inRect.ContractedBy(10f);
             groupRect.height -= 100;
             GUI.BeginGroup(groupRect);
 
@@ -113,8 +108,7 @@
             Rect viewRect = new Rect(
                 groupRect.xMin,
                 groupRect.yMin,
-                groupRect.width - 16f,
-                this.dict.Count * 28f + 16f);
+                groupRect.width - 16f, this._dict.Count * 28f + 16f);
             if (viewRect.height < groupRect.height)
             {
                 groupRect.height = viewRect.height;
@@ -122,10 +116,10 @@
 
             Rect listRect = viewRect.ContractedBy(4f);
 
-            Widgets.BeginScrollView(groupRect, ref this.scrollPosition, viewRect);
+            Widgets.BeginScrollView(groupRect, ref this._scrollPosition, viewRect);
 
 
-            foreach (KeyValuePair<Apparel, float> kvp in this.dict)
+            foreach (KeyValuePair<Apparel, float> kvp in this._dict)
             {
                 Apparel currentAppel = kvp.Key;
                 float gain = kvp.Value;
@@ -140,7 +134,7 @@
                 Pawn equipped = currentAppel.Wearer;
                 Pawn target = null;
 
-                string gainString = this.pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(currentAppel)
+                string gainString = this._pawn.outfits.forcedHandler.AllowedToAutomaticallyDrop(currentAppel)
                                         ? gain.ToString("N3")
                                         : "No Allow";
 
@@ -323,8 +317,7 @@
                 Text.Anchor = TextAnchor.UpperLeft;
                 if (Widgets.ButtonInvisible(fieldRect))
                 {
-                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(this.pawn, apparelThing));
-                    return;
+                    Find.WindowStack.Add(new Window_Pawn_ApparelDetail(this._pawn, apparelThing));
                 }
             }
         }

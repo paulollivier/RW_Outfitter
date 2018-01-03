@@ -1,30 +1,26 @@
-﻿namespace Outfitter.TabPatch
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using KillfaceTools.FMO;
+using RimWorld;
+using UnityEngine;
+using Verse;
+
+namespace Outfitter.TabPatch
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using KillfaceTools.FMO;
-
-    using RimWorld;
-
-    using UnityEngine;
-
-    using Verse;
-
-    public static class ITab_Bills_Patch
+    public static class Tab_Bills_Patch
     {
         private const string Separator = "   ";
 
-        private const string newLine = "\n-------------------------------";
+        private const string NewLine = "\n-------------------------------";
 
-        private static float viewHeight = 1000f;
+        private static float _viewHeight = 1000f;
 
-        private static Vector2 scrollPosition;
+        private static Vector2 _scrollPosition;
 
         private static readonly Vector2 WinSize = new Vector2(420f, 480f);
 
-        private static Bill mouseoverBill;
+        private static Bill _mouseoverBill;
 
         // RimWorld.ITab_Bills
         public static bool FillTab_Prefix()
@@ -106,7 +102,7 @@
                                     (float)(rect.y + (rect.height - 24.0) / 2.0),
                                     recipe));
 
-                            dictionary.Add(recipe.LabelCap, new List<FloatMenuOption>() { floatMenuOption });
+                            dictionary.Add(recipe.LabelCap, new List<FloatMenuOption> { floatMenuOption });
                         }
                     }
 
@@ -119,7 +115,7 @@
                             ThingCountClass recipeProduct = recipe.products.FirstOrDefault();
 
                             List<Pawn> colonistsWithThing = new List<Pawn>();
-                            if (recipeProduct.thingDef.IsApparel)
+                            if (recipeProduct != null && recipeProduct.thingDef.IsApparel)
                             {
                                 colonistsWithThing = selTable.Map.mapPawns.FreeColonistsSpawned
                                     .Where(p => p.apparel.WornApparel.Any(ap => ap.def == recipeProduct.thingDef))
@@ -143,68 +139,71 @@
 
                                 tooltip += "\n";
 
-                                ThingDef thingDef = recipeProduct.thingDef;
-                                for (int index = 0; index < thingDef.apparel.bodyPartGroups.Count; index++)
+                                if (recipeProduct != null)
                                 {
-                                    BodyPartGroupDef bpg = thingDef.apparel.bodyPartGroups[index];
-                                    if (index > 0)
+                                    ThingDef thingDef = recipeProduct.thingDef;
+                                    for (int index = 0; index < thingDef.apparel.bodyPartGroups.Count; index++)
                                     {
-                                        tooltip += ", ";
-                                    }
-
-                                    tooltip += bpg.LabelCap;
-                                }
-
-                                tooltip += "\n";
-                                for (int index = 0; index < thingDef.apparel.layers.Count; index++)
-                                {
-                                    ApparelLayer layer = thingDef.apparel.layers[index];
-                                    if (index > 0)
-                                    {
-                                        tooltip += ", ";
-                                    }
-
-                                    tooltip += layer.ToString();
-                                }
-
-                                List<StatModifier> statBases =
-                                    thingDef.statBases.Where(bing => bing.stat.category == StatCategoryDefOf.Apparel)
-                                        .ToList();
-                                if (!statBases.NullOrEmpty())
-                                {
-                                    // tooltip = StatCategoryDefOf.Apparel.LabelCap;
-                                    // tooltip += "\n-------------------------------";
-                                    tooltip += "\n";
-                                    for (int index = 0; index < statBases.Count; index++)
-                                    {
-                                        StatModifier statOffset = statBases[index];
+                                        BodyPartGroupDef bpg = thingDef.apparel.bodyPartGroups[index];
+                                        if (index > 0)
                                         {
-                                            // if (index > 0)
-                                            tooltip += "\n";
+                                            tooltip += ", ";
                                         }
 
-                                        tooltip += statOffset.stat.LabelCap + Separator
-                                                   + statOffset.ValueToStringAsOffset;
-                                    }
-                                }
-
-                                if (!thingDef.equippedStatOffsets.NullOrEmpty())
-                                {
-                                    // if (tooltip == string.Empty)
-                                    // {
-                                    // tooltip = StatCategoryDefOf.EquippedStatOffsets.LabelCap;
-                                    // }
-                                    {
-                                        // else
-                                        tooltip += "\n\n" + StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                        tooltip += bpg.LabelCap;
                                     }
 
-                                    tooltip += newLine;
-                                    foreach (StatModifier statOffset in thingDef.equippedStatOffsets)
+                                    tooltip += "\n";
+                                    for (int index = 0; index < thingDef.apparel.layers.Count; index++)
                                     {
+                                        ApparelLayer layer = thingDef.apparel.layers[index];
+                                        if (index > 0)
+                                        {
+                                            tooltip += ", ";
+                                        }
+
+                                        tooltip += layer.ToString();
+                                    }
+
+                                    List<StatModifier> statBases =
+                                    thingDef.statBases.Where(bing => bing.stat.category == StatCategoryDefOf.Apparel)
+                                            .ToList();
+                                    if (!statBases.NullOrEmpty())
+                                    {
+                                        // tooltip = StatCategoryDefOf.Apparel.LabelCap;
+                                        // tooltip += "\n-------------------------------";
                                         tooltip += "\n";
-                                        tooltip += statOffset.stat.LabelCap + Separator
-                                                   + statOffset.ValueToStringAsOffset;
+                                        for (int index = 0; index < statBases.Count; index++)
+                                        {
+                                            StatModifier statOffset = statBases[index];
+                                            {
+                                                // if (index > 0)
+                                                tooltip += "\n";
+                                            }
+
+                                            tooltip += statOffset.stat.LabelCap + Separator
+                                                                                + statOffset.ValueToStringAsOffset;
+                                        }
+                                    }
+
+                                    if (!thingDef.equippedStatOffsets.NullOrEmpty())
+                                    {
+                                        // if (tooltip == string.Empty)
+                                        // {
+                                        // tooltip = StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                        // }
+                                        {
+                                            // else
+                                            tooltip += "\n\n" + StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                        }
+
+                                        tooltip += NewLine;
+                                        foreach (StatModifier statOffset in thingDef.equippedStatOffsets)
+                                        {
+                                            tooltip += "\n";
+                                            tooltip += statOffset.stat.LabelCap + Separator
+                                                                                + statOffset.ValueToStringAsOffset;
+                                        }
                                     }
                                 }
 
@@ -282,30 +281,33 @@
 
                             // for (int j = 0; j < recipe.products.Count; j++)
                             // {
-                            int count = selTable.Map.listerThings.ThingsOfDef(recipeProduct.thingDef).Count;
-
-                            int wornCount = colonistsWithThing.Count;
-
-                            for (int k = 0; k < recipeProduct.thingDef?.apparel?.bodyPartGroups?.Count; k++)
+                            if (recipeProduct != null)
                             {
-                                BodyPartGroupDef bPart = recipeProduct.thingDef.apparel.bodyPartGroups[k];
+                                int count = selTable.Map.listerThings.ThingsOfDef(recipeProduct.thingDef).Count;
 
-                                string key = bPart.LabelCap + Tools.NestedString;
+                                int wornCount = colonistsWithThing.Count;
 
-                                if (!dictionary.ContainsKey(key))
+                                for (int k = 0; k < recipeProduct.thingDef?.apparel?.bodyPartGroups?.Count; k++)
                                 {
-                                    dictionary.Add(key, new List<FloatMenuOption>());
+                                    BodyPartGroupDef bPart = recipeProduct.thingDef.apparel.bodyPartGroups[k];
+
+                                    string key = bPart.LabelCap + Tools.NestedString;
+
+                                    if (!dictionary.ContainsKey(key))
+                                    {
+                                        dictionary.Add(key, new List<FloatMenuOption>());
+                                    }
+
+                                    if (k == 0)
+                                    {
+                                        floatMenuOption.Label += " (" + count + "/" + wornCount + ")";
+
+                                        // + "\n"
+                                        // + recipeProduct.thingDef.equippedStatOffsets.ToStringSafeEnumerable();
+                                    }
+
+                                    dictionary[key].Add(floatMenuOption);
                                 }
-
-                                if (k == 0)
-                                {
-                                    floatMenuOption.Label += " (" + count + "/" + wornCount + ")";
-
-                                    // + "\n"
-                                    // + recipeProduct.thingDef.equippedStatOffsets.ToStringSafeEnumerable();
-                                }
-
-                                dictionary[key].Add(floatMenuOption);
                             }
                         }
                     }
@@ -314,7 +316,7 @@
                     // dictionary2 = dictionary2.OrderByDescending(c => c.Key).ToDictionary(KeyValuePair<string, List<FloatMenuOption>>);
                     if (!dictionary.Any())
                     {
-                        dictionary.Add("NoneBrackets".Translate(), new List<FloatMenuOption>() { null });
+                        dictionary.Add("NoneBrackets".Translate(), new List<FloatMenuOption> { null });
                     }
 
                     // else
@@ -332,7 +334,7 @@
                     return dictionary;
                 };
 
-            mouseoverBill = DoListing(selTable.BillStack, rect2, labeledSortingActions, ref scrollPosition, ref viewHeight);
+            _mouseoverBill = DoListing(selTable.BillStack, rect2, labeledSortingActions, ref _scrollPosition, ref _viewHeight);
 
             return false;
         }
@@ -346,10 +348,10 @@
                 return true;
             }
 
-            if (mouseoverBill != null)
+            if (_mouseoverBill != null)
             {
-                mouseoverBill.TryDrawIngredientSearchRadiusOnMap(Find.Selector.SingleSelectedThing.Position);
-                mouseoverBill = null;
+                _mouseoverBill.TryDrawIngredientSearchRadiusOnMap(Find.Selector.SingleSelectedThing.Position);
+                _mouseoverBill = null;
             }
 
             return false;
@@ -409,13 +411,13 @@
 
             Widgets.EndScrollView();
             GUI.EndGroup();
-            DoBWMPostfix?.Invoke(ref __instance, ref rect);
+            DoBwmPostfix?.Invoke(ref rect);
             return result;
         }
 
-        public delegate void Postfix(ref BillStack __instance, ref Rect rect);
+        public delegate void Postfix(ref Rect rect);
 
-        public static event Postfix DoBWMPostfix;
+        public static event Postfix DoBwmPostfix;
 
     }
 }

@@ -1,32 +1,37 @@
-﻿namespace Outfitter
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using JetBrains.Annotations;
+using RimWorld;
+using UnityEngine;
+using Verse;
+using Verse.AI;
+
+namespace Outfitter
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-
-    using JetBrains.Annotations;
-
-    using RimWorld;
-
-    using UnityEngine;
-
-    using Verse;
-    using Verse.AI;
-
     public static class JobGiver_OutfitterOptimizeApparel
     {
+        #region Public Fields
+
         public const int ApparelStatCheck = 3750;
-
-        private const int ApparelOptimizeCheckIntervalMin = 6000;
-
-        private const int ApparelOptimizeCheckIntervalMax = 9000;
 
         // private const int ApparelOptimizeCheckIntervalMin = 9000;
         // private const int ApparelOptimizeCheckIntervalMax = 12000;
         public const float MinScoreGainToCare = 0.09f;
 
+        #endregion Public Fields
+
+        #region Private Fields
+
+        private const int ApparelOptimizeCheckIntervalMax = 9000;
+        private const int ApparelOptimizeCheckIntervalMin = 6000;
+
         // private const float MinScoreGainToCare = 0.15f;
-        private static StringBuilder debugSb;
+        private static StringBuilder _debugSb;
+
+        #endregion Private Fields
+
+        #region Public Methods
 
         // private static Apparel lastItem;
         public static void SetNextOptimizeTick([NotNull] Pawn pawn)
@@ -42,7 +47,8 @@
         }
 
         // private static NeededWarmth neededWarmth;
-        public static bool TryGiveJob_Prefix(ref Job __result, Pawn pawn)
+        // ReSharper disable once InconsistentNaming
+        public static bool TryGiveJob_Prefix([CanBeNull] ref Job __result, Pawn pawn)
         {
             __result = null;
             if (pawn.outfits == null)
@@ -68,8 +74,8 @@
             }
             else
             {
-                debugSb = new StringBuilder();
-                debugSb.AppendLine(string.Concat("Outfiter scanning for ", pawn, " at ", pawn.Position));
+                _debugSb = new StringBuilder();
+                _debugSb.AppendLine(string.Concat("Outfiter scanning for ", pawn, " at ", pawn.Position));
             }
 
             Outfit currentOutfit = pawn.outfits.CurrentOutfit;
@@ -145,8 +151,9 @@
                 // }
                 if (DebugViewSettings.debugApparelOptimize)
                 {
-                    debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
+                    _debugSb.AppendLine(apparel.LabelCap + ": " + gain.ToString("F2"));
                 }
+
                 //  float otherGain = 0f;
                 //  Pawn otherPawn = null;
                 //  foreach (Pawn otherP in pawn.Map.mapPawns.FreeColonistsSpawned.ToList())
@@ -174,7 +181,7 @@
                 {
                     if (ApparelUtility.HasPartsToWear(pawn, apparel.def))
                     {
-                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger(), 1))
+                        if (pawn.CanReserveAndReach(apparel, PathEndMode.OnCell, pawn.NormalMaxDanger()))
                         {
                             thing = apparel;
                             score = gain;
@@ -185,9 +192,9 @@
 
             if (DebugViewSettings.debugApparelOptimize)
             {
-                debugSb.AppendLine("BEST: " + thing);
-                Log.Message(debugSb.ToString());
-                debugSb = null;
+                _debugSb.AppendLine("BEST: " + thing);
+                Log.Message(_debugSb.ToString());
+                _debugSb = null;
             }
 
             // New stuff
@@ -237,5 +244,7 @@
             pawn.Reserve(thing, __result, 1, 1);
             return false;
         }
+
+        #endregion Public Methods
     }
 }

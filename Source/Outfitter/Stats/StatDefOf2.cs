@@ -1,7 +1,7 @@
-﻿namespace Outfitter
-{
-    using RimWorld;
+﻿using RimWorld;
 
+namespace Outfitter
+{
     // Not covered by vanilla
     [DefOf]
     public static class StatDefOf2
