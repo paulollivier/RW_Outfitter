@@ -26,7 +26,8 @@ namespace Outfitter.TabPatch
         public static bool FillTab_Prefix()
         {
             Building_WorkTable selTable = (Building_WorkTable)Find.Selector.SingleSelectedThing;
-            if (selTable.def != ThingDef.Named("HandTailoringBench")
+            if (!Controller.Settings.UseCustomTailorWorkbench
+                || selTable.def != ThingDef.Named("HandTailoringBench")
                 && selTable.def != ThingDef.Named("ElectricTailoringBench"))
             {
                 return true;
@@ -42,11 +43,11 @@ namespace Outfitter.TabPatch
                     Dictionary<string, List<FloatMenuOption>> dictionary =
                         new Dictionary<string, List<FloatMenuOption>>();
 
-                    // Dictionary<string, List<FloatMenuOption>> dictionary2 = new Dictionary<string, List<FloatMenuOption>>();
-                    List<RecipeDef> recipesWithoutPart = selTable.def.AllRecipes
-                        .Where(
-                            bam => bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty()
-                                   ?? true).ToList();
+                        // Dictionary<string, List<FloatMenuOption>> dictionary2 = new Dictionary<string, List<FloatMenuOption>>();
+                        List<RecipeDef> recipesWithoutPart = selTable.def.AllRecipes
+                                .Where(
+                                    bam => bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty()
+                                           ?? true).ToList();
                     List<RecipeDef> recipesWithPart = selTable.def.AllRecipes
                         .Where(
                             bam => !bam.products?.FirstOrDefault()?.thingDef?.apparel?.bodyPartGroups.NullOrEmpty()
@@ -170,15 +171,15 @@ namespace Outfitter.TabPatch
                                             .ToList();
                                     if (!statBases.NullOrEmpty())
                                     {
-                                        // tooltip = StatCategoryDefOf.Apparel.LabelCap;
-                                        // tooltip += "\n-------------------------------";
-                                        tooltip += "\n";
+                                            // tooltip = StatCategoryDefOf.Apparel.LabelCap;
+                                            // tooltip += "\n-------------------------------";
+                                            tooltip += "\n";
                                         for (int index = 0; index < statBases.Count; index++)
                                         {
                                             StatModifier statOffset = statBases[index];
                                             {
-                                                // if (index > 0)
-                                                tooltip += "\n";
+                                                    // if (index > 0)
+                                                    tooltip += "\n";
                                             }
 
                                             tooltip += statOffset.stat.LabelCap + Separator
@@ -188,13 +189,13 @@ namespace Outfitter.TabPatch
 
                                     if (!thingDef.equippedStatOffsets.NullOrEmpty())
                                     {
-                                        // if (tooltip == string.Empty)
-                                        // {
-                                        // tooltip = StatCategoryDefOf.EquippedStatOffsets.LabelCap;
-                                        // }
-                                        {
-                                            // else
-                                            tooltip += "\n\n" + StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                            // if (tooltip == string.Empty)
+                                            // {
+                                            // tooltip = StatCategoryDefOf.EquippedStatOffsets.LabelCap;
+                                            // }
+                                            {
+                                                // else
+                                                tooltip += "\n\n" + StatCategoryDefOf.EquippedStatOffsets.LabelCap;
                                         }
 
                                         tooltip += NewLine;
@@ -274,14 +275,14 @@ namespace Outfitter.TabPatch
                                     (float)(rect.y + (rect.height - 24.0) / 2.0),
                                     recipe));
 
-                            // recipe.products?.FirstOrDefault()?.thingDef));
+                                // recipe.products?.FirstOrDefault()?.thingDef));
 
-                            // list.Add(new FloatMenuOption("LoL", null));
-                            // Outfitter jump in here
+                                // list.Add(new FloatMenuOption("LoL", null));
+                                // Outfitter jump in here
 
-                            // for (int j = 0; j < recipe.products.Count; j++)
-                            // {
-                            if (recipeProduct != null)
+                                // for (int j = 0; j < recipe.products.Count; j++)
+                                // {
+                                if (recipeProduct != null)
                             {
                                 int count = selTable.Map.listerThings.ThingsOfDef(recipeProduct.thingDef).Count;
 
@@ -302,9 +303,9 @@ namespace Outfitter.TabPatch
                                     {
                                         floatMenuOption.Label += " (" + count + "/" + wornCount + ")";
 
-                                        // + "\n"
-                                        // + recipeProduct.thingDef.equippedStatOffsets.ToStringSafeEnumerable();
-                                    }
+                                            // + "\n"
+                                            // + recipeProduct.thingDef.equippedStatOffsets.ToStringSafeEnumerable();
+                                        }
 
                                     dictionary[key].Add(floatMenuOption);
                                 }
@@ -312,26 +313,26 @@ namespace Outfitter.TabPatch
                         }
                     }
 
-                    // Dictionary<string, List<FloatMenuOption>> list2 = new Dictionary<string, List<FloatMenuOption>>();
-                    // dictionary2 = dictionary2.OrderByDescending(c => c.Key).ToDictionary(KeyValuePair<string, List<FloatMenuOption>>);
-                    if (!dictionary.Any())
+                        // Dictionary<string, List<FloatMenuOption>> list2 = new Dictionary<string, List<FloatMenuOption>>();
+                        // dictionary2 = dictionary2.OrderByDescending(c => c.Key).ToDictionary(KeyValuePair<string, List<FloatMenuOption>>);
+                        if (!dictionary.Any())
                     {
                         dictionary.Add("NoneBrackets".Translate(), new List<FloatMenuOption> { null });
                     }
 
-                    // else
-                    // {
-                    // foreach (KeyValuePair<string, List<FloatMenuOption>> pair in list)
-                    // {
-                    // string label = pair.Key;
-                    // if (pair.Value.Count == 1)
-                    // {
-                    // label = pair.Value.FirstOrDefault().Label;
-                    // }
-                    // list2.Add(label, pair.Value);
-                    // }
-                    // }
-                    return dictionary;
+                        // else
+                        // {
+                        // foreach (KeyValuePair<string, List<FloatMenuOption>> pair in list)
+                        // {
+                        // string label = pair.Key;
+                        // if (pair.Value.Count == 1)
+                        // {
+                        // label = pair.Value.FirstOrDefault().Label;
+                        // }
+                        // list2.Add(label, pair.Value);
+                        // }
+                        // }
+                        return dictionary;
                 };
 
             _mouseoverBill = DoListing(selTable.BillStack, rect2, labeledSortingActions, ref _scrollPosition, ref _viewHeight);
@@ -377,9 +378,6 @@ namespace Outfitter.TabPatch
 
                     Tools.LabelMenu = new FloatMenuLabels(items);
                     Find.WindowStack.Add(Tools.LabelMenu);
-
-                    // Vanilla
-                    // Find.WindowStack.Add(new FloatMenu(recipeOptionsMaker()));
                 }
 
                 UIHighlighter.HighlightOpportunity(rect2, "AddBill");

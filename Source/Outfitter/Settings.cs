@@ -6,7 +6,12 @@ namespace Outfitter
     public class Settings : ModSettings
     {
         public bool UseEyes => this._useEyes;
+
+        public bool UseCustomTailorWorkbench => this._useCustomTailorWorkbench;
+
         private bool _useEyes;
+        private bool _useCustomTailorWorkbench;
+
         public void DoWindowContents(Rect inRect)
         {
             Listing_Standard list = new Listing_Standard { ColumnWidth = inRect.width / 2 };
@@ -18,6 +23,11 @@ namespace Outfitter
                 "Settings.UseEyes".Translate(),
                 ref this._useEyes,
                 "Settings.UseEyesTooltip".Translate());
+
+            list.CheckboxLabeled(
+                "Settings.UseTailorWorkbenchUI".Translate(),
+                ref this._useCustomTailorWorkbench,
+                "Settings.UseTailorWorkbenchUITooltip".Translate());
 
             list.End();
 
@@ -52,6 +62,7 @@ namespace Outfitter
         {
             base.ExposeData();
             Scribe_Values.Look(ref this._useEyes, "useEyes", false, true);
+            Scribe_Values.Look(ref this._useCustomTailorWorkbench, "useCustomTailorWorkbench", false, true);
         }
     }
 }
