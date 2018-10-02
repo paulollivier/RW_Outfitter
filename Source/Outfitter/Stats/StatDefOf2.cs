@@ -6,7 +6,7 @@ namespace Outfitter
     [DefOf]
     public static class StatDefOf2
     {
-        public static StatDef BrewingSpeed;
+        public static StatDef DrugCookingSpeed;
 
         public static StatDef ButcheryFleshEfficiency;
 

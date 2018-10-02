@@ -752,7 +752,7 @@ namespace Outfitter
                                                                             x => x.defName == FSF.Brewing ||
                                                                                  x.defName == Splitter.Brewing))
                     {
-                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
+                        yield return new KeyValuePair<StatDef, float>(StatDefOf2.DrugCookingSpeed, PosMax(mainJob));
                     }
 
                     if (!DefDatabase<WorkTypeDef>.AllDefsListForReading.Any(
@@ -1038,8 +1038,7 @@ namespace Outfitter
                     {
                         mainJob = true;
                     }
-
-                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.BrewingSpeed, PosMax(mainJob));
+                    yield return new KeyValuePair<StatDef, float>(StatDefOf2.DrugCookingSpeed, PosMax(mainJob));
                     yield break;
 
                 case Splitter.Repair:
