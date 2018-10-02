@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-  <name>Outfitter 0.19.0</name>
+  <name>Outfitter</name>
   <author>Ara</author>
   <url>https://github.com/paulollivier/RW_Outfitter</url>
   <targetVersion>0.19.2009</targetVersion>
@@ -10,17 +10,18 @@
     - Allows you to finetune, add and/or remove priorities.
     - Takes personal traits like temperature preference or mental states into account.
     - No naked pawns!
-
+    
     Original version of 'Outfitter™' by Fluffy. Original version of 'AutoEquip™' by soulkata.
     This is a fusion of both mods.
     B18, A17, A16 and A15 versions by Killface.
     Updated to B19 by Araelle.
-
+    
     DISCLAIMER: I am not a C# expert! in fact i just picked it up to update this mod.
     It is provided AS IS. I will try my best to support it, but don't expect miracles.
-
+    
     Please report bugs, compatibility issues and so on.
-
-    Also, if someone knows how to put multiple authors in the author list, i gladly accept any help.
+    
+	GitHub: https://github.com/paulollivier/RW_Outfitter
+	Patch for Infused, by NotFood: https://steamcommunity.com/sharedfiles/filedetails/?id=1525520790
   </description>
 </ModMetaData>
